@@ -8,94 +8,78 @@
   href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
   rel="stylesheet"
 />
+<link
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back_ios"
+  rel="stylesheet"
+/>
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/ficha_mascota.css' %}" rel="stylesheet" />
 {% endblock %}
 
-{% block navbar %}
-<nav class="navbar navbar-expand-lg bg-white sticky-top border-bottom">
-  <div class="container py-2">
-    <a
-      class="navbar-brand fs-4 d-flex align-items-center gap-2"
-      href="{% url 'home' %}"
-    >
-      <img
-        src="{% static 'inicio/img/logo.jpg' %}"
-        alt="Vet Arica"
-        height="36"
-        class="rounded"
-      />
-      Vet Arica
-    </a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navMenu"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-4">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'dashboard' %}">Mi Perfil</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'dashboard' %}#mis-mascotas">Mis Mascotas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'historial_citas' %}">Mis Citas</a>
-        </li>
-        <li class="nav-item mt-2 mt-lg-0 d-flex align-items-center gap-2">
-          <a class="btn btn-teal px-3" href="{% url 'agendar' %}"
-            >Agendar Cita</a
-          >
-          <a href="{% url 'logout' %}" class="Btn">
-            <div class="sign">
-              <svg viewBox="0 0 512 512">
-                <path
-                  d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"
-                ></path>
-              </svg>
-            </div>
-            <div class="text">Salir</div>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+
+{% block sidebar %}
+{% include 'usuarios/cliente/sidebar.html' %}
 {% endblock %}
 
 {% block content %}
 <div class="dash-shell">
   <main class="dash-content ficha-content">
-    <section class="ficha-hero">
-      {% if mascota.imagen %}
-      <img
-        src="{{ mascota.imagen.url }}"
-        alt="{{ mascota.nombre }}"
-        class="ficha-hero-foto"
-      />
-      {% else %}
-      <span class="ficha-hero-foto ficha-hero-foto-vacia"></span>
-      {% endif %}
-      <div class="ficha-hero-info">
-        <div class="ficha-hero-nombre">
-          <h1>{{ mascota.nombre }}</h1>
-        </div>
-      </div>
-    </section>
+    <div class="ficha-top-nav">
+      <a href="{% url 'dashboard' %}#mis-mascotas" class="btn-back-pill">
+        <span class="material-symbols-outlined">arrow_back_ios</span> Volver a Mis Mascotas
+      </a>
+    </div>
 
-    <section class="ficha-datos">
-      <h2 class="dash-section-title">Datos Generales</h2>
-      <div class="ficha-datos-grid">
-        <p class="ficha-dato">Especie: {{ mascota.especie }}</p>
-        <p class="ficha-dato">Raza: {{ mascota.raza|default:"Sin raza" }}</p>
-        <p class="ficha-dato">Sexo: {{ mascota.sexo|default:"—" }}</p>
-        <p class="ficha-dato">Edad: {{ mascota.edad }}</p>
-      </div>
-    </section>
+    <div class="ficha-caja-blanca">
+      <section class="ficha-simple-header">
+        {% if mascota.imagen %}
+        <img
+          src="{{ mascota.imagen.url }}"
+          alt="{{ mascota.nombre }}"
+          class="ficha-hero-foto"
+        />
+        {% endif %}
+        <div>
+          <h1>{{ mascota.nombre }}</h1>
+          <a href="{% url 'editar_mascota' mascota.id %}" class="ficha-editar-link">Editar datos</a>
+        </div>
+      </section>
+
+      <section class="ficha-seccion">
+        <h2 class="dash-section-title">Datos Generales</h2>
+        <div class="ficha-datos-grid">
+          <p class="ficha-texto"><strong>Especie:</strong> {{ mascota.especie }}</p>
+          <p class="ficha-texto"><strong>Raza:</strong> {{ mascota.raza|default:"Sin raza registrada" }}</p>
+          <p class="ficha-texto"><strong>Sexo:</strong> {{ mascota.sexo|default:"—" }}</p>
+          <p class="ficha-texto"><strong>Edad:</strong> {{ mascota.edad }}</p>
+        </div>
+      </section>
+
+      <section class="ficha-seccion ficha-seccion-ultima">
+        <h2 class="dash-section-title">Historial Clínico</h2>
+        {% if historial %}
+        {% for ficha in historial %}
+        <article class="historial-item-simple">
+          <p class="historial-fecha-simple">{{ ficha.fecha_atencion|date:"d M Y" }}</p>
+          <h3>{{ ficha.motivo_consulta }}</h3>
+          <p class="ficha-texto"><strong>Diagnóstico:</strong> {{ ficha.diagnostico }}</p>
+          <p class="ficha-texto"><strong>Tratamiento:</strong> {{ ficha.tratamiento }}</p>
+          {% if ficha.observaciones %}
+          <p class="ficha-texto"><strong>Observaciones:</strong> {{ ficha.observaciones }}</p>
+          {% endif %}
+          {% if ficha.peso %}
+          <p class="ficha-texto"><strong>Peso registrado:</strong> {{ ficha.peso }} kg</p>
+          {% endif %}
+        </article>
+        {% endfor %}
+        {% else %}
+        <p class="ficha-texto ficha-vacio">Todavía no hay atenciones clínicas registradas para {{ mascota.nombre }}.</p>
+        {% endif %}
+      </section>
+    </div>
   </main>
 </div>
 {% endblock %}
@@ -103,7 +87,7 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 <script>
-const notyf = new Notyf({
+  const notyf = new Notyf({
     duration: 3000,
     position: { x: "center", y: "top" },
   });
@@ -111,5 +95,19 @@ const notyf = new Notyf({
   {% for message in messages %}
   notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
   {% endfor %}
+
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarEl = document.getElementById("sidebar");
+  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+  if (sidebarToggle && sidebarEl && sidebarBackdrop) {
+    sidebarToggle.addEventListener("click", function () {
+      sidebarEl.classList.add("sidebar-open");
+      sidebarBackdrop.classList.add("show");
+    });
+    sidebarBackdrop.addEventListener("click", function () {
+      sidebarEl.classList.remove("sidebar-open");
+      sidebarBackdrop.classList.remove("show");
+    });
+  }
 </script>
 {% endblock %}
