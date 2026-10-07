@@ -1,17 +1,31 @@
+from datetime import timedelta
+
 from django.contrib import messages
+from django.db.models import Sum
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from citas.models import Mascota, SolicitudCita
-from .forms import LoginForm, RegisterForm, ConfiguracionForm
+from citas.forms import HORAS_ATENCION, rango_del_dia, MascotaForm
+from citas.models import FichaMedica, Mascota, SolicitudCita
+from .forms import ConfiguracionForm, LoginForm, RegisterForm
+
+
+def es_personal_clinica(usuario):
+    return usuario.rol in ('veterinaria', 'secretaria')
+
+
+MESES_ABREVIADOS = [
+    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+]
 
 
 def redirigir_segun_rol(usuario):
-    if usuario.rol == 'veterinaria':
-        return redirect('dashboard_doctora')
+    if es_personal_clinica(usuario):
+        return redirect('inicio_doctora')
     return redirect('dashboard')
 
 
@@ -63,16 +77,33 @@ def sin_acceso_view(request):
 @login_required(login_url='sin_acceso')
 def dashboard_usuario(request):
     ahora = timezone.now()
-    citas = request.user.citas_solicitadas.all().order_by('-fecha_hora')
+    citas = request.user.citas_solicitadas.all()
+    citas = citas.order_by('-fecha_hora')
     mascotas = request.user.mascotas.all()
 
-    proxima_cita = request.user.citas_solicitadas.filter(fecha_hora__gte=ahora).exclude(estado__iexact='cancelada').order_by('fecha_hora').first()
+    mascotas_info = []
+    for mascota in mascotas:
+        fichas_mascota = FichaMedica.objects.filter(solicitud__mascota=mascota)
+        fichas_mascota = fichas_mascota.order_by('-fecha_atencion')
+        ultima_ficha = fichas_mascota.first()
+        mascotas_info.append({
+            'mascota': mascota,
+            'ultima_ficha': ultima_ficha,
+        })
 
-    citas_anio = request.user.citas_solicitadas.filter(fecha_hora__year=ahora.year, fecha_hora__lt=ahora).exclude(estado__iexact='cancelada').count()
+    proximas_citas = request.user.citas_solicitadas.filter(fecha_hora__gte=ahora)
+    proximas_citas = proximas_citas.exclude(estado__iexact='cancelada')
+    proximas_citas = proximas_citas.order_by('fecha_hora')
+    proxima_cita = proximas_citas.first()
+
+    citas_del_anio = request.user.citas_solicitadas.filter(fecha_hora__year=ahora.year, fecha_hora__lt=ahora)
+    citas_del_anio = citas_del_anio.exclude(estado__iexact='cancelada')
+    citas_anio = citas_del_anio.count()
 
     context = {
         'citas': citas,
         'mascotas': mascotas,
+        'mascotas_info': mascotas_info,
         'proxima_cita': proxima_cita,
         'citas_anio': citas_anio,
     }
@@ -81,15 +112,147 @@ def dashboard_usuario(request):
 
 @never_cache
 @login_required(login_url='sin_acceso')
-def dashboard_doctora(request):
-    return render(request, 'usuarios/doctora/dashboard.html')
+def inicio_doctora(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    hoy = timezone.localdate()
+
+    # citas de hoy sin las canceladas ordenadas por hora
+    rango_hoy = rango_del_dia(hoy)
+    citas_hoy = SolicitudCita.objects.select_related('tipo_consulta').filter(fecha_hora__range=rango_hoy)
+    citas_hoy = citas_hoy.exclude(estado__iexact='cancelada')
+    citas_hoy = citas_hoy.order_by('fecha_hora')
+
+    # marcamos cual cita ya paso y cual es la siguiente por venir, para destacarla en la lista
+    ahora = timezone.now()
+    ya_eligio_la_siguiente = False
+    citas_hoy_info = []
+    for cita in citas_hoy:
+        ya_paso = cita.fecha_hora < ahora
+        es_siguiente = False
+        if not ya_paso and not ya_eligio_la_siguiente:
+            es_siguiente = True
+            ya_eligio_la_siguiente = True
+        citas_hoy_info.append({
+            'cita': cita,
+            'ya_paso': ya_paso,
+            'es_siguiente': es_siguiente,
+        })
+
+    # suma de lo pagado desde el dia 1 de este mes
+    inicio_mes_dt = rango_del_dia(hoy.replace(day=1))[0]
+    pagos_del_mes = SolicitudCita.objects.filter(estado_pago='Pagado', fecha_pago__gte=inicio_mes_dt)
+    suma_pagos_mes = pagos_del_mes.aggregate(total=Sum('monto_pagado'))['total']
+    if suma_pagos_mes is None:
+        ingresos_mes = 0
+    else:
+        ingresos_mes = suma_pagos_mes
+
+    ingresos_mes = format(ingresos_mes, ',').replace(',', '.')
+
+    context = {
+        'citas_hoy': citas_hoy,
+        'citas_hoy_info': citas_hoy_info,
+        'ingresos_mes': ingresos_mes,
+    }
+    return render(request, 'usuarios/doctora/inicio.html', context)
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def agenda_doctora(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    try:
+        semanas = int(request.GET.get('semana', 0))
+    except ValueError:
+        semanas = 0
+
+    hoy = timezone.localdate()
+    lunes_actual = hoy - timedelta(days=hoy.weekday())
+    lunes_semana = lunes_actual + timedelta(weeks=semanas)
+
+    dias_semana = []
+    for i in range(6):
+        dias_semana.append(lunes_semana + timedelta(days=i))
+
+    horas = []
+    for hora, _ in HORAS_ATENCION:
+        if hora:
+            horas.append(hora)
+
+    primer_dia_semana = dias_semana[0]
+    ultimo_dia_semana = dias_semana[5]
+    inicio_semana = rango_del_dia(primer_dia_semana)[0]
+    fin_semana = rango_del_dia(ultimo_dia_semana)[1]
+    rango_semana = (inicio_semana, fin_semana)
+
+    citas_semana = SolicitudCita.objects.select_related('tipo_consulta').filter(fecha_hora__range=rango_semana)
+    citas_semana = citas_semana.exclude(estado__iexact='cancelada')
+
+    citas_por_dia_hora = {}
+    for cita in citas_semana:
+        hora_local = timezone.localtime(cita.fecha_hora)
+        hora_texto = hora_local.strftime('%H:%M')
+        clave = (hora_local.date(), hora_texto)
+        citas_por_dia_hora[clave] = cita
+
+    dias_semana_info = []
+    for dia in dias_semana:
+        if dia == hoy:
+            es_hoy = True
+        else:
+            es_hoy = False
+        dias_semana_info.append({
+            'fecha': dia,
+            'es_hoy': es_hoy,
+        })
+
+    filas = []
+    for hora in horas:
+        celdas = []
+        for dia in dias_semana:
+            celdas.append({
+                'cita': citas_por_dia_hora.get((dia, hora)),
+            })
+
+        filas.append({
+            'hora': hora,
+            'celdas': celdas,
+        })
+
+    mes_inicio = MESES_ABREVIADOS[primer_dia_semana.month - 1]
+    mes_fin = MESES_ABREVIADOS[ultimo_dia_semana.month - 1]
+    if primer_dia_semana.month == ultimo_dia_semana.month:
+        subtitulo_semana = f'{primer_dia_semana.day} al {ultimo_dia_semana.day} {mes_fin} {ultimo_dia_semana.year}'
+    else:
+        subtitulo_semana = f'{primer_dia_semana.day} {mes_inicio} - {ultimo_dia_semana.day} {mes_fin} {ultimo_dia_semana.year}'
+
+    if semanas == 0:
+        es_semana_actual = True
+    else:
+        es_semana_actual = False
+
+    context = {
+        'dias_semana': dias_semana_info,
+        'filas': filas,
+        'total_citas': len(citas_por_dia_hora),
+        'subtitulo_semana': subtitulo_semana,
+        'es_semana_actual': es_semana_actual,
+        'semana_anterior': semanas - 1,
+        'semana_siguiente': semanas + 1,
+    }
+    return render(request, 'usuarios/doctora/agenda.html', context)
 
 
 @never_cache
 @login_required(login_url='sin_acceso')
 def historial_citas(request):
     anio_actual = timezone.now().year
-    citas = request.user.citas_solicitadas.select_related('mascota').order_by('-fecha_hora')
+    citas = request.user.citas_solicitadas.select_related('mascota')
+    citas = citas.order_by('-fecha_hora')
 
     periodo = request.GET.get('periodo', 'este_ano')
     mascota_sel = request.GET.get('mascota', '')
@@ -103,11 +266,13 @@ def historial_citas(request):
     if mascota_sel:
         citas = citas.filter(mascota_id=mascota_sel)
     if estado_sel:
-        citas = citas.filter(estado__iexact=estado_sel)
+        citas = citas.filter(estado=estado_sel)
 
     estados = SolicitudCita.ESTADOS
 
-    page_obj = Paginator(citas, 8).get_page(request.GET.get('page'))
+    paginador = Paginator(citas, 8)
+    numero_pagina = request.GET.get('page')
+    page_obj = paginador.get_page(numero_pagina)
 
     context = {
         'page_obj': page_obj,
@@ -122,7 +287,13 @@ def historial_citas(request):
 @login_required(login_url='sin_acceso')
 def ficha_mascota(request, mascota_id):
     mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user)
-    return render(request, 'usuarios/cliente/ficha_mascota.html', {'mascota': mascota})
+    historial = FichaMedica.objects.filter(solicitud__mascota=mascota)
+    historial = historial.order_by('-fecha_atencion')
+    context = {
+        'mascota': mascota,
+        'historial': historial,
+    }
+    return render(request, 'usuarios/cliente/ficha_mascota.html', context)
 
 
 @login_required
@@ -138,3 +309,24 @@ def configuracion(request):
         form = ConfiguracionForm(instance=request.user)
 
     return render(request, "usuarios/cliente/configuracion.html", {"form": form})
+
+@login_required(login_url='sin_acceso')
+def eliminar_mascota(request, mascota_id):
+    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user)
+    if request.method == 'POST':
+        mascota.delete()
+        messages.success(request, f'{mascota.nombre} fue eliminada correctamente.')
+    return redirect('dashboard')
+
+@login_required(login_url='sin_acceso')
+def editar_mascota(request, mascota_id):
+    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user)
+    if request.method == 'POST':
+        form = MascotaForm(request.POST, request.FILES, instance=mascota)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'{mascota.nombre} fue actualizada correctamente.')
+            return redirect('dashboard')
+    else:
+        form = MascotaForm(instance=mascota)
+    return render(request, 'usuarios/cliente/editar_mascota.html', {'form': form, 'mascota': mascota})

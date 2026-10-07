@@ -27,8 +27,11 @@ urlpatterns = [
     path('dashboard/', views.dashboard_usuario, name='dashboard'),
     path('historial-citas/', views.historial_citas, name='historial_citas'),
     path('mascota/<int:mascota_id>/', views.ficha_mascota, name='ficha_mascota'),
+    path('mascota/<int:mascota_id>/eliminar/', views.eliminar_mascota, name='eliminar_mascota'),
     path('configuracion/', views.configuracion, name='configuracion'),
-
+    path('mascota/<int:mascota_id>/editar/', views.editar_mascota, name='editar_mascota'),
+    
     # vistas doctora
-    path('doctora/dashboard/', views.dashboard_doctora, name='dashboard_doctora'),
+    path('doctora/', views.inicio_doctora, name='inicio_doctora'),
+    path('doctora/agenda/', views.agenda_doctora, name='agenda_doctora'),
 ]

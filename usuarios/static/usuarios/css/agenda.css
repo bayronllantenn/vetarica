@@ -1,0 +1,358 @@
+.dash-content-agenda {
+  max-width: 1400px;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.stat-card-eco {
+  background: #fff;
+  border: 1px solid #e6e8e7;
+  border-left: 4px solid var(--eco-accent, #0f8a7e);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.stat-card-eco-gris {
+  --eco-accent: #64748b;
+  --eco-accent-bg: #eef1f3;
+}
+
+.stat-card-eco-verde {
+  --eco-accent: #0f8a7e;
+  --eco-accent-bg: #e4f5f0;
+}
+
+.stat-card-eco-label {
+  display: block;
+  color: var(--eco-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card-eco-numero {
+  display: block;
+  color: #000;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.stat-card-eco-icono {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--eco-accent-bg);
+  color: var(--eco-accent);
+}
+
+.stat-card-eco-icono svg {
+  width: 22px;
+  height: 22px;
+}
+
+.stat-grid-eco {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+}
+
+@media (max-width: 575.98px) {
+  .stat-grid-eco {
+    grid-template-columns: 1fr;
+  }
+}
+
+.agenda-dia-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.agenda-dia-controles {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.agenda-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e6e8e7;
+  background: #fff;
+  color: #5b6b68;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.agenda-nav-btn:hover {
+  background: #eaf8f4;
+  color: #0f8a7e;
+  border-color: #0f8a7e;
+}
+
+.agenda-nav-hoy {
+  width: auto;
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.agenda-nav-hoy-desactivado {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.agenda-nueva-cita {
+  margin-left: 0.5rem;
+}
+
+.agenda-semana-lista {
+  overflow-x: auto;
+}
+
+.agenda-semana-header,
+.agenda-semana-fila {
+  display: grid;
+  grid-template-columns: 60px repeat(6, 1fr);
+  min-width: 760px;
+}
+
+.agenda-semana-hora-col,
+.agenda-semana-dia-col,
+.agenda-semana-hora,
+.agenda-semana-celda {
+  border: 1px solid #d8dbda;
+}
+
+.agenda-semana-dia-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.15rem;
+  padding: 0.2rem 0;
+}
+
+.agenda-semana-dia-col-hoy {
+  background: #eaf8f4;
+}
+
+.agenda-semana-dia-nombre {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.agenda-semana-dia-numero {
+  font-size: 0.78rem;
+  color: #5b6b68;
+}
+
+.agenda-semana-dia-numero-hoy {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.agenda-semana-hora {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.agenda-semana-celda {
+  position: relative;
+  min-height: 42px;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.agenda-semana-celda strong {
+  font-size: 0.78rem;
+  color: #1f2d2b;
+}
+
+.agenda-semana-celda span {
+  font-size: 0.72rem;
+  color: #5b6b68;
+}
+
+.agenda-semana-celda-ocupada {
+  margin: 3px;
+  border-radius: 6px;
+  border-left: 3px solid #c98a00;
+  background: #fdecb5;
+}
+
+.agenda-semana-celda-ocupada.agenda-cita-confirmada {
+  background: #d4f5e2;
+  border-left-color: #146c43;
+}
+
+.agenda-semana-celda-ocupada.agenda-cita-finalizado {
+  background: #e2e8e5;
+  border-left-color: #3d4e4a;
+}
+
+.cita-item-enlace {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.cita-estado-texto {
+  font-size: 0.95rem;
+  color: #000;
+  white-space: nowrap;
+}
+
+.citas-hoy-card .cita-item {
+  gap: 0.6rem;
+  background: none;
+  box-shadow: none;
+  border: none;
+  border-left: 3px solid #c98a00;
+  border-radius: 0;
+  border-bottom: 1px solid #e6e8e7;
+  padding: 0.85rem 0.25rem 0.85rem 0.75rem;
+}
+
+.citas-hoy-card .cita-item:hover {
+  box-shadow: none;
+  background: #f8faf9;
+}
+
+.cita-list .cita-item-enlace:last-child .cita-item {
+  border-bottom: none;
+}
+
+.citas-hoy-card .cita-item.cita-item-confirmada {
+  border-left-color: #146c43;
+}
+
+.citas-hoy-card .cita-item.cita-item-finalizado {
+  border-left-color: #3d4e4a;
+}
+
+.citas-hoy-card .cita-item.cita-item-siguiente {
+  background: #eaf8f4;
+}
+
+.citas-hoy-card .cita-item.cita-item-pasada {
+  opacity: 0.55;
+}
+
+.citas-hoy-card .cita-fecha-texto {
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #123c33;
+}
+
+.citas-hoy-card .cita-dueno {
+  font-weight: 400;
+  color: #5b6b68;
+  margin-left: 0.75rem;
+}
+
+.citas-hoy-card,
+.grafico-card {
+  background: #fff;
+  border: 1px solid #e6e8e7;
+  padding: 1.25rem;
+}
+
+.dash-mid-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  align-items: start;
+}
+
+.grafico-card-ancho {
+  margin-bottom: 2.25rem;
+}
+
+.grafico-lienzo {
+  position: relative;
+  height: 220px;
+}
+
+.especie-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.especie-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.especie-label {
+  width: 50px;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: #1f2d2b;
+}
+
+.especie-pista {
+  flex: 1;
+  background: #eef1f3;
+  height: 18px;
+}
+
+.especie-relleno {
+  height: 100%;
+}
+
+.especie-relleno-verde {
+  background: #0f8a7e;
+}
+
+.especie-relleno-gris {
+  background: #3d4e4a;
+}
+
+.especie-valor {
+  width: 38px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #5b6b68;
+}
+
+@media (max-width: 991.98px) {
+  .dash-mid-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.citas-hoy-card .dash-section-title {
+  margin-bottom: 1rem;
+}

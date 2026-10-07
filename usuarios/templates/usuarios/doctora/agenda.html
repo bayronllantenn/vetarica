@@ -2,15 +2,98 @@
 Vet Arica{% endblock %} {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/agenda.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
 <div class="dash-shell">
-  <main class="dash-content">
-    <section class="dash-hero">
-      <h1>¡Hola {{ user.first_name }}, bienvenida de vuelta!</h1>
-      <p class="dash-subtitle">Aquí vas a ver tu resumen del día.</p>
+  <main class="dash-content dash-content-agenda">
+    <section class="dash-hero agenda-dia-hero">
+      <div>
+        <h1>Agenda</h1>
+        <p class="dash-subtitle">{{ subtitulo_semana }}, {{ total_citas }} citas agendadas</p>
+      </div>
+      <div class="agenda-dia-controles">
+        <a href="?semana={{ semana_anterior }}" class="agenda-nav-btn" aria-label="Semana anterior">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M5 12l14 0" />
+            <path d="M5 12l4 4" />
+            <path d="M5 12l4 -4" />
+          </svg>
+        </a>
+        {% if es_semana_actual %}
+        <span class="agenda-nav-btn agenda-nav-hoy agenda-nav-hoy-desactivado">Esta semana</span>
+        {% else %}
+        <a href="?semana=0" class="agenda-nav-btn agenda-nav-hoy">Esta semana</a>
+        {% endif %}
+        <a href="?semana={{ semana_siguiente }}" class="agenda-nav-btn" aria-label="Semana siguiente">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M5 12l14 0" />
+            <path d="M15 16l4 -4" />
+            <path d="M15 8l4 4" />
+          </svg>
+        </a>
+        <span class="btn btn-teal agenda-nueva-cita">Nueva cita</span>
+      </div>
     </section>
+
+    <div class="agenda-semana-lista">
+      <div class="agenda-semana-header">
+        <div class="agenda-semana-hora-col"></div>
+        {% for dia in dias_semana %}
+        <div class="agenda-semana-dia-col {% if dia.es_hoy %}agenda-semana-dia-col-hoy{% endif %}">
+          <span class="agenda-semana-dia-nombre">{{ dia.fecha|date:"l"|capfirst }}</span>
+          <span class="agenda-semana-dia-numero {% if dia.es_hoy %}agenda-semana-dia-numero-hoy{% endif %}">{{ dia.fecha|date:"j" }}</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% for fila in filas %}
+      <div class="agenda-semana-fila">
+        <div class="agenda-semana-hora">{{ fila.hora }}</div>
+        {% for celda in fila.celdas %}
+        {% if celda.cita %}
+        <div class="agenda-semana-celda agenda-semana-celda-ocupada agenda-cita-{{ celda.cita.estado|lower }}">
+          <strong>{{ fila.hora }} {{ celda.cita.nombre_mascota }}</strong>
+          <span>{{ celda.cita.tipo_consulta.nombre }}, {{ celda.cita.nombre }} {{ celda.cita.apellido }}</span>
+        </div>
+        {% else %}
+        <span class="agenda-semana-celda agenda-semana-celda-libre"></span>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
   </main>
 </div>
+{% endblock %} {% block extra_js %}
+<script>
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarEl = document.getElementById("sidebar");
+  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+  if (sidebarToggle && sidebarEl && sidebarBackdrop) {
+    sidebarToggle.addEventListener("click", function () {
+      sidebarEl.classList.add("sidebar-open");
+      sidebarBackdrop.classList.add("show");
+    });
+    sidebarBackdrop.addEventListener("click", function () {
+      sidebarEl.classList.remove("sidebar-open");
+      sidebarBackdrop.classList.remove("show");
+    });
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
 {% endblock %}
