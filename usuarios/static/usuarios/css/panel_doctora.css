@@ -1,0 +1,137 @@
+.usuarios-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.usuarios-encabezado p,
+.texto-suave,
+.sin-resultados {
+  color: #71717a;
+}
+
+.tarjeta {
+  background: white;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tarjeta-header {
+  padding: 16px;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.buscador {
+  display: flex;
+  gap: 8px;
+  max-width: 420px;
+}
+
+.tabla-usuarios {
+  margin: 0;
+}
+
+.tabla-usuarios th,
+.tabla-usuarios td {
+  padding: 12px 16px;
+}
+
+.tabla-usuarios th {
+  color: #71717a;
+  font-size: 14px;
+}
+
+.fila-bloqueada td {
+  color: #a1a1aa;
+}
+
+.badge-rol,
+.estado {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  background: #f4f4f5;
+}
+
+.estado-activo {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.estado-bloqueado {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-vet {
+  background: #27272a;
+  color: white;
+}
+
+.btn-vet:hover {
+  background: #3f3f46;
+  color: white;
+}
+
+.btn-vet-borde {
+  background: white;
+  border: 1px solid #e4e4e7;
+}
+
+.btn-vet-borde:hover {
+  background: #f4f4f5;
+}
+
+.btn-bloquear {
+  background: white;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.btn-bloquear:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.sin-resultados {
+  text-align: center;
+  padding: 40px;
+}
+
+.volver {
+  display: block;
+  max-width: 600px;
+  margin: 0 auto 16px;
+  color: #71717a;
+  text-decoration: none;
+}
+
+.tarjeta-formulario {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.formulario-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+@media (max-width: 991.98px) {
+  .usuarios-encabezado,
+  .buscador {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}

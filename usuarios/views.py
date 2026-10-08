@@ -10,12 +10,16 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from citas.forms import HORAS_ATENCION, rango_del_dia, MascotaForm
 from citas.models import FichaMedica, Mascota, SolicitudCita
-from .forms import ConfiguracionForm, LoginForm, RegisterForm
+from .forms import ConfiguracionForm, CrearUsuarioForm, EditarUsuarioForm, LoginForm, RegisterForm
+from .models import Persona
 
 
 def es_personal_clinica(usuario):
     return usuario.rol in ('veterinaria', 'secretaria')
 
+
+def es_veterinaria(usuario):
+    return usuario.rol == 'veterinaria'
 
 MESES_ABREVIADOS = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
@@ -49,7 +53,6 @@ def registro_view(request):
 def login_view(request):
     if request.user.is_authenticated:
         return redirigir_segun_rol(request.user)
-
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
@@ -57,7 +60,13 @@ def login_view(request):
             login(request, usuario)
             messages.success(request, f'Bienvenido, {usuario.first_name} {usuario.last_name}.')
             return redirigir_segun_rol(usuario)
-        messages.error(request, 'Correo electrónico o contraseña incorrectos.')
+        correo = request.POST.get('username', '').strip()
+        clave = request.POST.get('password', '')
+        usuario_bloqueado = Persona.objects.filter(email__iexact=correo, is_active=False).first()
+        if usuario_bloqueado and usuario_bloqueado.check_password(clave):
+            messages.error(request, 'Tu cuenta fue bloqueada. Comunícate con la veterinaria.')
+        else:
+            messages.error(request, 'Correo electrónico o contraseña incorrectos.')
     else:
         form = LoginForm()
     return render(request, 'usuarios/login_form.html', {'form': form})
@@ -246,6 +255,94 @@ def agenda_doctora(request):
     }
     return render(request, 'usuarios/doctora/agenda.html', context)
 
+#muestra la lista de usuarios que estan creados
+@never_cache
+@login_required(login_url='sin_acceso')
+def usuarios_list(request):
+    if not es_veterinaria(request.user):
+        return redirect('sin_acceso')
+
+    buscar = request.GET.get('buscar', '')
+    usuarios = Persona.objects.order_by('rol', 'first_name')
+    if buscar:
+        por_nombre = usuarios.filter(first_name__icontains=buscar)
+        por_apellido = usuarios.filter(last_name__icontains=buscar)
+        por_correo = usuarios.filter(email__icontains=buscar)
+        por_rut = usuarios.filter(rut__icontains=buscar)
+        usuarios = por_nombre | por_apellido | por_correo | por_rut
+
+    context = {
+        'usuarios': usuarios,
+        'buscar': buscar,
+    }
+    return render(request, 'usuarios/doctora/usuarios_list.html', context)
+
+@never_cache
+@login_required(login_url='sin_acceso')
+#esta funcion permite crear el usuario desde la doctora en usuarios_list.html
+def crear_usuario(request):
+    if not es_veterinaria(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        form = CrearUsuarioForm(request.POST)
+        if form.is_valid():
+            usuario = form.save()
+            messages.success(request, f'Usuario {usuario.email} creado correctamente.')
+            return redirect('usuarios_list')
+        messages.error(request, 'Revisa los campos marcados en rojo.')
+    else:
+        form = CrearUsuarioForm()
+    context = {
+        'form': form,
+        'titulo': 'Crear usuario',
+        'texto_boton': 'Crear usuario',
+    }
+    return render(request, 'usuarios/doctora/usuario_form.html', context)
+#aqui se puede editar el usuario desde la doctora 
+@never_cache
+@login_required(login_url='sin_acceso')
+def editar_usuario(request, usuario_id):
+    if not es_veterinaria(request.user):
+        return redirect('sin_acceso')
+    usuario = get_object_or_404(Persona, id=usuario_id)
+    if usuario == request.user:
+        messages.error(request, 'No puedes editar tu propia cuenta desde aquí.')
+        return redirect('usuarios_list')
+
+    if request.method == 'POST':
+        form = EditarUsuarioForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Los datos de {usuario.email} se guardaron correctamente.')
+            return redirect('usuarios_list')
+        messages.error(request, 'Revisa los campos marcados en rojo.')
+    else:
+        form = EditarUsuarioForm(instance=usuario)
+    context = {
+        'form': form,
+        'titulo': 'Editar usuario',
+        'texto_boton': 'Guardar cambios',
+    }
+    return render(request, 'usuarios/doctora/usuario_form.html', context)
+# esto nos permite bloquear el usuario 
+@login_required(login_url='sin_acceso')
+def bloquear_usuario(request, usuario_id):
+    if not es_veterinaria(request.user):
+        return redirect('sin_acceso')
+    usuario = get_object_or_404(Persona, id=usuario_id)
+    if request.method == 'POST':
+        if usuario == request.user:
+            messages.error(request, 'No puedes bloquear tu propia cuenta.')
+        elif usuario.is_active:
+            usuario.is_active = False
+            usuario.save()
+            messages.success(request, f'{usuario.email} fue bloqueado y ya no puede iniciar sesión.')
+        else:
+            usuario.is_active = True
+            usuario.save()
+            messages.success(request, f'{usuario.email} fue desbloqueado.')
+    return redirect('usuarios_list')
 
 @never_cache
 @login_required(login_url='sin_acceso')

@@ -8,7 +8,6 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('sin-acceso/', views.sin_acceso_view, name='sin_acceso'),
-
     # recuperar contrasena
     path(
         'recuperar/',
@@ -34,4 +33,8 @@ urlpatterns = [
     # vistas doctora
     path('doctora/', views.inicio_doctora, name='inicio_doctora'),
     path('doctora/agenda/', views.agenda_doctora, name='agenda_doctora'),
+    path('doctora/usuarios/', views.usuarios_list, name='usuarios_list'),
+    path('doctora/usuarios/crear/', views.crear_usuario, name='crear_usuario'),
+    path('doctora/usuarios/<int:usuario_id>/editar/', views.editar_usuario, name='editar_usuario'),
+    path('doctora/usuarios/<int:usuario_id>/bloquear/', views.bloquear_usuario, name='bloquear_usuario'),
 ]
