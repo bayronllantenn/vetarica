@@ -101,6 +101,33 @@ Vet Arica{% endblock %} {% block css %}
         <canvas id="atenciones-chart"></canvas>
       </div>
     </div>
+    <div class="grafico-card grafico-card-ancho">
+      <div class="tabla-titulo">
+        <h2 class="dash-section-title">Tipos de Consultas</h2>
+        <button type="button" class="agregar">Agregar</button>
+      </div>
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Tipo de consulta</th>
+            <th>Valor</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tipo in tipos_consulta %}
+          <tr>
+            <td>{{ tipo.nombre }}</td>
+            <td>${{ tipo.precio_base }}</td>
+            <td>
+              <button type="button" class="editar">Editar</button>
+              <button type="button" class="eliminar">Eliminar</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </main>
 </div>
 {% endblock %} {% block extra_js %}

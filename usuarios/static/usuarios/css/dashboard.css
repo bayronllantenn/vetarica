@@ -435,3 +435,84 @@ html {
   background: #bb2d3b;
   color: #fff;
 }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.tabla th {
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6b7280;
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabla td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.9rem;
+}
+
+.editar,
+.eliminar {
+  border: 1px solid #000;
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  margin-right: 0.3rem;
+  cursor: pointer;
+  font-weight: bold
+}
+
+.editar {
+  background: #16a34a;
+  color: #fff;
+}
+
+.editar:hover {
+  background: #15803d;
+}
+
+.eliminar {
+  background: #dc2626;
+  color: #fff;
+}
+
+.eliminar:hover {
+  background: #b91c1c;
+}
+
+.tabla th:nth-child(2),
+.tabla td:nth-child(2) {
+  text-align: right;
+}
+
+.tabla th:nth-child(3),
+.tabla td:nth-child(3) {
+  text-align: right;
+}
+
+.tabla-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.agregar {
+  border: 1px solid #000;
+  border-radius: 6px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background: #15803d;
+  color: #fff;
+  cursor: pointer;
+}
+
+.agregar:hover {
+  background: #0f766e;
+}

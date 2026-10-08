@@ -9,7 +9,7 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from citas.forms import HORAS_ATENCION, rango_del_dia, MascotaForm
-from citas.models import FichaMedica, Mascota, SolicitudCita
+from citas.models import FichaMedica, Mascota, SolicitudCita, TipoConsulta
 from .forms import ConfiguracionForm, LoginForm, RegisterForm
 
 
@@ -151,10 +151,13 @@ def inicio_doctora(request):
 
     ingresos_mes = format(ingresos_mes, ',').replace(',', '.')
 
+    tipos_consulta = TipoConsulta.objects.all()
+
     context = {
         'citas_hoy': citas_hoy,
         'citas_hoy_info': citas_hoy_info,
         'ingresos_mes': ingresos_mes,
+        'tipos_consulta': tipos_consulta,
     }
     return render(request, 'usuarios/doctora/inicio.html', context)
 
