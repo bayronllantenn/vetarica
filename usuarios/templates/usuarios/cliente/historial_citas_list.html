@@ -99,11 +99,7 @@
             <td class="nowrap">{{ cita.fecha_hora|date:"H:i" }}</td>
             <td>{{ cita.tipo_consulta.nombre }}</td>
             <td>{{ cita.mascota.nombre|default:cita.nombre_mascota }}</td>
-            <td>
-              <span class="badge badge--{{ cita.estado|slugify }}">
-                {{ cita.get_estado_display }}
-              </span>
-            </td>
+            <td>{{ cita.get_estado_display }}</td>
             <td class="text-right nowrap">
               {% if cita.tipo_consulta.precio_base %}${{ cita.tipo_consulta.precio_base|floatformat:"0g" }}{% else %}—{% endif %}
             </td>
@@ -114,7 +110,6 @@
     </div>
     {% else %}
     <div class="empty">
-      <i class="bi bi-calendar2-x"></i>
       <p>No hay citas con estos filtros.</p>
     </div>
     {% endif %}

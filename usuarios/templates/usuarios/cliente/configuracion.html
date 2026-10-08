@@ -38,7 +38,7 @@
 
           <div class="campo campo-foto {% if form.foto.errors %}con-error{% endif %}">
             <label for="{{ form.foto.id_for_label }}">Elegir foto de perfil</label>
-            <div class="selector-foto">{{ form.foto }}</div>
+            {{ form.foto }}
             <small>Imagen formato .PNG o .JPG maximo 2MB luego presionar en "Guardar cambios".</small>
             {% for error in form.foto.errors %}<span class="error">{{ error }}</span>{% endfor %}
           </div>

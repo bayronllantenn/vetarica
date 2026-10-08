@@ -12,23 +12,6 @@ body {
     min-height: 100vh;
 }
 
-.auth-back-link {
-    align-items: center;
-    color: #5b6b68;
-    display: inline-flex;
-    font-size: .875rem;
-    font-weight: 500;
-    gap: .4rem;
-    margin-bottom: 1rem;
-    text-decoration: none;
-    transition: color .15s ease, gap .15s ease;
-}
-
-.auth-back-link:hover {
-    color: #1c8266;
-    gap: .6rem;
-}
-
 .form {
     background-color: #fff;
     border-radius: 0.75rem;

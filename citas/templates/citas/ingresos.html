@@ -14,28 +14,32 @@ Vet Arica{% endblock %} {% block css %}
       <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas.</p>
     </section>
 
-    <section class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-body">
-          <span class="stat-label stat-label-upper">Este mes</span>
-          <strong class="stat-number">${{ ingresos_mes }}</strong>
-        </div>
+    <section class="stat-grid-eco">
+      <div class="stat-card-eco stat-card-eco-verde">
+        <span class="stat-card-eco-label">{{ nombre_mes_actual|capfirst }}, mes en curso</span>
+        <strong class="stat-card-eco-numero">${{ ingresos_mes_actual }}</strong>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-body">
-          <span class="stat-label stat-label-upper">Este año</span>
-          <strong class="stat-number">${{ ingresos_anio }}</strong>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-body">
-          <span class="stat-label stat-label-upper">Total histórico</span>
-          <strong class="stat-number">${{ ingresos_totales }}</strong>
-        </div>
+      <div class="stat-card-eco stat-card-eco-gris">
+        <span class="stat-card-eco-label">Mes pasado</span>
       </div>
     </section>
+
+    <div class="dash-mid-grid">
+      <div class="grafico-card">
+        <h2 class="dash-section-title">Ingresos por mes</h2>
+        <div class="grafico-placeholder">
+          <span>Gráfico de barras: ingresos totales por mes</span>
+        </div>
+      </div>
+
+      <div class="grafico-card">
+        <h2 class="dash-section-title">Ingresos por tipo de consulta</h2>
+        <div class="grafico-placeholder">
+          <span>Gráfico: ingresos por tipo de consulta</span>
+        </div>
+      </div>
+    </div>
 
     <h2 class="dash-section-title">Citas pagadas</h2>
 

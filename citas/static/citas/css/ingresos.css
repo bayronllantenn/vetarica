@@ -1,4 +1,86 @@
-.stat-label-upper {
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+.stat-grid-eco {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+}
+
+@media (max-width: 575.98px) {
+  .stat-grid-eco {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card-eco {
+  background: #fff;
+  border: 1px solid #e6e8e7;
+  border-left: 4px solid var(--eco-accent, #0f8a7e);
+  padding: 1.1rem 1.25rem;
+}
+
+.stat-card-eco-verde {
+  --eco-accent: #0f8a7e;
+}
+
+.stat-card-eco-gris {
+  --eco-accent: #64748b;
+}
+
+.stat-card-eco-label {
+  display: block;
+  color: var(--eco-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.stat-card-eco-numero {
+  display: block;
+  color: #000;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.stat-card-eco-caption {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: #5b6b68;
+}
+
+.grafico-card {
+  background: #fff;
+  border: 1px solid #e6e8e7;
+  padding: 1.25rem;
+}
+
+.dash-mid-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+}
+
+@media (max-width: 991.98px) {
+  .dash-mid-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grafico-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  background: #f3f4f3;
+  text-align: center;
+  padding: 1rem;
+}
+
+.grafico-placeholder span {
+  font-size: 0.85rem;
+  color: #8a8f8c;
 }

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -265,6 +265,25 @@ def reserva_fallida(request, id=None):
     return render(request, 'citas/pago/reserva_fallida.html', {'solicitud': solicitud})
 
 
+MESES_LARGOS = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+]
+
+
+def primer_dia_del_siguiente_mes(primer_dia):
+    if primer_dia.month == 12:
+        return date(primer_dia.year + 1, 1, 1)
+    return date(primer_dia.year, primer_dia.month + 1, 1)
+
+
+def rango_de_un_mes(primer_dia):
+    primer_dia_siguiente = primer_dia_del_siguiente_mes(primer_dia)
+    inicio = rango_del_dia(primer_dia)[0]
+    fin = rango_del_dia(primer_dia_siguiente - timedelta(days=1))[1]
+    return (inicio, fin)
+
+
 @never_cache
 @login_required(login_url='sin_acceso')
 def ingresos_doctora(request):
@@ -272,37 +291,26 @@ def ingresos_doctora(request):
         return redirect('sin_acceso')
 
     hoy = timezone.localdate()
-    inicio_mes_dt = rango_del_dia(hoy.replace(day=1))[0]
 
     citas_pagadas = SolicitudCita.objects.select_related('tipo_consulta').filter(estado_pago='Pagado')
     citas_pagadas = citas_pagadas.order_by('-fecha_pago')
 
-    citas_del_mes = citas_pagadas.filter(fecha_pago__gte=inicio_mes_dt)
-    citas_del_anio = citas_pagadas.filter(fecha_pago__year=hoy.year)
+    primer_dia_mes_actual = hoy.replace(day=1)
+    rango_mes_actual = rango_de_un_mes(primer_dia_mes_actual)
+    citas_mes_actual = citas_pagadas.filter(fecha_pago__range=rango_mes_actual)
 
-    suma_mes = citas_del_mes.aggregate(total=Sum('monto_pagado'))['total']
-    if suma_mes is None:
-        ingresos_mes = 0
+    suma_mes_actual = citas_mes_actual.aggregate(total=Sum('monto_pagado'))['total']
+    if suma_mes_actual is None:
+        ingresos_mes_actual = 0
     else:
-        ingresos_mes = suma_mes
+        ingresos_mes_actual = suma_mes_actual
 
-    suma_anio = citas_del_anio.aggregate(total=Sum('monto_pagado'))['total']
-    if suma_anio is None:
-        ingresos_anio = 0
-    else:
-        ingresos_anio = suma_anio
-
-    suma_total = citas_pagadas.aggregate(total=Sum('monto_pagado'))['total']
-    if suma_total is None:
-        ingresos_totales = 0
-    else:
-        ingresos_totales = suma_total
+    nombre_mes_actual = MESES_LARGOS[hoy.month - 1]
 
     context = {
         'citas_pagadas': citas_pagadas[:50],
-        'ingresos_mes': ingresos_mes,
-        'ingresos_anio': ingresos_anio,
-        'ingresos_totales': ingresos_totales,
+        'nombre_mes_actual': nombre_mes_actual,
+        'ingresos_mes_actual': format(ingresos_mes_actual, ',').replace(',', '.'),
     }
     return render(request, 'citas/ingresos.html', context)
 

@@ -33,6 +33,11 @@ body {
     gap: .6rem;
 }
 
+.material-symbols-outlined {
+    font-size: 1.1em;
+    vertical-align: -2px;
+}
+
 .auth-logo {
     display: block;
     height: 60px;
@@ -59,29 +64,10 @@ body {
     text-align: center;
 }
 
-.input-container {
-    position: relative;
-}
-
-.input-container input,
 .form button {
     border: 1px solid #dbe7e1;
     margin: 8px 0;
     outline: none;
-}
-
-.input-container input {
-    background-color: #fff;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    font-size: 1rem;
-    line-height: 1.5rem;
-    padding: .9rem 1.4rem;
-    width: 100%;
-}
-
-.input-container input:focus {
-    border-color: #1c8266;
 }
 
 .submit {
@@ -126,9 +112,4 @@ body {
 .alert-error {
     background-color: #fbe7e7;
     color: #9c2e2e;
-}
-
-.alert-success {
-    background-color: #e7f5ef;
-    color: #145c46;
 }

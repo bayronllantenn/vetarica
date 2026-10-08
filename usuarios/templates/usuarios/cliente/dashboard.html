@@ -6,139 +6,142 @@ Vet Arica{% endblock %} {% block css %}
 />
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
-{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
-{% include 'usuarios/cliente/sidebar.html' %}
-{% endblock %} {% block content %}
+{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %}
+{% block sidebar %} {% include 'usuarios/cliente/sidebar.html' %} {% endblock %}
+{% block content %}
 <div class="dash-shell">
   <main class="dash-content">
     <section class="dash-hero">
-      <h1>¡Hola {{ user.first_name }}, bienvenido de vuelta!</h1>
-      <p class="dash-subtitle">
-        Aquí tienes un resumen de la salud de tus mejores amigos y tus próximas
-        horas agendadas.
-      </p>
+      <h1>¡Hola {{ user.first_name }}!</h1>
+      <p class="dash-subtitle">Resumen de tus mascotas y próximas citas.</p>
     </section>
 
     <section class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-body">
-          <span class="stat-label">Mascotas Registradas</span>
-          <strong class="stat-number">{{ mascotas|length }}</strong>
-        </div>
-        <div class="stat-icon-box stat-icon-box-gris">
-          <i class="bi bi-clipboard2-pulse"></i>
-        </div>
+      <div class="stat-card stat-card-gris">
+        <span class="stat-label">Mascotas Registradas</span>
+        <strong class="stat-number">{{ mascotas|length }}</strong>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-body">
-          <span class="stat-label">Próxima Cita</span>
-          {% if proxima_cita %}
-          <strong class="stat-number stat-number-sm"
-            >{{ proxima_cita.fecha_hora|date:"j M, H:i" }}</strong
-          >
-          <span class="stat-caption">{{ proxima_cita.nombre_mascota }}</span>
-          {% else %}
-          <span class="stat-caption stat-caption-oscuro">Sin citas próximas</span>
-          {% endif %}
-        </div>
-        <div class="stat-icon-box stat-icon-box-verde">
-          <i class="bi bi-calendar-event"></i>
-        </div>
+      <div class="stat-card stat-card-verde">
+        <span class="stat-label">Próxima Cita</span>
+        {% if proxima_cita %}
+        <strong class="stat-number stat-number-sm"
+          >{{ proxima_cita.fecha_hora|date:"j M, H:i" }}</strong
+        >
+        <span class="stat-caption">{{ proxima_cita.nombre_mascota }}</span>
+        {% else %}
+        <strong class="stat-number stat-number-sm stat-number-vacio"
+          >Sin citas próximas</strong
+        >
+        {% endif %}
       </div>
 
-      <div class="stat-card">
-        <div class="stat-body">
-          <span class="stat-label">Citas Este Año</span>
-          <strong class="stat-number">{{ citas_anio|default:0 }}</strong>
-          <span class="stat-caption">Atenciones completadas</span>
-        </div>
-        <div class="stat-icon-box stat-icon-box-azul">
-          <i class="bi bi-check2-circle"></i>
-        </div>
+      <div class="stat-card stat-card-azul">
+        <span class="stat-label">Citas Este Año</span>
+        <strong class="stat-number">{{ citas_anio|default:0 }}</strong>
+        <span class="stat-caption">Atenciones completadas</span>
       </div>
     </section>
 
     <div class="mascotas-header">
       <div>
         <h2 class="dash-section-title" id="mis-mascotas">Mis Mascotas</h2>
-        <p class="mascotas-subtitulo">Fichas y datos de tus mascotas registradas</p>
+        <p class="mascotas-subtitulo">
+          Fichas y datos de tus mascotas registradas
+        </p>
       </div>
     </div>
 
     <div class="mascota-grid">
-      {% for mascota in mascotas %}
+      {% for item in mascotas_info %}
       <article class="mascota-card">
-        <div class="mascota-card-top">
-          <div class="mascota-foto-wrap">
-            {% if mascota.imagen %}
-            <img
-              src="{{ mascota.imagen.url }}"
-              alt="{{ mascota.nombre }}"
-              class="mascota-foto-cuad"
-            />
+        {% if item.mascota.imagen %}
+        <img
+          src="{{ item.mascota.imagen.url }}"
+          alt="{{ item.mascota.nombre }}"
+          class="mascota-card-img-top"
+        />
+        {% else %}
+        <div class="mascota-card-img-top mascota-card-img-vacia"></div>
+        {% endif %}
+
+        <div class="mascota-card-body">
+          <h3 class="mascota-nombre">{{ item.mascota.nombre }}</h3>
+          <p class="mascota-subinfo">
+            {{ item.mascota.sexo }} • {{ item.mascota.edad_valor }} {{ item.mascota.edad_unidad }}
+          </p>
+        </div>
+
+        <ul class="mascota-lista-flush">
+          <li>
+            <span>Última visita</span>
+            {% if item.ultima_ficha %}
+            <span>{{ item.ultima_ficha.fecha_atencion|date:"d M Y" }}</span>
             {% else %}
-            <span class="mascota-foto-cuad mascota-foto-vacia"></span>
+            <span>Sin Registro</span>
             {% endif %}
-          </div>
+          </li>
+        </ul>
+
+        <div class="mascota-card-footer">
+          <a href="{% url 'ficha_mascota' item.mascota.id %}" class="mascota-card-btn mascota-card-btn-primary">
+            Ver ficha
+          </a>
+          <a href="{% url 'editar_mascota' item.mascota.id %}" class="mascota-card-btn mascota-card-btn-warning">
+            Editar
+          </a>
+          <form
+            action="{% url 'eliminar_mascota' item.mascota.id %}"
+            method="post"
+            class="mascota-eliminar-form"
+            onsubmit="return confirm('¿Seguro que quieres eliminar a {{ item.mascota.nombre }}? Esta acción no se puede deshacer.');"
+          >
+            {% csrf_token %}
+            <button type="submit" class="mascota-card-btn mascota-card-btn-danger">
+              Eliminar
+            </button>
+          </form>
         </div>
-
-        <h3 class="mascota-nombre">{{ mascota.nombre }}</h3>
-        <p class="mascota-subinfo">{{ mascota.sexo }} • {{ mascota.edad_valor }} {{ mascota.edad_unidad }}</p>
-
-        <div class="mascota-visita-row">
-          <span>Última visita</span>
-          <span>sin registro</span>
-        </div>
-
       </article>
       {% endfor %}
 
       <a href="{% url 'agregar_mascota' %}" class="mascota-card-add">
-        <span class="mascota-add-icon"><i class="bi bi-plus-lg"></i></span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mascota-add-icon">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+          <path d="M9 12h6" />
+          <path d="M12 9v6" />
+        </svg>
         <span class="mascota-add-text">Agregar mascota</span>
       </a>
     </div>
 
     <h2 class="dash-section-title" id="mis-citas">Recordatorio</h2>
 
-    {% if citas %}
+    {% if proxima_cita %}
     <div class="cita-list">
-      {% for cita in citas %}
       <article class="cita-item">
-        <div class="cita-fecha cita-fecha-{{ cita.estado|lower }}">
-          <strong>{{ cita.fecha_hora|date:"d" }}</strong>
-          <span>{{ cita.fecha_hora|date:"M"|upper }}</span>
-          <em>{{ cita.fecha_hora|date:"H:i" }}</em>
+        <div class="cita-fecha-texto">
+          {{ proxima_cita.fecha_hora|date:"d M, H:i" }}
         </div>
 
         <div class="cita-info">
-          <h3>{{ cita.tipo_consulta.nombre }}</h3>
+          <h3>{{ proxima_cita.tipo_consulta.nombre }}</h3>
           <p>
             Paciente:
-            <strong>{{ cita.nombre_mascota }}</strong>
+            <strong>{{ proxima_cita.nombre_mascota }}</strong>
           </p>
         </div>
 
         <div class="cita-meta">
           <span class="cita-estado-label">
-            Estado: {% if cita.estado|lower == "cancelada" %}
-            <span class="badge-cita badge-cancelada">Cancelada</span>
-            {% else %}
-            <span class="badge-cita badge-{{ cita.estado_pago|lower }}"
-              >{{ cita.estado_pago }}</span
-            >
-            {% endif %}
+            Estado: {% if proxima_cita.estado|lower == "cancelada" %}Cancelada{% else %}{{ proxima_cita.estado_pago }}{% endif %}
           </span>
-
-          <a href="#" class="cita-cancelar">Cancelar</a>
         </div>
       </article>
-      {% endfor %}
     </div>
     {% else %}
     <div class="cita-empty">
-      <i class="bi bi-calendar-x"></i>
       <p>Todavía no tienes citas agendadas.</p>
       <a href="{% url 'agendar' %}" class="btn btn-teal"
         >Agendar mi primera cita</a
@@ -150,7 +153,7 @@ Vet Arica{% endblock %} {% block css %}
 {% endblock %} {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 <script>
-const notyf = new Notyf({
+  const notyf = new Notyf({
     duration: 3000,
     position: { x: "center", y: "top" },
   });
@@ -159,7 +162,6 @@ const notyf = new Notyf({
   notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
   {% endfor %}
 
-  // abre y cierra el sidebar en pantalla chica
   const sidebarToggle = document.getElementById("sidebarToggle");
   const sidebarEl = document.getElementById("sidebar");
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");

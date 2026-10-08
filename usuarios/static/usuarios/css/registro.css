@@ -74,40 +74,10 @@ body {
     gap: .75rem;
 }
 
-.input-row .input-container {
-    flex: 1;
-}
-
-.input-container {
-    position: relative;
-}
-
-.input-container input,
 .form button {
     border: 1px solid #dbe7e1;
     margin: 8px 0;
     outline: none;
-}
-
-.input-container input {
-    background-color: #fff;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    font-size: 1rem;
-    line-height: 1.5rem;
-    padding: .9rem 1.4rem;
-    width: 100%;
-}
-
-.input-container input:focus {
-    border-color: #1c8266;
-}
-
-.field-error {
-    color: #9c2e2e;
-    display: block;
-    font-size: .8rem;
-    margin: -4px 0 8px 2px;
 }
 
 .submit {
@@ -140,21 +110,4 @@ body {
     color: #1c8266;
     font-weight: 500;
     text-decoration: underline;
-}
-
-.alert {
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    margin: 8px 0;
-    padding: 0.75rem 1rem;
-}
-
-.alert-error {
-    background-color: #fbe7e7;
-    color: #9c2e2e;
-}
-
-.alert-success {
-    background-color: #e7f5ef;
-    color: #145c46;
 }

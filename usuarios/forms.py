@@ -1,7 +1,6 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import ValidationError
 from django import forms
-from django.core.validators import FileExtensionValidator
 
 from .models import Persona
 
@@ -18,14 +17,14 @@ DOMINIOS_CONOCIDOS = {
 
 
 def validar_nombre(valor, etiqueta):
-    valor = valor.lower()
+    valor_minuscula = valor.lower()
 
-    if len(valor) < 3 or len(valor) > 15:
+    if len(valor_minuscula) < 3 or len(valor_minuscula) > 15:
         raise ValidationError(f'{etiqueta} ingresado no es valido.')
-    if not valor.isalpha():
+    if not valor_minuscula.isalpha():
         raise ValidationError(f'{etiqueta} ingresado no es valido.')
 
-    return valor
+    return valor_minuscula.capitalize()
 
 class RegisterForm(UserCreationForm):
     class Meta:
@@ -151,5 +150,9 @@ class ConfiguracionForm(forms.ModelForm):
             'foto': forms.FileInput(attrs={'accept': 'image/*'}),
         }
 
-    clean_first_name = RegisterForm.clean_first_name
-    clean_last_name = RegisterForm.clean_last_name
+    def clean_first_name(self):
+        return validar_nombre(self.cleaned_data['first_name'], 'El nombre')
+
+    def clean_last_name(self):
+        return validar_nombre(self.cleaned_data['last_name'], 'El apellido')
+

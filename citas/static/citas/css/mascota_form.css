@@ -109,17 +109,12 @@ body.mascota-form-body {
   height: 110px;
   position: relative;
   cursor: pointer;
-  border: 2.5px dashed #cbd5e1;
+  border: 2.5px solid var(--primary-teal);
   background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-}
-
-.avatar-preview-box:hover {
-  border-color: var(--primary-teal);
-  background: var(--primary-light);
 }
 
 .avatar-img-preview {

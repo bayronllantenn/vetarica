@@ -13,4 +13,6 @@ ENV/
 *.swo
 staticfiles/
 media/
+Pipfile
+Pipfile.lock
 .env

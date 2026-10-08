@@ -11,38 +11,80 @@
 
 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
-<aside id="sidebar" class="sidebar">
+<aside id="sidebar" class="sidebar sidebar-doctora">
   <div class="sidebar-brand">
     <img src="{% static 'inicio/img/logo.jpg' %}" alt="Vet Arica" height="36" class="rounded" />
     <div>
-      <strong>Vet Arica</strong>
+      <strong>VetArica</strong>
       <span>Portal Cliente</span>
     </div>
   </div>
 
-  <a href="{% url 'agendar' %}" class="btn btn-teal sidebar-cta">Agendar Cita</a>
+  <a href="{% url 'agendar' %}" class="btn btn-teal sidebar-cta">
+    Agendar Cita
+  </a>
 
   <nav class="sidebar-nav">
-    <a href="{% url 'dashboard' %}" class="sidebar-link">
-      <i class="bi bi-grid"></i> Inicio
+    <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" id="nav-inicio">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-home">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+        <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+      </svg>
+      Inicio
     </a>
-    <a href="{% url 'dashboard' %}#mis-mascotas" class="sidebar-link">
-      <i class="bi bi-heart"></i> Mis Mascotas
+    <a href="{% url 'dashboard' %}#mis-mascotas" class="sidebar-link" id="nav-mascotas">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-paw">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M12 10c-1.32 0 -1.983 .421 -2.931 1.924l-.244 .398l-.395 .688a50.89 50.89 0 0 0 -.141 .254c-.24 .434 -.571 .753 -1.139 1.142l-.55 .365c-.94 .627 -1.432 1.118 -1.707 1.955c-.124 .338 -.196 .853 -.193 1.28c0 1.687 1.198 2.994 2.8 2.994l.242 -.006c.119 -.006 .234 -.017 .354 -.034l.248 -.043l.132 -.028l.291 -.073l.162 -.045l.57 -.17l.763 -.243l.455 -.136c.53 -.15 .94 -.222 1.283 -.222c.344 0 .753 .073 1.283 .222l.455 .136l.764 .242l.569 .171l.312 .084c.097 .024 .187 .045 .273 .062l.248 .043c.12 .017 .235 .028 .354 .034l.242 .006c1.602 0 2.8 -1.307 2.8 -3c0 -.427 -.073 -.939 -.207 -1.306c-.236 -.724 -.677 -1.223 -1.48 -1.83l-.257 -.19l-.528 -.38c-.642 -.47 -1.003 -.826 -1.253 -1.278l-.27 -.485l-.252 -.432c-1.011 -1.696 -1.618 -2.099 -3.053 -2.099z" />
+        <path d="M19.78 7h-.03c-1.219 .02 -2.35 1.066 -2.908 2.504c-.69 1.775 -.348 3.72 1.075 4.333c.256 .109 .527 .163 .801 .163c1.231 0 2.38 -1.053 2.943 -2.504c.686 -1.774 .34 -3.72 -1.076 -4.332a2.05 2.05 0 0 0 -.804 -.164z" />
+        <path d="M9.025 3c-.112 0 -.185 .002 -.27 .015l-.093 .016c-1.532 .206 -2.397 1.989 -2.108 3.855c.272 1.725 1.462 3.114 2.92 3.114l.187 -.005a1.26 1.26 0 0 0 .084 -.01l.092 -.016c1.533 -.206 2.397 -1.989 2.108 -3.855c-.27 -1.727 -1.46 -3.114 -2.92 -3.114z" />
+        <path d="M14.972 3c-1.459 0 -2.647 1.388 -2.916 3.113c-.29 1.867 .574 3.65 2.174 3.867c.103 .013 .2 .02 .296 .02c1.39 0 2.543 -1.265 2.877 -2.883l.041 -.23c.29 -1.867 -.574 -3.65 -2.174 -3.867a2.154 2.154 0 0 0 -.298 -.02z" />
+        <path d="M4.217 7c-.274 0 -.544 .054 -.797 .161c-1.426 .615 -1.767 2.562 -1.078 4.335c.563 1.451 1.71 2.504 2.941 2.504c.274 0 .544 -.054 .797 -.161c1.426 -.615 1.767 -2.562 1.078 -4.335c-.563 -1.451 -1.71 -2.504 -2.941 -2.504z" />
+      </svg>
+      Mis Mascotas
     </a>
-    <a href="{% url 'dashboard' %}#mis-citas" class="sidebar-link">
-      <i class="bi bi-calendar-event"></i> Citas Agendadas
+    <a href="{% url 'agregar_mascota' %}" class="sidebar-link {% if request.resolver_match.url_name == 'agregar_mascota' %}active{% endif %}" id="nav-nueva-mascota">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-circle-plus">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+        <path d="M9 12h6" />
+        <path d="M12 9v6" />
+      </svg>
+      Nueva Mascota
     </a>
-    <a href="{% url 'historial_citas' %}" class="sidebar-link">
-      <i class="bi bi-file-earmark-text"></i> Historial de Citas
+    <a href="{% url 'historial_citas' %}" class="sidebar-link {% if request.resolver_match.url_name == 'historial_citas' %}active{% endif %}" id="nav-citas">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-calendar">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12" />
+        <path d="M16 3v4" />
+        <path d="M8 3v4" />
+        <path d="M4 11h16" />
+        <path d="M11 15h1" />
+        <path d="M12 15v3" />
+      </svg>
+      Mis Citas
     </a>
   </nav>
 
   <div class="sidebar-footer">
-   <a href="{% url 'configuracion' %}" class="sidebar-link">
-  <i class="bi bi-gear"></i> Configuración
-</a>
+    <a href="{% url 'configuracion' %}" class="sidebar-link {% if request.resolver_match.url_name == 'configuracion' %}active{% endif %}" id="nav-config">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065" />
+        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+      </svg>
+      Configuración
+    </a>
     <a href="{% url 'logout' %}" class="sidebar-link">
-      <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-logout">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+        <path d="M9 12h12l-3 -3" />
+        <path d="M18 15l3 -3" />
+      </svg>
+      Cerrar sesión
     </a>
   </div>
 </aside>

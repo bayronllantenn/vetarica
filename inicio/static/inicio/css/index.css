@@ -51,20 +51,6 @@ body {
     color: #fff;
 }
 
-.btn-outline-teal {
-    background-color: transparent;
-    border: 1.5px solid #1c8266;
-    color: #1c8266;
-    font-weight: 500;
-    transition: background-color .15s ease, color .15s ease;
-}
-
-.btn-outline-teal:hover {
-    background-color: #1c8266;
-    border-color: #1c8266;
-    color: #fff;
-}
-
 .Btn {
     display: flex;
     align-items: center;
