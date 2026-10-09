@@ -1,0 +1,54 @@
+{% extends 'inicio/base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}{{ titulo }} - Vet Arica{% endblock %} {% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %} {% block content %}
+<div class="dash-shell">
+  <main class="dash-content">
+    <a href="{% url 'usuarios_list' %}" class="volver">
+      <i class="bi bi-arrow-left"></i> Volver a usuarios
+    </a>
+    <div class="tarjeta tarjeta-formulario">
+      <h2>{{ titulo }}</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="formulario-botones">
+          <a href="{% url 'usuarios_list' %}" class="btn btn-vet-borde">Cancelar</a>
+          <button type="submit" class="btn btn-vet">{{ texto_boton }}</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarEl = document.getElementById("sidebar");
+  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+  if (sidebarToggle && sidebarEl && sidebarBackdrop) {
+    sidebarToggle.addEventListener("click", function () {
+      sidebarEl.classList.add("sidebar-open");
+      sidebarBackdrop.classList.add("show");
+    });
+    sidebarBackdrop.addEventListener("click", function () {
+      sidebarEl.classList.remove("sidebar-open");
+      sidebarBackdrop.classList.remove("show");
+    });
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}

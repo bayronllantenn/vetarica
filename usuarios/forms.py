@@ -1,6 +1,7 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import ValidationError
 from django import forms
+from django.core.validators import FileExtensionValidator
 
 from .models import Persona
 
@@ -14,17 +15,22 @@ DOMINIOS_CONOCIDOS = {
 }
 
 
-
+ROLES_ASIGNABLES = [
+    ('cliente', 'Cliente'),
+    ('secretaria', 'Secretaria'),
+    ('tecnico', 'Técnico'),
+]
 
 def validar_nombre(valor, etiqueta):
-    valor_minuscula = valor.lower()
+    valor = valor.lower()
 
-    if len(valor_minuscula) < 3 or len(valor_minuscula) > 15:
+    if len(valor) < 3 or len(valor) > 15:
         raise ValidationError(f'{etiqueta} ingresado no es valido.')
-    if not valor_minuscula.isalpha():
+    if not valor.isalpha():
         raise ValidationError(f'{etiqueta} ingresado no es valido.')
 
-    return valor_minuscula.capitalize()
+    return valor
+
 
 class RegisterForm(UserCreationForm):
     class Meta:
@@ -150,9 +156,41 @@ class ConfiguracionForm(forms.ModelForm):
             'foto': forms.FileInput(attrs={'accept': 'image/*'}),
         }
 
-    def clean_first_name(self):
-        return validar_nombre(self.cleaned_data['first_name'], 'El nombre')
+    clean_first_name = RegisterForm.clean_first_name
+    clean_last_name = RegisterForm.clean_last_name
 
-    def clean_last_name(self):
-        return validar_nombre(self.cleaned_data['last_name'], 'El apellido')
 
+class CrearUsuarioForm(RegisterForm):
+    rol = forms.ChoiceField(choices=ROLES_ASIGNABLES, label='Rol')
+    class Meta(RegisterForm.Meta):
+        fields = RegisterForm.Meta.fields + ('rol',)
+        labels = {
+            'email': 'Correo electrónico',
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+            'rut': 'RUT',
+            'telefono': 'Teléfono',
+            'rol': 'Rol',
+        }
+
+
+class EditarUsuarioForm(forms.ModelForm):
+    rol = forms.ChoiceField(choices=ROLES_ASIGNABLES, label='Rol')
+
+    class Meta:
+        model = Persona
+        fields = ('first_name', 'last_name', 'email', 'rut', 'telefono', 'rol')
+        labels = {
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+            'email': 'Correo electrónico',
+            'rut': 'RUT',
+            'telefono': 'Teléfono',
+        }
+        widgets = RegisterForm.Meta.widgets
+
+    clean_first_name = RegisterForm.clean_first_name
+    clean_last_name = RegisterForm.clean_last_name
+    clean_email = RegisterForm.clean_email
+    clean_rut = RegisterForm.clean_rut
+    clean_telefono = RegisterForm.clean_telefono

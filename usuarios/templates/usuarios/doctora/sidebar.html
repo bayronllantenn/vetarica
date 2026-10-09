@@ -38,6 +38,10 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'ingresos_doctora' %}active{% endif %}">
     <i class="bi bi-cash-coin"></i> Ingresos
   </a>
+  <a href="{% url 'usuarios_list' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'usuarios_list' %}active{% endif %}">
+    <i class="bi bi-people"></i> Usuarios
+  </a>
   {% endif %}
 </nav>
   <div class="sidebar-footer">
