@@ -34,4 +34,6 @@ urlpatterns = [
     # vistas doctora
     path('doctora/', views.inicio_doctora, name='inicio_doctora'),
     path('doctora/agenda/', views.agenda_doctora, name='agenda_doctora'),
+    path('doctora/bloqueos/', views.bloqueos_doctora, name='bloqueos_doctora'),
+    path('doctora/bloqueos/<int:bloqueo_id>/eliminar/', views.eliminar_bloqueo, name='eliminar_bloqueo'),
 ]

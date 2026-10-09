@@ -12,7 +12,7 @@ from django.views.decorators.cache import never_cache
 
 from usuarios.views import es_personal_clinica
 from .forms import FichaMedicaForm, MascotaForm, SolicitudCitaForm, obtener_horas_disponibles, rango_del_dia
-from .models import FichaMedica, Mascota, SolicitudCita
+from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .utils import get_webpay_transaction
 
 
@@ -140,12 +140,15 @@ def agendar_view(request):
 
     form.fields['fecha'].widget.attrs['min'] = timezone.localdate().isoformat()
 
+    bloqueos_del_dia = BloqueoHorario.objects.filter(fecha=fecha_seleccionada)
+
     return render(request, 'citas/agendar_form.html', {
         'form': form,
         'mascotas': mascotas,
         'fecha_seleccionada': fecha_seleccionada,
         'mascota_elegida': mascota_elegida,
         'cuenta_completa': cuenta_completa,
+        'bloqueos_del_dia': bloqueos_del_dia,
     })
 
 

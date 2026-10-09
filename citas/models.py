@@ -109,6 +109,17 @@ class FichaMedica(models.Model):
         return f"Ficha de {self.solicitud.nombre_mascota}"
 
 
+class BloqueoHorario(models.Model):
+    fecha = models.DateField()
+    hora_inicio = models.CharField(max_length=5)
+    hora_fin = models.CharField(max_length=5)
+    motivo = models.CharField(max_length=200, blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Bloqueo {self.fecha} de {self.hora_inicio} a {self.hora_fin}"
+
+
 class Mascota(models.Model):
     dueno = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mascotas')
     nombre = models.CharField(max_length=100)

@@ -8,8 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from citas.forms import HORAS_ATENCION, rango_del_dia, MascotaForm
-from citas.models import FichaMedica, Mascota, SolicitudCita
+from citas.forms import BloqueoHorarioForm, HORAS_ATENCION, rango_del_dia, MascotaForm
+from citas.models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .forms import ConfiguracionForm, LoginForm, RegisterForm
 
 
@@ -245,6 +245,47 @@ def agenda_doctora(request):
         'semana_siguiente': semanas + 1,
     }
     return render(request, 'usuarios/doctora/agenda.html', context)
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def bloqueos_doctora(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        form = BloqueoHorarioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Horario bloqueado correctamente.')
+            return redirect('bloqueos_doctora')
+        messages.error(request, 'Revisa los campos marcados en rojo.')
+    else:
+        form = BloqueoHorarioForm()
+
+    hoy = timezone.localdate()
+    form.fields['fecha'].widget.attrs['min'] = hoy.isoformat()
+
+    bloqueos = BloqueoHorario.objects.filter(fecha__gte=hoy)
+    bloqueos = bloqueos.order_by('fecha', 'hora_inicio')
+
+    context = {
+        'form': form,
+        'bloqueos': bloqueos,
+    }
+    return render(request, 'usuarios/doctora/bloqueos.html', context)
+
+
+@login_required(login_url='sin_acceso')
+def eliminar_bloqueo(request, bloqueo_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    bloqueo = get_object_or_404(BloqueoHorario, id=bloqueo_id)
+    if request.method == 'POST':
+        bloqueo.delete()
+        messages.success(request, 'Bloqueo eliminado correctamente.')
+    return redirect('bloqueos_doctora')
 
 
 @never_cache
