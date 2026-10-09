@@ -319,3 +319,9 @@ class TipoConsultaForm(forms.ModelForm):
     class Meta:
         model = TipoConsulta
         fields = ['nombre', 'precio_base']
+
+    def clean_precio_base(self):
+        precio = self.cleaned_data.get('precio_base')
+        if precio is not None and precio <= 0:
+            raise forms.ValidationError('El precio debe ser mayor a 0.')
+        return precio

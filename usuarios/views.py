@@ -335,32 +335,6 @@ def editar_mascota(request, mascota_id):
     return render(request, 'usuarios/cliente/editar_mascota.html', {'form': form, 'mascota': mascota})
 
 @login_required(login_url='sin_acceso')
-def agregar_tipo_consulta(request):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-
-    if request.method == 'POST':
-        form = TipoConsultaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Tipo de consulta agregado correctamente.')
-            return redirect('inicio_doctora')
-    else:
-        form = TipoConsultaForm()
-    return render(request, 'usuarios/doctora/agregar_tipo_consulta.html', {'form': form})
-
-@login_required(login_url='sin_acceso')
-def eliminar_tipo_consulta(request, tipo_id):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-
-    tipo = get_object_or_404(TipoConsulta, id=tipo_id)
-    if request.method == 'POST':
-        tipo.delete()
-        messages.success(request, f'{tipo.nombre} fue eliminado correctamente.')
-    return redirect('inicio_doctora')
-
-@login_required(login_url='sin_acceso')
 def editar_tipo_consulta(request, tipo_id):
     if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
