@@ -104,7 +104,7 @@ Vet Arica{% endblock %} {% block css %}
     <div class="grafico-card grafico-card-ancho">
       <div class="tabla-titulo">
         <h2 class="dash-section-title">Tipos de Consultas</h2>
-        <button type="button" class="agregar">Agregar</button>
+        <a href="{% url 'agregar_tipo_consulta' %}" class="agregar">Agregar</a>
       </div>
       <table class="tabla">
         <thead>
@@ -120,8 +120,14 @@ Vet Arica{% endblock %} {% block css %}
             <td>{{ tipo.nombre }}</td>
             <td>${{ tipo.precio_base }}</td>
             <td>
-              <button type="button" class="editar">Editar</button>
-              <button type="button" class="eliminar">Eliminar</button>
+
+              <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="editar">Editar</a>
+
+              <form action="{% url 'eliminar_tipo_consulta' tipo.id %}" method="post" style="display:inline;"
+                  onsubmit="return confirm('¿Seguro que quieres eliminar {{ tipo.nombre }}? Esta acción no se puede deshacer.');">
+                {% csrf_token %}
+              <button type="submit" class="eliminar">Eliminar</button>
+              </form>
             </td>
           </tr>
           {% endfor %}

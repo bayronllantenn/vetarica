@@ -34,4 +34,7 @@ urlpatterns = [
     # vistas doctora
     path('doctora/', views.inicio_doctora, name='inicio_doctora'),
     path('doctora/agenda/', views.agenda_doctora, name='agenda_doctora'),
+    path('tipo-consulta/agregar/', views.agregar_tipo_consulta, name='agregar_tipo_consulta'),
+    path('tipo-consulta/<int:tipo_id>/eliminar/', views.eliminar_tipo_consulta, name='eliminar_tipo_consulta'),
+    path('tipo-consulta/<int:tipo_id>/editar/', views.editar_tipo_consulta, name='editar_tipo_consulta'),
 ]

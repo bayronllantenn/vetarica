@@ -314,3 +314,8 @@ class FichaMedicaForm(forms.ModelForm):
             'tratamiento': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tratamiento indicado'}),
             'observaciones': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Vacunas, alergias, cirugías previas u otras observaciones (opcional)'}),
         }
+
+class TipoConsultaForm(forms.ModelForm):
+    class Meta:
+        model = TipoConsulta
+        fields = ['nombre', 'precio_base']

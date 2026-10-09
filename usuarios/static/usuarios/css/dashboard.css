@@ -458,32 +458,65 @@ html {
 }
 
 .editar,
-.eliminar {
-  border: 1px solid #000;
-  border-radius: 6px;
-  padding: 0.3rem 0.6rem;
+.eliminar,
+.agregar {
+  padding: 0.7em 1.7em;
   font-size: 0.8rem;
-  margin-right: 0.3rem;
+  border-radius: 0.5em;
+  font-weight: bold;
   cursor: pointer;
-  font-weight: bold
+  transition: all 0.3s;
+  margin-right: 0.3rem;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .editar {
-  background: #16a34a;
   color: #fff;
+  background: #16a34a;
+  border: 1px solid #16a34a;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
 }
 
 .editar:hover {
   background: #15803d;
+  border: 1px solid #ffffff;
+}
+
+.editar:active {
+  box-shadow: 4px 4px 12px #c5c5c5, -4px -4px 12px #ffffff;
 }
 
 .eliminar {
-  background: #dc2626;
   color: #fff;
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
 }
 
 .eliminar:hover {
   background: #b91c1c;
+  border: 1px solid #ffffff;
+}
+
+.eliminar:active {
+  box-shadow: 4px 4px 12px #c5c5c5, -4px -4px 12px #ffffff;
+}
+
+.agregar {
+  color: #fff;
+  background: #15803d;
+  border: 1px solid #15803d;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+}
+
+.agregar:hover {
+  background: #0f766e;
+  border: 1px solid #ffffff;
+}
+
+.agregar:active {
+  box-shadow: 4px 4px 12px #c5c5c5, -4px -4px 12px #ffffff;
 }
 
 .tabla th:nth-child(2),
@@ -500,19 +533,4 @@ html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.agregar {
-  border: 1px solid #000;
-  border-radius: 6px;
-  padding: 0.3rem 0.8rem;
-  font-size: 0.8rem;
-  font-weight: bold;
-  background: #15803d;
-  color: #fff;
-  cursor: pointer;
-}
-
-.agregar:hover {
-  background: #0f766e;
 }
