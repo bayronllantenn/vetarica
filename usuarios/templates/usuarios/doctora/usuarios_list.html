@@ -51,22 +51,23 @@
                   <span class="estado estado-bloqueado">Bloqueado</span>
                 {% endif %}
               </td>
-              <td>
+              <td class="text-end">
                 {% if usuario == request.user %}
-                  <div class="acciones texto-suave">Tú</div>
+                  <span class="text-muted small">Tú</span>
                 {% else %}
-                  <div class="acciones">
-                    <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-sm btn-vet-borde">
+                  <div class="d-inline-flex gap-2">
+                    <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-sm btn-outline-primary">
                       <i class="bi bi-pencil"></i> Editar
                     </a>
-                    <form method="post" action="{% url 'bloquear_usuario' usuario.id %}">
+                    <form method="post" action="{% url 'bloquear_usuario' usuario.id %}" class="m-0">
                       {% csrf_token %}
                       {% if usuario.is_active %}
-                        <button type="submit" class="btn btn-sm btn-bloquear" onclick="return confirm('¿Bloquear a {{ usuario.email }}? No podrá iniciar sesión.')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('¿Bloquear a {{ usuario.email|escapejs }}? No podrá iniciar sesión.')">
                           <i class="bi bi-lock"></i> Bloquear
                         </button>
                       {% else %}
-                        <button type="submit" class="btn btn-sm btn-vet-borde">
+                        <button type="submit" class="btn btn-sm btn-outline-success">
                           <i class="bi bi-unlock"></i> Desbloquear
                         </button>
                       {% endif %}
