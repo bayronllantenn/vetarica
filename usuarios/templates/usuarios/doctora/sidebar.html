@@ -29,6 +29,10 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'agenda_doctora' %}active{% endif %}">
     <i class="bi bi-calendar-week"></i> Agenda
   </a>
+  <a href="{% url 'bloqueos_doctora' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'bloqueos_doctora' %}active{% endif %}">
+    <i class="bi bi-calendar-x"></i> Bloqueos
+  </a>
   {% if request.user.rol == 'veterinaria' %}
   <a href="{% url 'ingresos_doctora' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'ingresos_doctora' %}active{% endif %}">

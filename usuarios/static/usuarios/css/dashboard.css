@@ -345,6 +345,20 @@ html {
   color: #d9423b;
 }
 
+.btn-eliminar-bloqueo {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.bloqueo-form-card {
+  background: #fff;
+  border: 1px solid #e6e8e7;
+  box-shadow: 0 1px 3px rgba(18, 60, 51, 0.06);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
 .cita-empty {
   background: #fff;
   border: 1px solid #e6e8e7;
@@ -434,4 +448,103 @@ html {
 .mascota-card-btn-danger:hover {
   background: #bb2d3b;
   color: #fff;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.tabla th {
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6b7280;
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabla td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.9rem;
+}
+
+.editar,
+.eliminar,
+.agregar {
+  padding: 0.7em 1.7em;
+  font-size: 0.8rem;
+  border-radius: 0.5em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-right: 0.3rem;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.editar {
+  color: #fff;
+  background: #16a34a;
+  border: 1px solid #16a34a;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+}
+
+.editar:hover {
+  background: #15803d;
+  border: 1px solid #ffffff;
+}
+
+.editar:active {
+  box-shadow: 4px 4px 12px #c5c5c5, -4px -4px 12px #ffffff;
+}
+
+.eliminar {
+  color: #fff;
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+}
+
+.eliminar:hover {
+  background: #b91c1c;
+  border: 1px solid #ffffff;
+}
+
+.eliminar:active {
+  box-shadow: 4px 4px 12px #c5c5c5, -4px -4px 12px #ffffff;
+}
+
+.agregar {
+  color: #fff;
+  background: #15803d;
+  border: 1px solid #15803d;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+}
+
+.agregar:hover {
+  background: #0f766e;
+  border: 1px solid #ffffff;
+}
+
+.agregar:active {
+  box-shadow: 4px 4px 12px #c5c5c5, -4px -4px 12px #ffffff;
+}
+
+.tabla th:nth-child(2),
+.tabla td:nth-child(2) {
+  text-align: right;
+}
+
+.tabla th:nth-child(3),
+.tabla td:nth-child(3) {
+  text-align: right;
+}
+
+.tabla-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

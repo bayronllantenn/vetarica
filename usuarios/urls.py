@@ -33,6 +33,9 @@ urlpatterns = [
     # vistas doctora
     path('doctora/', views.inicio_doctora, name='inicio_doctora'),
     path('doctora/agenda/', views.agenda_doctora, name='agenda_doctora'),
+    path('doctora/bloqueos/', views.bloqueos_doctora, name='bloqueos_doctora'),
+    path('doctora/bloqueos/<int:bloqueo_id>/eliminar/', views.eliminar_bloqueo, name='eliminar_bloqueo'),
+    path('tipo-consulta/<int:tipo_id>/editar/', views.editar_tipo_consulta, name='editar_tipo_consulta'),
     path('doctora/usuarios/', views.usuarios_list, name='usuarios_list'),
     path('doctora/usuarios/crear/', views.crear_usuario, name='crear_usuario'),
     path('doctora/usuarios/<int:usuario_id>/editar/', views.editar_usuario, name='editar_usuario'),

@@ -7,6 +7,7 @@ from .models import (
     ESPECIES_MASCOTA,
     SEXOS_MASCOTA,
     UNIDADES_EDAD_MASCOTA,
+    BloqueoHorario,
     FichaMedica,
     Mascota,
     SolicitudCita,
@@ -65,6 +66,15 @@ def obtener_horas_disponibles(fecha):
     horas_ocupadas = []
     for c in citas:
         horas_ocupadas.append(timezone.localtime(c.fecha_hora).strftime('%H:%M'))
+
+    # las horas que la doctora bloqueo ese dia tambien cuentan como ocupadas
+    bloqueos = BloqueoHorario.objects.filter(fecha=fecha)
+    for bloqueo in bloqueos:
+        for hora, etiqueta in HORAS_ATENCION:
+            if hora:
+                si_esta_en_el_bloqueo = hora >= bloqueo.hora_inicio and hora < bloqueo.hora_fin
+                if si_esta_en_el_bloqueo:
+                    horas_ocupadas.append(hora)
 
     if fecha == timezone.localdate():
         hora_actual = timezone.localtime().strftime('%H:%M')
@@ -260,6 +270,8 @@ class SolicitudCitaForm(forms.ModelForm):
                 self.add_error('hora', 'Elige un horario con al menos 1 hora de anticipación.')
             elif citas_que_bloquean().filter(fecha_hora=fecha_hora).exists():
                 self.add_error('hora', 'Ese horario ya está ocupado, elige otro.')
+            elif BloqueoHorario.objects.filter(fecha=fecha, hora_inicio__lte=hora, hora_fin__gt=hora).exists():
+                self.add_error('hora', 'La doctora no atiende en ese horario, elige otro.')
             else:
                 self.instance.fecha_hora = fecha_hora
 
@@ -314,3 +326,60 @@ class FichaMedicaForm(forms.ModelForm):
             'tratamiento': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tratamiento indicado'}),
             'observaciones': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Vacunas, alergias, cirugías previas u otras observaciones (opcional)'}),
         }
+
+
+class BloqueoHorarioForm(forms.ModelForm):
+    fecha = forms.DateField(
+        label='Fecha',
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+        error_messages={'required': 'Elige una fecha.'},
+    )
+    hora_inicio = forms.ChoiceField(
+        label='Desde',
+        choices=HORAS_ATENCION,
+        error_messages={'required': 'Elige la hora de inicio.'},
+    )
+    hora_fin = forms.ChoiceField(
+        label='Hasta',
+        choices=HORAS_ATENCION,
+        error_messages={'required': 'Elige la hora de termino.'},
+    )
+
+    class Meta:
+        model = BloqueoHorario
+        fields = ['fecha', 'hora_inicio', 'hora_fin', 'motivo']
+        widgets = {
+            'motivo': forms.TextInput(attrs={'placeholder': 'Motivo (opcional)'}),
+        }
+
+    def clean_fecha(self):
+        fecha = self.cleaned_data['fecha']
+        hoy = timezone.localdate()
+
+        if fecha < hoy:
+            raise forms.ValidationError('No puedes bloquear una fecha pasada.')
+
+        return fecha
+
+    def clean(self):
+        cleaned_data = super().clean()
+        hora_inicio = cleaned_data.get('hora_inicio')
+        hora_fin = cleaned_data.get('hora_fin')
+
+        if hora_inicio and hora_fin:
+            if hora_fin <= hora_inicio:
+                self.add_error('hora_fin', 'La hora de termino debe ser despues de la hora de inicio.')
+
+        return cleaned_data
+
+
+class TipoConsultaForm(forms.ModelForm):
+    class Meta:
+        model = TipoConsulta
+        fields = ['nombre', 'precio_base']
+
+    def clean_precio_base(self):
+        precio = self.cleaned_data.get('precio_base')
+        if precio is not None and precio <= 0:
+            raise forms.ValidationError('El precio debe ser mayor a 0.')
+        return precio

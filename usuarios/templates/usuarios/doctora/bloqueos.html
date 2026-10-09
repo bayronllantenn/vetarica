@@ -1,0 +1,109 @@
+{% extends 'inicio/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Bloqueos - Vet Arica
+{% endblock %}
+
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block topbar %}{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="dash-shell">
+  <main class="dash-content">
+    <section class="dash-hero">
+      <h1>Bloqueos de horario</h1>
+      <p class="dash-subtitle">Marca las horas en que la doctora no puede atender, para que nadie pueda agendar ahí.</p>
+    </section>
+
+    <div class="bloqueo-form-card">
+      <h2 class="dash-section-title">Nuevo bloqueo</h2>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-4">{{ form.fecha|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.hora_inicio|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.hora_fin|as_crispy_field }}</div>
+        </div>
+        {{ form.motivo|as_crispy_field }}
+        <button type="submit" class="btn btn-teal">Bloquear</button>
+      </form>
+    </div>
+
+    <h2 class="dash-section-title">Bloqueos próximos</h2>
+
+    {% if bloqueos %}
+    <div class="cita-list">
+      {% for bloqueo in bloqueos %}
+      <article class="cita-item">
+        <div class="cita-fecha-texto">{{ bloqueo.fecha|date:"d M Y" }}</div>
+
+        <div class="cita-info">
+          <h3>{{ bloqueo.hora_inicio }} a {{ bloqueo.hora_fin }}</h3>
+          {% if bloqueo.motivo %}
+          <p>{{ bloqueo.motivo }}</p>
+          {% endif %}
+        </div>
+
+        <div class="cita-meta">
+          <form
+            action="{% url 'eliminar_bloqueo' bloqueo.id %}"
+            method="post"
+            onsubmit="return confirm('¿Seguro que quieres eliminar este bloqueo?');"
+          >
+            {% csrf_token %}
+            <button type="submit" class="cita-cancelar btn-eliminar-bloqueo">Eliminar</button>
+          </form>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="cita-empty">
+      <p>No hay bloqueos programados.</p>
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarEl = document.getElementById("sidebar");
+  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+  if (sidebarToggle && sidebarEl && sidebarBackdrop) {
+    sidebarToggle.addEventListener("click", function () {
+      sidebarEl.classList.add("sidebar-open");
+      sidebarBackdrop.classList.add("show");
+    });
+    sidebarBackdrop.addEventListener("click", function () {
+      sidebarEl.classList.remove("sidebar-open");
+      sidebarBackdrop.classList.remove("show");
+    });
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}

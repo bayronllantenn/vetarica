@@ -72,7 +72,11 @@
             </li>
             {% if user.is_authenticated %}
             <li class="nav-item">
+              {% if user.rol == 'veterinaria' or user.rol == 'secretaria' %}
+              <a class="nav-link" href="{% url 'inicio_doctora' %}">Mi Cuenta</a>
+              {% else %}
               <a class="nav-link" href="{% url 'dashboard' %}">Mi Cuenta</a>
+              {% endif %}
             </li>
             {% endif %}
             <li class="nav-item mt-2 mt-lg-0 d-flex align-items-center gap-2">
