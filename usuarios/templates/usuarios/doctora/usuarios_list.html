@@ -1,4 +1,7 @@
-{% extends 'inicio/base.html' %} {% load static %} {% block title %}Usuarios - Vet Arica{% endblock %} {% block css %}
+{% extends 'inicio/base.html' %} 
+{% load static %} 
+{% block title %}Usuarios - Vet Arica{% endblock %} 
+{% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
@@ -57,7 +60,7 @@
                 {% else %}
                   <div class="acciones">
                     <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-sm btn-vet-borde">
-                      <i class="bi bi-pencil"></i> Editar
+                      <i class="bi bi-pencil-square"></i> Editar
                     </a>
                     <form method="post" action="{% url 'bloquear_usuario' usuario.id %}">
                       {% csrf_token %}

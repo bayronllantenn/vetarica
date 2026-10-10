@@ -24,7 +24,7 @@
     <form class="form" method="post" novalidate>
       {% csrf_token %}
       <a href="{% url 'inicio_doctora' %}" class="auth-back-link">
-        <i class="bi bi-arrow-left"></i> Volver al inicio
+        <i class="bi bi-chevron-left"></i> Volver
       </a>
       <p class="form-title">Editar {{ tipo.nombre }}</p>
       <p class="form-subtitle">

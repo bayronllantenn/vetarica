@@ -1,7 +1,6 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import ValidationError
 from django import forms
-from django.core.validators import FileExtensionValidator
 
 from .models import Persona
 

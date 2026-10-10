@@ -44,13 +44,6 @@
   line-height: 1.15;
 }
 
-.stat-card-eco-caption {
-  display: block;
-  margin-top: 0.4rem;
-  font-size: 0.78rem;
-  color: #5b6b68;
-}
-
 .grafico-card {
   background: #fff;
   border: 1px solid #e6e8e7;

@@ -3,6 +3,7 @@ Vet Arica{% endblock %} {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/agenda.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
@@ -120,7 +121,9 @@ Vet Arica{% endblock %} {% block css %}
             <td>${{ tipo.precio_base }}</td>
             <td>
 
-              <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="editar">Editar</a>
+              <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="btn btn-sm btn-vet-borde">
+                <i class="bi bi-pencil-square"></i> Editar
+              </a>
 
             </td>
           </tr>
