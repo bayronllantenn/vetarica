@@ -18,24 +18,29 @@
       href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
       rel="stylesheet"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back_ios"
-      rel="stylesheet"
-    />
     <link href="{% static 'citas/css/mascota_form.css' %}" rel="stylesheet" />
   </head>
   <body class="mascota-form-body">
+    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="form-deco fondo-camino" />
+    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-1" />
+    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-2" />
+    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-3" />
+    <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
+    <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
+    <img src="{% static 'inicio/img/ilustraciones/perro.png' %}" alt="" class="form-deco fondo-perro" />
     <div class="mascota-card-wrapper">
       <form class="mascota-form-card" method="post" enctype="multipart/form-data" novalidate id="mascotaForm">
         {% csrf_token %}
-        
+
+
         <div class="form-top-nav">
           <a href="{% url 'dashboard' %}" class="btn-back-pill">
-            <span class="material-symbols-outlined">arrow_back_ios</span> Volver a mi cuenta
+            <i class="bi bi-chevron-left"></i> Volver
           </a>
         </div>
 
         <div class="form-header">
+          <img src="{% static 'inicio/img/ilustraciones/perroYgato.png' %}" alt="" class="form-header-ilustracion" />
           <h1>Agregar mascota</h1>
           <p>
             Regístrala una vez y ya no tendrás que escribir sus datos cada vez que agendes una cita.
@@ -43,33 +48,65 @@
         </div>
 
         <div class="avatar-upload-section">
-          <label class="avatar-preview-box" for="{{ form.imagen.id_for_label }}" title="Haz clic para seleccionar foto">
-            <img id="avatarImage" src="" alt="Vista previa" class="avatar-img-preview d-none" />
-            <div class="avatar-placeholder" id="avatarPlaceholder">
-              <i class="bi bi-camera"></i>
-              <span>FOTO</span>
-            </div>
+          <div class="avatar-wrap">
+            <label class="avatar-preview-box" for="{{ form.imagen.id_for_label }}" title="Haz clic para seleccionar foto">
+              <img id="avatarImage" src="" alt="Vista previa" class="avatar-img-preview d-none" />
+              <div class="avatar-placeholder" id="avatarPlaceholder">
+                <i class="bi bi-camera"></i>
+                <span>Agregar foto</span>
+              </div>
+            </label>
             <div class="avatar-badge-edit">
               <i class="bi bi-plus-lg"></i>
             </div>
-          </label>
-          <span class="avatar-upload-hint">Foto de perfil (opcional • máx. 2MB)</span>
+          </div>
+          <span class="avatar-upload-hint">Foto de perfil opcional, máximo 2MB</span>
         </div>
 
-        <div class="crispy-fields-wrap">
-          {{ form.nombre|as_crispy_field }}
-
-          <div class="row g-3">
-            <div class="col-md-6">{{ form.especie|as_crispy_field }}</div>
-            <div class="col-md-6">{{ form.sexo|as_crispy_field }}</div>
+        <div class="crispy-fields-wrap campos-con-icono">
+          <div class="campo">
+            <label class="campo-label" for="{{ form.nombre.id_for_label }}">
+              <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Nombre
+            </label>
+            {{ form.nombre|as_crispy_field }}
           </div>
 
           <div class="row g-3">
-            <div class="col-md-6">{{ form.edad_valor|as_crispy_field }}</div>
-            <div class="col-md-6">{{ form.edad_unidad|as_crispy_field }}</div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.especie.id_for_label }}">
+                <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Especie
+              </label>
+              {{ form.especie|as_crispy_field }}
+            </div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.sexo.id_for_label }}">
+                <i class="bi bi-gender-ambiguous"></i> Sexo
+              </label>
+              {{ form.sexo|as_crispy_field }}
+            </div>
           </div>
 
-          {{ form.raza|as_crispy_field }}
+          <div class="row g-3">
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.edad_valor.id_for_label }}">
+                <i class="bi bi-calendar3"></i> Edad
+              </label>
+              {{ form.edad_valor|as_crispy_field }}
+            </div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.edad_unidad.id_for_label }}">
+                <i class="bi bi-clock"></i> Edad unidad
+              </label>
+              {{ form.edad_unidad|as_crispy_field }}
+            </div>
+          </div>
+
+          <div class="campo">
+            <label class="campo-label" for="{{ form.raza.id_for_label }}">
+              <i class="bi bi-tag"></i> Raza
+            </label>
+            {{ form.raza|as_crispy_field }}
+          </div>
 
           <div class="d-none">
             {{ form.imagen|as_crispy_field }}
