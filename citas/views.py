@@ -197,7 +197,7 @@ def iniciar_pago_webpay(request, id):
 
     except Exception as e:
         messages.error(request, f'Error al iniciar el pago: {e}')
-        return redirect('reserva_fallida')
+        return redirect('reserva_fallida_id', solicitud.pk)
 
 
 def marcar_pago_rechazado(solicitud):
@@ -211,9 +211,10 @@ def retorno_webpay(request):
     tbk_token = request.GET.get('TBK_TOKEN') or request.POST.get('TBK_TOKEN')
     if tbk_token:
         solicitud = SolicitudCita.objects.filter(webpay_token=tbk_token).first()
+        messages.error(request, 'Cancelaste el pago. La cita fue cancelada.')
         if solicitud:
             marcar_pago_rechazado(solicitud)
-        messages.error(request, 'Cancelaste el pago. La cita fue cancelada.')
+            return redirect('reserva_fallida_id', solicitud.pk)
         return redirect('reserva_fallida')
 
     token = request.GET.get('token_ws') or request.POST.get('token_ws')
