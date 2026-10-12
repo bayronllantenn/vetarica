@@ -62,6 +62,10 @@ def citas_que_bloquean():
 
 
 def obtener_horas_disponibles(fecha):
+    # los domingos no se atiende, asi que no hay horas para elegir
+    if fecha.weekday() == 6:
+        return [('', 'Selecciona una hora')]
+
     citas = citas_que_bloquean().filter(fecha_hora__range=rango_del_dia(fecha))
     horas_ocupadas = []
     for c in citas:

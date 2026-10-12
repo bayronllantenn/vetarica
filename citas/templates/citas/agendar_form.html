@@ -6,37 +6,36 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Agendar Cita - Vet Arica</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back_ios"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
     <link href="{% static 'citas/css/mascota_form.css' %}" rel="stylesheet" />
     <link href="{% static 'citas/css/agendar.css' %}" rel="stylesheet" />
   </head>
   <body class="mascota-form-body">
+    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="form-deco fondo-camino" />
+    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-1" />
+    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-2" />
+    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-3" />
+    <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
+    <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
+    <img src="{% static 'inicio/img/ilustraciones/perro.png' %}" alt="" class="form-deco fondo-perro" />
     <div class="mascota-card-wrapper agendar-card-wrapper">
       <form class="mascota-form-card" method="post" novalidate>
         {% csrf_token %}
 
         <div class="form-top-nav">
-          <a href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'home' %}{% endif %}" onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }" class="btn-back-pill">
-            <span class="material-symbols-outlined">arrow_back_ios</span> Volver atrás
-          </a>
+          {% if user.rol == 'veterinaria' or user.rol == 'secretaria' %}
+          <a href="{% url 'inicio_doctora' %}" class="btn-back-pill"><i class="bi bi-chevron-left"></i> Volver</a>
+          {% elif user.is_authenticated %}
+          <a href="{% url 'dashboard' %}" class="btn-back-pill"><i class="bi bi-chevron-left"></i> Volver</a>
+          {% else %}
+          <a href="{% url 'home' %}" class="btn-back-pill"><i class="bi bi-chevron-left"></i> Volver</a>
+          {% endif %}
         </div>
 
         <div class="form-header">
+          <img src="{% static 'inicio/img/ilustraciones/perroYgato.png' %}" alt="" class="form-header-ilustracion" />
           <h1>Agendar cita</h1>
           <p>
             Completa tus datos y nos contactaremos contigo para confirmar la hora.
@@ -52,17 +51,37 @@
         </div>
         {% endif %}
 
-        <div class="crispy-fields-wrap">
+        <div class="crispy-fields-wrap campos-con-icono">
           {% if not cuenta_completa %}
           <p class="section-title">Datos de contacto</p>
 
           <div class="row g-3">
-            <div class="col-md-6">{{ form.nombre|as_crispy_field }}</div>
-            <div class="col-md-6">{{ form.apellido|as_crispy_field }}</div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.nombre.id_for_label }}">
+                <i class="bi bi-person"></i> Nombre
+              </label>
+              {{ form.nombre|as_crispy_field }}
+            </div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.apellido.id_for_label }}">
+                <i class="bi bi-person"></i> Apellido
+              </label>
+              {{ form.apellido|as_crispy_field }}
+            </div>
           </div>
           <div class="row g-3">
-            <div class="col-md-6">{{ form.email|as_crispy_field }}</div>
-            <div class="col-md-6">{{ form.telefono|as_crispy_field }}</div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.email.id_for_label }}">
+                <i class="bi bi-envelope"></i> Correo
+              </label>
+              {{ form.email|as_crispy_field }}
+            </div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.telefono.id_for_label }}">
+                <i class="bi bi-telephone"></i> Teléfono
+              </label>
+              {{ form.telefono|as_crispy_field }}
+            </div>
           </div>
           {% endif %}
 
@@ -70,6 +89,9 @@
 
           {% if mascotas %}
           <div class="mb-3">
+            <label class="campo-label" for="mascota_guardada">
+              <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Mascota
+            </label>
             <select id="mascota_guardada" name="mascota_id" class="form-select" onchange="recargarFormulario(this.form)">
               {% for mascota in mascotas %}
               <option value="{{ mascota.id }}" {% if mascota_elegida.id == mascota.id %}selected{% endif %}>
@@ -83,23 +105,74 @@
 
           <div id="contenedor_datos_mascota" {% if mascota_elegida %}hidden{% endif %}>
             <div class="row g-3">
-              <div class="col-md-4">{{ form.nombre_mascota|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.especie_mascota|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.raza_mascota|as_crispy_field }}</div>
+              <div class="col-md-4 campo">
+                <label class="campo-label" for="{{ form.nombre_mascota.id_for_label }}">
+                  <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Nombre mascota
+                </label>
+                {{ form.nombre_mascota|as_crispy_field }}
+              </div>
+              <div class="col-md-4 campo">
+                <label class="campo-label" for="{{ form.especie_mascota.id_for_label }}">
+                  <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Especie
+                </label>
+                {{ form.especie_mascota|as_crispy_field }}
+              </div>
+              <div class="col-md-4 campo">
+                <label class="campo-label" for="{{ form.raza_mascota.id_for_label }}">
+                  <i class="bi bi-tag"></i> Raza
+                </label>
+                {{ form.raza_mascota|as_crispy_field }}
+              </div>
             </div>
             <div class="row g-3">
-              <div class="col-md-4">{{ form.sexo_mascota|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.edad_valor_mascota|as_crispy_field }}</div>
-              <div class="col-md-4">{{ form.edad_unidad_mascota|as_crispy_field }}</div>
+              <div class="col-md-4 campo">
+                <label class="campo-label" for="{{ form.sexo_mascota.id_for_label }}">
+                  <i class="bi bi-gender-ambiguous"></i> Sexo
+                </label>
+                {{ form.sexo_mascota|as_crispy_field }}
+              </div>
+              <div class="col-md-4 campo">
+                <label class="campo-label" for="{{ form.edad_valor_mascota.id_for_label }}">
+                  <i class="bi bi-calendar3"></i> Edad
+                </label>
+                {{ form.edad_valor_mascota|as_crispy_field }}
+              </div>
+              <div class="col-md-4 campo">
+                <label class="campo-label" for="{{ form.edad_unidad_mascota.id_for_label }}">
+                  <i class="bi bi-clock"></i> Unidad
+                </label>
+                {{ form.edad_unidad_mascota|as_crispy_field }}
+              </div>
             </div>
           </div>
 
-          {{ form.tipo_consulta|as_crispy_field }}
+          <div class="campo">
+            <label class="campo-label" for="{{ form.tipo_consulta.id_for_label }}">
+              <i class="bi bi-clipboard2-pulse"></i> Tipo de consulta
+            </label>
+            {{ form.tipo_consulta|as_crispy_field }}
+          </div>
 
           <div class="row g-3">
-            <div class="col-md-6">{{ form.fecha|as_crispy_field }}</div>
-            <div class="col-md-6">{{ form.hora|as_crispy_field }}</div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.fecha.id_for_label }}">
+                <i class="bi bi-calendar-event"></i> Fecha
+              </label>
+              {{ form.fecha|as_crispy_field }}
+            </div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.hora.id_for_label }}">
+                <i class="bi bi-clock"></i> Hora
+              </label>
+              {{ form.hora|as_crispy_field }}
+            </div>
           </div>
+
+          {% if fecha_seleccionada.weekday == 6 %}
+          <div class="bloqueo-aviso">
+            <p>Los domingos no atendemos, elige otra fecha.</p>
+          </div>
+          {% endif %}
 
           {% if bloqueos_del_dia %}
           <div class="bloqueo-aviso">
@@ -113,7 +186,12 @@
           </div>
           {% endif %}
 
-          {{ form.observaciones|as_crispy_field }}
+          <div class="campo">
+            <label class="campo-label" for="{{ form.observaciones.id_for_label }}">
+              <i class="bi bi-chat-left-text"></i> Observaciones
+            </label>
+            {{ form.observaciones|as_crispy_field }}
+          </div>
         </div>
 
         <div class="form-actions">
