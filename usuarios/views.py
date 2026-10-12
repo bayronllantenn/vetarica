@@ -487,3 +487,9 @@ def editar_tipo_consulta(request, tipo_id):
     else:
         form = TipoConsultaForm(instance=tipo)
     return render(request, 'usuarios/doctora/editar_tipo_consulta.html', {'form': form, 'tipo': tipo})
+
+def error_404(request, exception=None):
+    return render(request, '404.html', status=404)
+
+def error_500(request):
+    return render(request, '500.html', status=500)

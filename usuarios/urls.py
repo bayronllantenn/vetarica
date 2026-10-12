@@ -40,4 +40,7 @@ urlpatterns = [
     path('doctora/usuarios/crear/', views.crear_usuario, name='crear_usuario'),
     path('doctora/usuarios/<int:usuario_id>/editar/', views.editar_usuario, name='editar_usuario'),
     path('doctora/usuarios/<int:usuario_id>/bloquear/', views.bloquear_usuario, name='bloquear_usuario'),
+    #error 404
+    path('404/', views.error_404, name='error_404'),
+    path('500/', views.error_500, name='error_500'),
 ]

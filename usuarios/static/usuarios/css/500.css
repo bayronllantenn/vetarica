@@ -1,0 +1,202 @@
+:root {
+  --verde-oscuro: #2b6a4d;
+  --verde-hover: #225740;
+  --verde-claro: #4f9a6b;
+  --fondo: #f3f8f4;
+  --mancha: #e1eee5;
+  --texto: #13362a;
+  --texto-suave: #586a63;
+  --blanco: #ffffff;
+  --fuente: "Nunito", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--fuente);
+  background: var(--fondo);
+  color: var(--texto);
+  overflow-x: hidden;
+  position: relative;
+}
+
+.deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  height: auto;
+}
+.deco--izq {
+  top: 4%;
+  left: 0;
+  width: min(30vw, 340px);
+}
+.deco--der {
+  bottom: 4%;
+  right: 0;
+  width: min(26vw, 300px);
+}
+
+.error {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1.25rem 2.5rem;
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--texto);
+  margin-bottom: 1.75rem;
+}
+.marca img {
+  width: 78px;
+  height: auto;
+}
+.marca__nombre {
+  font-size: 1.6rem;
+  line-height: 1;
+  letter-spacing: .02em;
+  margin-top: .25rem;
+}
+.marca__nombre strong { color: var(--verde-oscuro); font-weight: 900; }
+.marca__nombre span   { color: var(--texto); font-weight: 600; }
+.marca__sub {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  color: var(--verde-oscuro);
+  margin-top: .35rem;
+}
+
+.codigo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .1em;
+  font-size: clamp(5rem, 16vw, 9.5rem);
+  font-weight: 900;
+  line-height: .9;
+  color: var(--verde-oscuro);
+}
+.codigo__cero {
+  width: .78em;
+  height: .98em;
+  border-radius: 50%;
+  background: var(--verde-oscuro);
+  display: grid;
+  place-items: center;
+}
+.codigo__cero svg {
+  width: 48%;
+  height: auto;
+  fill: var(--blanco);
+}
+
+.chispa {
+  position: absolute;
+  width: .26em;
+  height: .055em;
+  background: var(--verde-claro);
+  border-radius: 99px;
+}
+.chispa--1 { left: -.42em;  top: .12em; transform: rotate(40deg); }
+.chispa--2 { left: -.5em;   top: .38em; transform: rotate(5deg); width: .18em; }
+.chispa--3 { right: -.38em; top: .06em; transform: rotate(-60deg); }
+.chispa--4 { right: -.5em;  top: .3em;  transform: rotate(-20deg); width: .18em; }
+
+.titulo {
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  font-weight: 800;
+  margin-top: 1rem;
+  color: var(--texto);
+}
+
+.mensaje {
+  font-size: clamp(.95rem, 2.2vw, 1.08rem);
+  color: var(--texto-suave);
+  line-height: 1.6;
+  margin-top: .6rem;
+  max-width: 36ch;
+}
+
+.mascotas {
+  position: relative;
+  width: min(100%, 520px);
+  margin-top: 1.5rem;
+}
+.mascotas__mancha {
+  position: absolute;
+  inset: 8% 0 6% 0;
+  background: var(--mancha);
+  border-radius: 48% 52% 44% 56% / 60% 55% 45% 40%;
+  z-index: 0;
+}
+.mascotas img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.pregunta {
+  position: absolute;
+  z-index: 2;
+  font-weight: 900;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  color: var(--verde-claro);
+}
+.pregunta--perro { top: 0;  left: 18%; }
+.pregunta--gato  { top: 12%; right: 20%; }
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  margin-top: 1.75rem;
+  padding: 1rem 2.6rem;
+  min-width: 260px;
+  justify-content: center;
+  background: var(--verde-oscuro);
+  color: var(--blanco);
+  font-family: var(--fuente);
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px -12px rgba(43, 106, 77, .7);
+  transition: background .2s ease, transform .2s ease;
+}
+.boton svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.boton:hover  { background: var(--verde-hover); transform: translateY(-2px); }
+.boton:active { transform: translateY(0); }
+.boton:focus-visible {
+  outline: 3px solid var(--verde-claro);
+  outline-offset: 4px;
+}
+
+@media (max-width: 600px) {
+  .deco--izq { width: 45vw; opacity: .7; }
+  .deco--der { width: 40vw; opacity: .7; }
+  .chispa { display: none; }
+  .boton { min-width: 0; width: 100%; max-width: 320px; }
+}
