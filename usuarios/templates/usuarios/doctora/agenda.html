@@ -36,7 +36,9 @@ Vet Arica{% endblock %} {% block css %}
             <path d="M15 8l4 4" />
           </svg>
         </a>
+        {% if request.user.rol != 'tecnico' %}
         <a href="{% url 'agendar' %}" class="btn btn-teal agenda-nueva-cita">Nueva cita</a>
+        {% endif %}
       </div>
     </section>
 

@@ -3,7 +3,7 @@
   <button id="sidebarToggle" class="sidebar-toggle-btn" type="button" aria-label="Abrir menu">
     <i class="bi bi-list"></i>
   </button>
-  <a href="{% url 'inicio_doctora' %}" class="mobile-topbar-brand">
+  <a href="{% if request.user.rol == 'tecnico' %}{% url 'agenda_doctora' %}{% else %}{% url 'inicio_doctora' %}{% endif %}" class="mobile-topbar-brand">
     <img src="{% static 'inicio/img/logo.jpg' %}" alt="Vet Arica" height="28" class="rounded" />
     Vet Arica
   </a>
@@ -16,11 +16,17 @@
     <img src="{% static 'inicio/img/logo.jpg' %}" alt="Vet Arica" height="36" class="rounded" />
     <div>
       <strong>VetArica</strong>
-      <span>Portal Veterinaria</span>
+      <span>Portal {{ request.user.get_rol_display }} </span>
     </div>
   </div>
 
   <nav class="sidebar-nav">
+  {% if request.user.rol == 'tecnico' %}
+  <a href="{% url 'agenda_doctora' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'agenda_doctora' %}active{% endif %}">
+    <i class="bi bi-calendar-week"></i> Agenda
+  </a>
+  {% else %}
   <a href="{% url 'inicio_doctora' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'inicio_doctora' %}active{% endif %}">
     <i class="bi bi-grid"></i> Inicio
@@ -42,6 +48,7 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'usuarios_list' %}active{% endif %}">
     <i class="bi bi-people"></i> Usuarios
   </a>
+  {% endif %}
   {% endif %}
 </nav>
   <div class="sidebar-footer">

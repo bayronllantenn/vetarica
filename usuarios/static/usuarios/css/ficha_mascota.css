@@ -1,4 +1,34 @@
+.ficha-fondo {
+  position: relative;
+  overflow: hidden;
+  background: #f4f9f5;
+  margin: 0;
+  min-height: 100vh;
+}
+
+.ficha-fondo-mancha {
+  position: absolute;
+  border-radius: 50%;
+  background: #e3efe5;
+  pointer-events: none;
+}
+
+.ficha-fondo-mancha-arriba {
+  top: -120px;
+  right: -100px;
+  width: 420px;
+  height: 300px;
+}
+
+.ficha-fondo-mancha-abajo {
+  bottom: -140px;
+  left: -120px;
+  width: 360px;
+  height: 320px;
+}
+
 .ficha-content {
+  position: relative;
   max-width: 860px;
 }
 
@@ -10,70 +40,202 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #64748b;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  padding: 0.45rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 500;
+  color: #123c33;
+  background: #e3efe5;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
   text-decoration: none;
 }
 
 .btn-back-pill:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.material-symbols-outlined {
-  font-size: 1.1em;
-  vertical-align: -2px;
+  background: #d3e6d7;
+  color: #123c33;
 }
 
 .ficha-caja-blanca {
+  position: relative;
+  overflow: hidden;
   background: #fff;
-  border: 1px solid #e6e8e7;
+  border-radius: 26px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
   padding: 2rem;
 }
 
-.ficha-simple-header {
+.ficha-caja-blanca > *:not(.ficha-caja-mancha):not(.ficha-caja-huella) {
+  position: relative;
+  z-index: 1;
+}
+
+.ficha-caja-mancha {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 190px;
+  border-radius: 50%;
+  background: #e3efe5;
+  pointer-events: none;
+}
+
+.ficha-caja-huella {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 44px;
+  pointer-events: none;
+}
+
+.ficha-header {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.ficha-hero-foto {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  object-fit: cover;
+.ficha-foto-wrap {
+  position: relative;
   flex-shrink: 0;
-  border: 3px solid #f0fdf4;
 }
 
-.ficha-simple-header h1 {
-  color: #0f172a;
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin: 0 0 0.3rem;
+.ficha-foto {
+  display: block;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 6px solid #e3efe5;
+}
+
+.ficha-foto-vacia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f9f5;
+}
+
+.ficha-foto-vacia img {
+  width: 48px;
+  opacity: 0.35;
+}
+
+.ficha-foto-rayas {
+  position: absolute;
+  top: -12px;
+  left: -16px;
+  width: 30px;
+}
+
+.ficha-nombre-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ficha-nombre-fila h1 {
+  color: #123c33;
+  font-size: 2.1rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.ficha-sexo-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #e3efe5;
+  color: #0f766e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.ficha-editar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  background: #e3efe5;
+  color: #123c33;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.ficha-editar-link:hover {
+  background: #d3e6d7;
+  color: #123c33;
 }
 
 .ficha-seccion {
-  margin-bottom: 2.25rem;
+  margin-bottom: 1.75rem;
 }
 
-.ficha-seccion-ultima {
+.ficha-seccion:last-child {
   margin-bottom: 0;
 }
 
-.ficha-seccion .dash-section-title {
-  margin-bottom: 1.1rem;
+.ficha-seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #123c33;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 0.9rem;
+}
+
+.ficha-titulo-icono {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.ficha-dato-icono-bi {
+  border-radius: 50%;
+  background: #e3efe5;
+  color: #123c33;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+}
+
+.ficha-recuadro {
+  background: #fbfdfb;
+  border: 1px solid #e3efe5;
+  border-radius: 18px;
+  padding: 1.1rem 1.4rem;
 }
 
 .ficha-datos-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem 2rem;
+  gap: 0.85rem 2rem;
+}
+
+.ficha-dato {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #334155;
+  margin: 0;
+}
+
+.ficha-dato strong {
+  color: #123c33;
+  font-weight: 700;
+}
+
+.ficha-dato-icono {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
 }
 
 .ficha-texto {
@@ -88,26 +250,27 @@
 }
 
 .ficha-vacio {
-  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0 0.5rem;
 }
 
-.ficha-editar-link {
-  display: inline-block;
-  margin-top: 0.3rem;
-  color: #0f766e;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
+.ficha-vacio-icono {
+  width: 80px;
+  margin-bottom: 0.9rem;
 }
 
-.ficha-editar-link:hover {
-  text-decoration: underline;
+.ficha-vacio p {
+  color: #334155;
+  margin: 0;
 }
 
 .historial-item-simple {
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e3efe5;
 }
 
 .historial-item-simple:last-child {
@@ -119,7 +282,7 @@
 .historial-item-simple h3 {
   font-size: 1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #123c33;
   margin: 0 0 0.5rem;
 }
 
@@ -128,7 +291,7 @@
 }
 
 .historial-fecha-simple {
-  color: #64748b;
+  color: #5b6b68;
   font-size: 0.82rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -136,8 +299,40 @@
   margin: 0 0 0.3rem;
 }
 
-@media (max-width: 480px) {
+.ficha-camino {
+  position: absolute;
+  right: -110px;
+  bottom: 1rem;
+  width: 150px;
+  pointer-events: none;
+}
+
+@media (max-width: 991.98px) {
+  .ficha-camino {
+    display: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .ficha-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .ficha-nombre-fila {
+    justify-content: center;
+  }
+
+  .ficha-foto {
+    width: 110px;
+    height: 110px;
+  }
+
   .ficha-datos-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .ficha-caja-blanca {
+    padding: 1.5rem 1.1rem;
   }
 }

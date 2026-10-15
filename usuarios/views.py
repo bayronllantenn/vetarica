@@ -21,6 +21,9 @@ def es_personal_clinica(usuario):
 def es_veterinaria(usuario):
     return usuario.rol == 'veterinaria'
 
+def es_tecnico(usuario):
+    return usuario.rol == 'tecnico'
+
 MESES_ABREVIADOS = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
     'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
@@ -30,6 +33,9 @@ MESES_ABREVIADOS = [
 def redirigir_segun_rol(usuario):
     if es_personal_clinica(usuario):
         return redirect('inicio_doctora')
+    
+    if es_tecnico(usuario):
+        return redirect('agenda_doctora')
     return redirect('dashboard')
 
 
@@ -174,14 +180,12 @@ def inicio_doctora(request):
 @never_cache
 @login_required(login_url='sin_acceso')
 def agenda_doctora(request):
-    if not es_personal_clinica(request.user):
+    if not es_personal_clinica(request.user) and not es_tecnico(request.user):
         return redirect('sin_acceso')
-
     try:
         semanas = int(request.GET.get('semana', 0))
     except ValueError:
         semanas = 0
-
     hoy = timezone.localdate()
     lunes_actual = hoy - timedelta(days=hoy.weekday())
     lunes_semana = lunes_actual + timedelta(weeks=semanas)
