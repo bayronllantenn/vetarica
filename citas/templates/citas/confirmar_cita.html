@@ -5,125 +5,101 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Confirmar Cita - Vet Arica</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back_ios"
-      rel="stylesheet"
-    />
-    <style>
-      .material-symbols-outlined {
-        font-size: 1.1em;
-        vertical-align: -2px;
-      }
-    </style>
+    <link rel="icon" href="{% static 'inicio/img/marca/favicon.png' %}" />
+    <link href="{% static 'citas/css/confirmar_cita.css' %}" rel="stylesheet" />
   </head>
-  <body class="bg-light">
-    <div class="container py-5">
-      <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-6">
-          <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-body p-4 p-md-5">
-              <h1 class="h3 fw-bold mb-1">Confirma tu cita</h1>
-              <p class="text-muted mb-4">
-                Revisa que tus datos estén correctos antes de pagar.
-              </p>
+  <body class="confirmar-body">
+    <span class="confirmar-mancha confirmar-mancha-izq"></span>
+    <span class="confirmar-mancha confirmar-mancha-der"></span>
+    <img src="{% static 'inicio/img/ilustraciones/golden.png' %}" alt="" class="confirmar-golden" />
+    <img src="{% static 'inicio/img/ilustraciones/gato_foto.png' %}" alt="" class="confirmar-gato" />
 
-              <h6 class="text-success fw-bold mb-2">
-                <i class="bi bi-person"></i> Datos de contacto
-              </h6>
-              <ul class="list-group list-group-flush mb-4">
-                <li class="list-group-item d-flex justify-content-between px-0">
-                  <span class="text-muted">Nombre</span>
-                  <span class="fw-semibold"
-                    >{{ solicitud.nombre }} {{ solicitud.apellido }}</span
-                  >
-                </li>
-                <li class="list-group-item d-flex justify-content-between px-0">
-                  <span class="text-muted">Email</span>
-                  <span class="fw-semibold">{{ solicitud.email }}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between px-0">
-                  <span class="text-muted">Teléfono</span>
-                  <span class="fw-semibold">{{ solicitud.telefono }}</span>
-                </li>
-              </ul>
+    <main class="confirmar-contenido">
+      <img src="{% static 'inicio/img/marca/logo_corazon_huella.png' %}" alt="Vet Arica" class="confirmar-logo" />
 
-              <h6 class="text-success fw-bold mb-2">
-                <i class="bi bi-heart-pulse"></i> Datos de la atención
-              </h6>
-              <ul class="list-group list-group-flush mb-4">
-                <li class="list-group-item d-flex justify-content-between px-0">
-                  <span class="text-muted">Mascota</span>
-                  <span class="fw-semibold"
-                    >{{ solicitud.nombre_mascota }}</span
-                  >
-                </li>
-                <li class="list-group-item d-flex justify-content-between px-0">
-                  <span class="text-muted">Tipo de consulta</span>
-                  <span class="fw-semibold"
-                    >{{ solicitud.tipo_consulta.nombre }}</span
-                  >
-                </li>
-                <li class="list-group-item d-flex justify-content-between px-0">
-                  <span class="text-muted">Fecha</span>
-                  <span class="fw-semibold"
-                    >{{ solicitud.fecha_hora|date:"d-m-Y" }}</span
-                  >
-                </li>
-                <li class="list-group-item d-flex justify-content-between px-0">
-                  <span class="text-muted">Hora</span>
-                  <span class="fw-semibold"
-                    >{{ solicitud.fecha_hora|time:"H:i" }}</span
-                  >
-                </li>
-                {% if solicitud.observaciones %}
-                <li class="list-group-item px-0">
-                  <span class="text-muted d-block">Observaciones</span>
-                  <span>{{ solicitud.observaciones }}</span>
-                </li>
-                {% endif %}
-              </ul>
+      <div class="confirmar-card">
+        <h1>Confirma tu cita</h1>
+        <p class="confirmar-sub">Revisa que tus datos estén correctos antes de pagar.</p>
 
-              <div
-                class="d-flex justify-content-between align-items-center bg-success-subtle rounded-3 p-3 mb-4"
-              >
-                <span class="fw-bold">Total a pagar</span>
-                <span class="fs-3 fw-bold text-success">
-                  ${{ solicitud.tipo_consulta.precio_base|floatformat:"0g" }}
-                </span>
-              </div>
-              <a
-                href="{% url 'iniciar_pago_webpay' solicitud.pk %}"
-                class="btn btn-success btn-lg w-100"
-              >
-                <i class="bi bi-credit-card"></i> Pagar con Webpay
-              </a>
-
-              <form
-                method="post"
-                action="{% url 'cancelar_solicitud' solicitud.pk %}"
-                class="mt-2"
-              >
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-secondary w-100">
-                  <span class="material-symbols-outlined">arrow_back_ios</span> Cancelar y volver
-                </button>
-              </form>
-            </div>
+        <section class="confirmar-seccion">
+          <div class="confirmar-seccion-titulo">
+            <span class="confirmar-seccion-icono">
+              <img src="{% static 'inicio/img/iconos/cita_usuario.png' %}" alt="" />
+            </span>
+            <h2>Datos de contacto</h2>
           </div>
+          <div class="confirmar-fila">
+            <img src="{% static 'inicio/img/iconos/cita_usuario.png' %}" alt="" />
+            <span class="confirmar-etiqueta">Nombre</span>
+            <span class="confirmar-valor">{{ solicitud.nombre }} {{ solicitud.apellido }}</span>
+          </div>
+          <div class="confirmar-fila">
+            <img src="{% static 'inicio/img/iconos/cita_correo.png' %}" alt="" />
+            <span class="confirmar-etiqueta">Email</span>
+            <span class="confirmar-valor">{{ solicitud.email }}</span>
+          </div>
+          <div class="confirmar-fila">
+            <img src="{% static 'inicio/img/iconos/cita_telefono.png' %}" alt="" />
+            <span class="confirmar-etiqueta">Teléfono</span>
+            <span class="confirmar-valor">{{ solicitud.telefono }}</span>
+          </div>
+        </section>
+
+        <section class="confirmar-seccion">
+          <div class="confirmar-seccion-titulo">
+            <span class="confirmar-seccion-icono">
+              <img src="{% static 'inicio/img/iconos/cita_huella.png' %}" alt="" />
+            </span>
+            <h2>Datos de la atención</h2>
+          </div>
+          <div class="confirmar-fila">
+            <img src="{% static 'inicio/img/iconos/cita_huella.png' %}" alt="" />
+            <span class="confirmar-etiqueta">Mascota</span>
+            <span class="confirmar-valor">{{ solicitud.nombre_mascota }}</span>
+          </div>
+          <div class="confirmar-fila">
+            <img src="{% static 'inicio/img/iconos/cita_estetoscopio.png' %}" alt="" />
+            <span class="confirmar-etiqueta">Tipo de consulta</span>
+            <span class="confirmar-valor">{{ solicitud.tipo_consulta.nombre }}</span>
+          </div>
+          <div class="confirmar-fila">
+            <img src="{% static 'inicio/img/iconos/cita_calendario.png' %}" alt="" />
+            <span class="confirmar-etiqueta">Fecha</span>
+            <span class="confirmar-valor">{{ solicitud.fecha_hora|date:"d-m-Y" }}</span>
+          </div>
+          <div class="confirmar-fila">
+            <img src="{% static 'inicio/img/iconos/cita_reloj.png' %}" alt="" />
+            <span class="confirmar-etiqueta">Hora</span>
+            <span class="confirmar-valor">{{ solicitud.fecha_hora|time:"H:i" }}</span>
+          </div>
+          {% if solicitud.observaciones %}
+          <div class="confirmar-fila confirmar-fila-observaciones">
+            <span class="confirmar-etiqueta">Observaciones</span>
+            <span class="confirmar-valor">{{ solicitud.observaciones }}</span>
+          </div>
+          {% endif %}
+        </section>
+
+        <div class="confirmar-total">
+          <span class="confirmar-total-icono">
+            <img src="{% static 'inicio/img/iconos/cita_documento.png' %}" alt="" />
+          </span>
+          <div>
+            <span class="confirmar-total-texto">Total a pagar</span>
+            <strong class="confirmar-total-monto">${{ solicitud.tipo_consulta.precio_base|floatformat:"0g" }}</strong>
+          </div>
+          <img src="{% static 'inicio/img/decoracion/rayas2.png' %}" alt="" class="confirmar-total-rayas" />
         </div>
+
+        <a href="{% url 'iniciar_pago_webpay' solicitud.pk %}" class="confirmar-btn-pagar">
+          Pagar con Webpay
+        </a>
+
+        <form method="post" action="{% url 'cancelar_solicitud' solicitud.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="confirmar-btn-cancelar">Cancelar y volver</button>
+        </form>
       </div>
-    </div>
+    </main>
   </body>
 </html>
