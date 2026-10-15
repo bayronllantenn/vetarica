@@ -2,71 +2,203 @@
     box-sizing: border-box;
 }
 
+.historial-fondo {
+    position: relative;
+    overflow: hidden;
+    background: #f4f9f5;
+    margin: 0;
+    min-height: 100vh;
+    padding-bottom: 170px;
+}
+
+.historial-content {
+    position: relative;
+    z-index: 1;
+}
+
+.historial-camino {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    width: 210px;
+    transform: rotate(-12deg);
+    pointer-events: none;
+}
+
+.historial-nube {
+    position: absolute;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.historial-nube-izq {
+    left: -40px;
+    width: 460px;
+}
+
+.historial-nube-der {
+    right: -40px;
+    width: 420px;
+}
+
+.historial-animal {
+    position: absolute;
+    bottom: 0;
+    width: 170px;
+    pointer-events: none;
+}
+
+.historial-gato {
+    left: 1.5rem;
+}
+
+.historial-perro {
+    right: 1.5rem;
+}
+
 .page-head {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.page-head-icono {
+    position: relative;
+    flex-shrink: 0;
+    width: 110px;
+    height: 90px;
+    border-radius: 50%;
+    background: #e3efe5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-head-calendario {
+    width: 58px;
+}
+
+.page-head-rayas {
+    position: absolute;
+    top: -14px;
+    right: 6px;
+    width: 26px;
 }
 
 .page-head h1 {
     margin: 0 0 4px;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #000;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #123c33;
 }
 
 .subtitle {
     margin: 0;
-    color: #000;
+    color: #5b6b68;
 }
 
 .filters {
     background: #fff;
-    border: 1px solid #e6e8e7;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(18, 60, 51, 0.06);
-    padding: 1rem;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    padding: 1.1rem 1.25rem;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: 1.25rem;
     margin-bottom: 1.25rem;
+}
+
+.filter {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.filter-icono {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #e3efe5;
+    color: #123c33;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.filter-icono img {
+    width: 20px;
+    height: 20px;
+}
+
+.filter-campo {
+    flex: 1;
+    min-width: 0;
 }
 
 .filter label {
     display: block;
     font-size: .7rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: .03em;
     text-transform: uppercase;
-    color: #000;
+    color: #123c33;
     margin-bottom: .4rem;
 }
 
 .filter select {
     width: 100%;
-    padding: .6rem .7rem;
-    border: 1px solid #e6e8e7;
-    border-radius: 4px;
-    background: #fff;
+    height: 44px;
+    padding: 0 2.5rem 0 1rem;
+    border: 1.5px solid #e3efe5;
+    border-radius: 12px;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23123c33'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 1rem;
+    appearance: none;
     font: inherit;
-    color: #000;
+    font-size: 0.95rem;
+    color: #1f2d2b;
     cursor: pointer;
 }
 
 .filter select:focus {
     outline: none;
-    border-color: #0f8a7e;
+    border-color: #0f766e;
 }
 
 .table-card {
+    position: relative;
     background: #fff;
-    border: 1px solid #e6e8e7;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(18, 60, 51, 0.06);
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
     overflow: hidden;
+}
+
+.table-rayas {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.45rem;
+    width: 16px;
+    z-index: 1;
+}
+
+.citas-table th:first-child,
+.citas-table td:first-child {
+    padding-left: 2rem;
+}
+
+.table-huella {
+    position: absolute;
+    top: 0.85rem;
+    right: 1rem;
+    width: 28px;
+    opacity: 0.4;
+    z-index: 1;
 }
 
 .table-scroll {
@@ -85,17 +217,25 @@
     font-weight: 700;
     letter-spacing: .04em;
     text-transform: uppercase;
-    color: #000;
-    padding: .9rem 1.1rem;
-    border-bottom: 1px solid #e6e8e7;
-    background: #f3faf7;
+    color: #123c33;
+    padding: 1.1rem 1.4rem;
+    border-bottom: 1px solid #e3efe5;
+    background: #f7faf8;
+}
+
+.citas-table th:last-child {
+    padding-right: 3.5rem;
 }
 
 .citas-table td {
-    padding: .9rem 1.1rem;
+    padding: 1.1rem 1.4rem;
     vertical-align: middle;
-    color: #000;
-    font-size: .9rem;
+    color: #1f2d2b;
+    font-size: .92rem;
+}
+
+.citas-table td:last-child {
+    padding-right: 3.5rem;
 }
 
 .cita-group + .cita-group {
@@ -103,11 +243,43 @@
 }
 
 .cita-group:hover {
-    background: #f8fbfa;
+    background: #f8fbf9;
+}
+
+.estado-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: #eef1f0;
+    color: #3d4e4a;
+}
+
+.estado-pill i {
+    font-size: 0.45rem;
+}
+
+.estado-confirmada,
+.estado-finalizado {
+    background: #e3efe5;
+    color: #123c33;
+}
+
+.estado-pendiente {
+    background: #fdf0d5;
+    color: #8a5a00;
+}
+
+.estado-cancelada {
+    background: #fbe4e4;
+    color: #9c2e2e;
 }
 
 .muted {
-    color: #000;
+    color: #5b6b68;
 }
 
 .nowrap {
@@ -118,86 +290,60 @@
     text-align: right !important;
 }
 
-.badge {
-    display: inline-block;
-    padding: .3rem .7rem;
-    border-radius: 4px;
-    font-size: .72rem;
-    font-weight: 600;
-    white-space: nowrap;
-    background: #e2e8e5;
-    color: #3d4e4a;
-}
-
-.badge--finalizado {
-    background: #e7f5ef;
-    color: #145c46;
-}
-
-.badge--confirmada {
-    background: #dcecfb;
-    color: #1d5fa3;
-}
-
-.badge--pendiente {
-    background: #fdf1d9;
-    color: #92650f;
-}
-
-.badge--cancelada {
-    background: #fbe7e7;
-    color: #9c2e2e;
-}
-
 .empty {
     text-align: center;
-    padding: 3.5rem 1.25rem;
-    color: #000;
-}
-
-.empty i {
-    font-size: 2.1rem;
-    color: #1c8266;
+    padding: 3rem 1.25rem;
+    color: #334155;
 }
 
 .empty p {
-    margin: .7rem 0 1.1rem;
+    margin: 0;
 }
 
 .pager {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1.1rem;
     gap: .75rem;
     flex-wrap: wrap;
-    font-size: .8rem;
+    font-size: .82rem;
+    padding: 0.9rem 1.4rem;
+    background: #f7faf8;
+    border-top: 1px solid #e3efe5;
 }
 
 .pager-links {
     display: flex;
+    align-items: center;
     gap: .4rem;
 }
 
 .pager-btn {
-    padding: .4rem .75rem;
-    border: 1px solid #e6e8e7;
-    border-radius: 4px;
-    background: #fff;
-    color: #000;
+    padding: .4rem .9rem;
+    border-radius: 999px;
+    background: #e3efe5;
+    color: #123c33;
+    font-weight: 600;
     text-decoration: none;
 }
 
 .pager-btn:hover {
-    border-color: #0f8a7e;
+    background: #d3e6d7;
+    color: #123c33;
+}
+
+.pager-huella {
+    width: 22px;
+    opacity: 0.35;
+    margin-left: 0.4rem;
 }
 
 .btn-primary {
-    background: #0f8a7e;
+    background: #123c33;
     color: #fff !important;
-    font-weight: 500;
-    padding: .55rem .9rem;
-    border-radius: 4px;
+    font-weight: 600;
+    padding: .55rem 1.1rem;
+    border-radius: 999px;
     border: none;
     cursor: pointer;
     display: inline-block;
@@ -205,7 +351,13 @@
 }
 
 .btn-primary:hover {
-    background: #0b5d52;
+    background: #0f766e;
+}
+
+@media (max-width: 991.98px) {
+    .historial-camino {
+        display: none;
+    }
 }
 
 @media (max-width: 720px) {
@@ -215,5 +367,31 @@
 
     .page-head {
         align-items: flex-start;
+    }
+
+    .page-head-icono {
+        width: 80px;
+        height: 66px;
+    }
+
+    .page-head-calendario {
+        width: 42px;
+    }
+
+    .page-head h1 {
+        font-size: 1.5rem;
+    }
+
+    .historial-fondo {
+        padding-bottom: 110px;
+    }
+
+    .historial-nube-izq,
+    .historial-nube-der {
+        width: 240px;
+    }
+
+    .historial-animal {
+        width: 100px;
     }
 }
