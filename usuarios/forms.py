@@ -28,7 +28,7 @@ def validar_nombre(valor, etiqueta):
     if not valor.isalpha():
         raise ValidationError(f'{etiqueta} ingresado no es valido.')
 
-    return valor
+    return valor.capitalize()
 
 
 class RegisterForm(UserCreationForm):

@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from django.contrib import messages
-from django.db.models import Sum
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -15,7 +14,9 @@ from .models import Persona
 
 
 def es_personal_clinica(usuario):
-    return usuario.rol in ('veterinaria', 'secretaria')
+    if usuario.rol == 'veterinaria' or usuario.rol == 'secretaria':
+        return True
+    return False
 
 
 def es_veterinaria(usuario):
@@ -86,8 +87,6 @@ def sin_acceso_view(request):
 @login_required(login_url='sin_acceso')
 def dashboard_usuario(request):
     ahora = timezone.now()
-    citas = request.user.citas_solicitadas.all()
-    citas = citas.order_by('-fecha_hora')
     mascotas = request.user.mascotas.all()
 
     mascotas_info = []
@@ -110,7 +109,6 @@ def dashboard_usuario(request):
     citas_anio = citas_del_anio.count()
 
     context = {
-        'citas': citas,
         'mascotas': mascotas,
         'mascotas_info': mascotas_info,
         'proxima_cita': proxima_cita,
@@ -133,7 +131,7 @@ def inicio_doctora(request):
     citas_hoy = citas_hoy.exclude(estado__iexact='cancelada')
     citas_hoy = citas_hoy.order_by('fecha_hora')
 
-    # marcamos cual cita ya paso y cual es la siguiente por venir, para destacarla en la lista
+    # marcamos cual cita ya paso y cual es la siguiente por venir para destacarla en la lista
     ahora = timezone.now()
     ya_eligio_la_siguiente = False
     citas_hoy_info = []
@@ -150,14 +148,15 @@ def inicio_doctora(request):
         })
 
     # suma de lo pagado desde el dia 1 de este mes
-    inicio_mes_dt = rango_del_dia(hoy.replace(day=1))[0]
-    pagos_del_mes = SolicitudCita.objects.filter(estado_pago='Pagado', fecha_pago__gte=inicio_mes_dt)
-    suma_pagos_mes = pagos_del_mes.aggregate(total=Sum('monto_pagado'))['total']
-    if suma_pagos_mes is None:
-        ingresos_mes = 0
-    else:
-        ingresos_mes = suma_pagos_mes
+    inicio_mes, fin_mes = rango_del_dia(hoy.replace(day=1))
+    pagos_del_mes = SolicitudCita.objects.filter(estado_pago='Pagado', fecha_pago__gte=inicio_mes)
 
+    ingresos_mes = 0
+    for pago in pagos_del_mes:
+        if pago.monto_pagado:
+            ingresos_mes = ingresos_mes + pago.monto_pagado
+
+    # separa los miles con punto
     ingresos_mes = format(ingresos_mes, ',').replace(',', '.')
 
     tipos_consulta = TipoConsulta.objects.all()
@@ -191,7 +190,8 @@ def agenda_doctora(request):
         dias_semana.append(lunes_semana + timedelta(days=i))
 
     horas = []
-    for hora, _ in HORAS_ATENCION:
+    for opcion in HORAS_ATENCION:
+        hora = opcion[0]
         if hora:
             horas.append(hora)
 
@@ -258,7 +258,6 @@ def agenda_doctora(request):
     }
     return render(request, 'usuarios/doctora/agenda.html', context)
 
-#muestra la lista de usuarios que estan creados
 @never_cache
 @login_required(login_url='sin_acceso')
 def usuarios_list(request):
@@ -272,6 +271,7 @@ def usuarios_list(request):
         por_apellido = usuarios.filter(last_name__icontains=buscar)
         por_correo = usuarios.filter(email__icontains=buscar)
         por_rut = usuarios.filter(rut__icontains=buscar)
+        # el | junta los resultados de las 4 busquedas en una sola lista
         usuarios = por_nombre | por_apellido | por_correo | por_rut
 
     context = {
@@ -282,7 +282,6 @@ def usuarios_list(request):
 
 @never_cache
 @login_required(login_url='sin_acceso')
-#esta funcion permite crear el usuario desde la doctora en usuarios_list.html
 def crear_usuario(request):
     if not es_veterinaria(request.user):
         return redirect('sin_acceso')
@@ -302,7 +301,6 @@ def crear_usuario(request):
         'texto_boton': 'Crear usuario',
     }
     return render(request, 'usuarios/doctora/usuario_form.html', context)
-#aqui se puede editar el usuario desde la doctora 
 @never_cache
 @login_required(login_url='sin_acceso')
 def editar_usuario(request, usuario_id):
@@ -328,7 +326,9 @@ def editar_usuario(request, usuario_id):
         'texto_boton': 'Guardar cambios',
     }
     return render(request, 'usuarios/doctora/usuario_form.html', context)
-# esto nos permite bloquear el usuario 
+
+
+# esto nos permite bloquear el usuario
 @login_required(login_url='sin_acceso')
 def bloquear_usuario(request, usuario_id):
     if not es_veterinaria(request.user):
@@ -437,7 +437,7 @@ def ficha_mascota(request, mascota_id):
     return render(request, 'usuarios/cliente/ficha_mascota.html', context)
 
 
-@login_required
+@login_required(login_url='sin_acceso')
 def configuracion(request):
     if request.method == "POST":
         form = ConfiguracionForm(request.POST, request.FILES, instance=request.user)
