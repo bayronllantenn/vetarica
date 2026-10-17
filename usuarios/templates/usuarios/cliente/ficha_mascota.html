@@ -4,14 +4,7 @@
 {% block title %}{{ mascota.nombre }} - Vet Arica{% endblock %}
 
 {% block css %}
-<link
-  href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
-  rel="stylesheet"
-/>
-<link
-  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back_ios"
-  rel="stylesheet"
-/>
+<linkhref="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"rel="stylesheet"/>
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/ficha_mascota.css' %}" rel="stylesheet" />
@@ -25,61 +18,107 @@
 {% endblock %}
 
 {% block content %}
-<div class="dash-shell">
+<div class="dash-shell ficha-fondo">
+  <span class="ficha-fondo-mancha ficha-fondo-mancha-arriba"></span>
+  <span class="ficha-fondo-mancha ficha-fondo-mancha-abajo"></span>
+
   <main class="dash-content ficha-content">
     <div class="ficha-top-nav">
       <a href="{% url 'dashboard' %}#mis-mascotas" class="btn-back-pill">
-        <span class="material-symbols-outlined">arrow_back_ios</span> Volver a Mis Mascotas
+        <i class="bi bi-chevron-left"></i> Volver
       </a>
     </div>
-
     <div class="ficha-caja-blanca">
-      <section class="ficha-simple-header">
-        {% if mascota.imagen %}
-        <img
-          src="{{ mascota.imagen.url }}"
-          alt="{{ mascota.nombre }}"
-          class="ficha-hero-foto"
-        />
-        {% endif %}
+      <span class="ficha-caja-mancha"></span>
+      <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="ficha-caja-huella" />
+
+      <section class="ficha-header">
+        <div class="ficha-foto-wrap">
+          <img src="{% static 'inicio/img/decoracion/ficha_rayas.png' %}" alt="" class="ficha-foto-rayas" />
+          {% if mascota.imagen %}
+          <img src="{{ mascota.imagen.url }}" alt="{{ mascota.nombre }}" class="ficha-foto" />
+          {% else %}
+          <span class="ficha-foto ficha-foto-vacia">
+            <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" />
+          </span>
+          {% endif %}
+        </div>
         <div>
-          <h1>{{ mascota.nombre }}</h1>
-          <a href="{% url 'editar_mascota' mascota.id %}" class="ficha-editar-link">Editar datos</a>
+          <div class="ficha-nombre-fila">
+            <h1>{{ mascota.nombre }}</h1>
+            <span class="ficha-sexo-badge">
+              {% if mascota.sexo == 'Macho' %}
+              <i class="bi bi-gender-male"></i>
+              {% else %}
+              <i class="bi bi-gender-female"></i>
+              {% endif %}
+            </span>
+          </div>
+          <a href="{% url 'editar_mascota' mascota.id %}" class="ficha-editar-link">
+            <i class="bi bi-pencil"></i> Editar datos
+          </a>
         </div>
       </section>
-
       <section class="ficha-seccion">
-        <h2 class="dash-section-title">Datos Generales</h2>
-        <div class="ficha-datos-grid">
-          <p class="ficha-texto"><strong>Especie:</strong> {{ mascota.especie }}</p>
-          <p class="ficha-texto"><strong>Raza:</strong> {{ mascota.raza|default:"Sin raza registrada" }}</p>
-          <p class="ficha-texto"><strong>Sexo:</strong> {{ mascota.sexo|default:"—" }}</p>
-          <p class="ficha-texto"><strong>Edad:</strong> {{ mascota.edad }}</p>
+        <h2 class="ficha-seccion-titulo">
+          <img src="{% static 'inicio/img/iconos/ficha_icono_huella.png' %}" alt="" class="ficha-titulo-icono" />
+          Datos Generales
+        </h2>
+        <div class="ficha-recuadro ficha-datos-grid">
+          <p class="ficha-dato">
+            <img src="{% static 'inicio/img/iconos/ficha_icono_huella.png' %}" alt="" class="ficha-dato-icono" />
+            <strong>Especie:</strong> {{ mascota.especie }}
+          </p>
+          <p class="ficha-dato">
+            <img src="{% static 'inicio/img/iconos/ficha_icono_hueso.png' %}" alt="" class="ficha-dato-icono" />
+            <strong>Raza:</strong> {{ mascota.raza|default:"Sin raza registrada" }}
+          </p>
+          <p class="ficha-dato">
+            {% if mascota.sexo == 'Macho' %}
+            <img src="{% static 'inicio/img/iconos/ficha_icono_sexo.png' %}" alt="" class="ficha-dato-icono" />
+            {% else %}
+            <span class="ficha-dato-icono ficha-dato-icono-bi"><i class="bi bi-gender-female"></i></span>
+            {% endif %}
+            <strong>Sexo:</strong> {{ mascota.sexo }}
+          </p>
+          <p class="ficha-dato">
+            <img src="{% static 'inicio/img/iconos/ficha_icono_edad.png' %}" alt="" class="ficha-dato-icono" />
+            <strong>Edad:</strong> {{ mascota.edad }}
+          </p>
         </div>
       </section>
-
-      <section class="ficha-seccion ficha-seccion-ultima">
-        <h2 class="dash-section-title">Historial Clínico</h2>
-        {% if historial %}
-        {% for ficha in historial %}
-        <article class="historial-item-simple">
-          <p class="historial-fecha-simple">{{ ficha.fecha_atencion|date:"d M Y" }}</p>
-          <h3>{{ ficha.motivo_consulta }}</h3>
-          <p class="ficha-texto"><strong>Diagnóstico:</strong> {{ ficha.diagnostico }}</p>
-          <p class="ficha-texto"><strong>Tratamiento:</strong> {{ ficha.tratamiento }}</p>
-          {% if ficha.observaciones %}
-          <p class="ficha-texto"><strong>Observaciones:</strong> {{ ficha.observaciones }}</p>
+      <section class="ficha-seccion">
+        <h2 class="ficha-seccion-titulo">
+          <span class="ficha-titulo-icono ficha-dato-icono-bi"><i class="bi bi-file-earmark-text"></i></span>
+          Historial Clínico
+        </h2>
+        <div class="ficha-recuadro">
+          {% if historial %}
+          {% for ficha in historial %}
+          <article class="historial-item-simple">
+            <p class="historial-fecha-simple">{{ ficha.fecha_atencion|date:"d M Y" }}</p>
+            <h3>{{ ficha.motivo_consulta }}</h3>
+            <p class="ficha-texto"><strong>Diagnóstico:</strong> {{ ficha.diagnostico }}</p>
+            <p class="ficha-texto"><strong>Tratamiento:</strong> {{ ficha.tratamiento }}</p>
+            {% if ficha.observaciones %}
+            <p class="ficha-texto"><strong>Observaciones:</strong> {{ ficha.observaciones }}</p>
+            {% endif %}
+            {% if ficha.peso %}
+            <p class="ficha-texto"><strong>Peso registrado:</strong> {{ ficha.peso }} kg</p>
+            {% endif %}
+          </article>
+          {% endfor %}
+          {% else %}
+          <div class="ficha-vacio">
+            <img src="{% static 'inicio/img/iconos/ficha_calendario.png' %}" alt="" class="ficha-vacio-icono" />
+            <p>Todavía no hay atenciones clínicas registradas para {{ mascota.nombre }}.</p>
+          </div>
           {% endif %}
-          {% if ficha.peso %}
-          <p class="ficha-texto"><strong>Peso registrado:</strong> {{ ficha.peso }} kg</p>
-          {% endif %}
-        </article>
-        {% endfor %}
-        {% else %}
-        <p class="ficha-texto ficha-vacio">Todavía no hay atenciones clínicas registradas para {{ mascota.nombre }}.</p>
-        {% endif %}
+        </div>
       </section>
     </div>
+
+    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="ficha-camino" />
   </main>
 </div>
 {% endblock %}
@@ -91,11 +130,9 @@
     duration: 3000,
     position: { x: "center", y: "top" },
   });
-
   {% for message in messages %}
   notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
   {% endfor %}
-
   const sidebarToggle = document.getElementById("sidebarToggle");
   const sidebarEl = document.getElementById("sidebar");
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");

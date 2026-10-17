@@ -13,54 +13,107 @@
 {% include "usuarios/cliente/sidebar.html" %}
 {% endblock %}
 {% block content %}
-<div class="dash-shell">
-  <main class="dash-content">
+<div class="dash-shell config-fondo">
+  <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="config-deco config-camino" />
+  <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="config-deco config-huella config-huella-izq" />
+  <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="config-deco config-huella config-huella-der" />
+  <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="config-deco config-nube config-nube-izq" />
+  <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="config-deco config-nube config-nube-der" />
+
+  <main class="dash-content config-content">
     <div class="config-header">
-      <h1>Configuración</h1>
-      <p>Actualiza tus datos personales y tu foto de perfil.</p>
+      <div class="config-header-icono">
+        <img src="{% static 'inicio/img/iconos/config_engranaje.png' %}" alt="" class="config-header-engranaje" />
+      </div>
+      <div>
+        <h1>Configuración</h1>
+        <p>Actualiza tus datos personales y tu foto de perfil.</p>
+      </div>
     </div>
 
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
 
       <section class="config-card">
-        <h2>Foto de perfil</h2>
-        <p class="sub">Se mostrará en tu portal de cliente.</p>
+        <img src="{% static 'inicio/img/ilustraciones/gato2.png' %}" alt="" class="config-gato" />
+        <div class="config-card-titulo">
+          <img src="{% static 'inicio/img/iconos/config_usuario.png' %}" alt="" class="config-card-icono" />
+          <div>
+            <h2>Foto de perfil</h2>
+            <p class="sub">Se mostrará en tu portal de cliente.</p>
+          </div>
+        </div>
 
         <div class="foto-row">
-          {% if user.foto %}
-            <img class="avatar" src="{{ user.foto.url }}" alt="Foto de perfil">
-          {% else %}
-            <div class="avatar avatar-iniciales">
-              {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-            </div>
-          {% endif %}
+          <div class="avatar-wrap">
+            {% if user.foto %}
+              <img class="avatar" src="{{ user.foto.url }}" alt="Foto de perfil">
+            {% else %}
+              <div class="avatar avatar-iniciales">
+                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+              </div>
+            {% endif %}
+            <label for="{{ form.foto.id_for_label }}" class="avatar-camara">
+              <img src="{% static 'inicio/img/iconos/config_camara.png' %}" alt="Cambiar foto" />
+            </label>
+          </div>
 
           <div class="campo campo-foto {% if form.foto.errors %}con-error{% endif %}">
-            <label for="{{ form.foto.id_for_label }}">Elegir foto de perfil</label>
+            <label for="{{ form.foto.id_for_label }}" class="campo-foto-titulo">
+              <img src="{% static 'inicio/img/iconos/config_subir.png' %}" alt="" />
+              Elegir foto de perfil
+            </label>
             {{ form.foto }}
-            <small>Imagen formato .PNG o .JPG maximo 2MB luego presionar en "Guardar cambios".</small>
+            <small>Imagen formato .jpg o .png máximo 2MB</small>
             {% for error in form.foto.errors %}<span class="error">{{ error }}</span>{% endfor %}
           </div>
         </div>
       </section>
 
       <section class="config-card">
-        <h2>Datos personales</h2>
-        <p class="sub">Estos son los datos que ingresaste al crear tu cuenta.</p>
+        <img src="{% static 'inicio/img/ilustraciones/perro2.png' %}" alt="" class="config-perro" />
+        <div class="config-card-titulo">
+          <img src="{% static 'inicio/img/iconos/config_usuario.png' %}" alt="" class="config-card-icono" />
+          <div>
+            <h2>Datos personales</h2>
+            <p class="sub">Estos son los datos que ingresaste al crear tu cuenta.</p>
+          </div>
+        </div>
 
         <div class="grid-2">
-          <div>{{ form.first_name|as_crispy_field }}</div>
-          <div>{{ form.last_name|as_crispy_field }}</div>
+          <div class="campo-con-icono">
+            <label class="campo-titulo" for="{{ form.first_name.id_for_label }}">
+              <img src="{% static 'inicio/img/iconos/config_usuario.png' %}" alt="" /> Nombre
+            </label>
+            {{ form.first_name|as_crispy_field }}
+          </div>
+          <div class="campo-con-icono">
+            <label class="campo-titulo" for="{{ form.last_name.id_for_label }}">
+              <img src="{% static 'inicio/img/iconos/config_usuario.png' %}" alt="" /> Apellidos
+            </label>
+            {{ form.last_name|as_crispy_field }}
+          </div>
 
-          <div class="mb-3">
-            <label class="form-label">RUT</label>
+          <div class="campo-con-icono mb-3">
+            <label class="campo-titulo">
+              <img src="{% static 'inicio/img/iconos/config_documento.png' %}" alt="" /> RUT
+            </label>
             <input type="text" class="form-control" value="{{ user.rut }}" disabled>
             <div class="form-text">El RUT no se puede modificar.</div>
           </div>
 
-          <div>{{ form.telefono|as_crispy_field }}</div>
-          <div class="campo-full">{{ form.email|as_crispy_field }}</div>
+          <div class="campo-con-icono">
+            <label class="campo-titulo" for="{{ form.telefono.id_for_label }}">
+              <img src="{% static 'inicio/img/iconos/config_telefono.png' %}" alt="" /> Teléfono
+            </label>
+            {{ form.telefono|as_crispy_field }}
+          </div>
+          <div class="campo-con-icono campo-full">
+            <label class="campo-titulo" for="{{ form.email.id_for_label }}">
+              <img src="{% static 'inicio/img/iconos/config_correo.png' %}" alt="" /> Email
+            </label>
+            {{ form.email|as_crispy_field }}
+          </div>
         </div>
 
         <div class="acciones">
@@ -72,7 +125,6 @@
   </main>
 </div>
 {% endblock %}
-
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 <script>

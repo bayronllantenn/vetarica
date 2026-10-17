@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Página no encontrada | VetArica</title>
+  <link rel="icon" href="{% static 'inicio/img/marca/favicon.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'usuarios/css/404.css' %}">
+</head>
+<body>
+
+  <img class="deco deco--izq" src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" aria-hidden="true">
+
+  <img class="deco deco--der" src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" aria-hidden="true">
+
+  <main class="error">
+
+    <a class="marca" href="/" aria-label="VetArica, ir al inicio">
+      <img src="{% static 'inicio/img/marca/logo_corazon_huella.png' %}" alt="">
+      <p class="marca__nombre"><strong>VET</strong><span>ARICA</span></p>
+      <p class="marca__sub">CLÍNICA VETERINARIA</p>
+    </a>
+
+    <h1 class="codigo" aria-label="Error 404">
+      <span class="chispa chispa--1" aria-hidden="true"></span>
+      <span class="chispa chispa--2" aria-hidden="true"></span>
+      <span aria-hidden="true">4</span>
+      <span class="codigo__cero" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="#ffffff">
+          <ellipse cx="32" cy="42" rx="15" ry="13"/>
+          <ellipse cx="13" cy="26" rx="6.5" ry="8" transform="rotate(-20 13 26)"/>
+          <ellipse cx="24" cy="13" rx="6.5" ry="8.5" transform="rotate(-8 24 13)"/>
+          <ellipse cx="40" cy="13" rx="6.5" ry="8.5" transform="rotate(8 40 13)"/>
+          <ellipse cx="51" cy="26" rx="6.5" ry="8" transform="rotate(20 51 26)"/>
+        </svg>
+      </span>
+      <span aria-hidden="true">4</span>
+      <span class="chispa chispa--3" aria-hidden="true"></span>
+      <span class="chispa chispa--4" aria-hidden="true"></span>
+    </h1>
+
+    <h2 class="titulo">Oops... esta página no existe</h2>
+    <p class="mensaje">
+      Parece que tu peludo también se perdió por aquí.<br>
+      La página que buscas no se encuentra.
+    </p>
+
+    <div class="mascotas">
+      <div class="mascotas__mancha" aria-hidden="true"></div>
+      <span class="pregunta pregunta--perro" aria-hidden="true">?</span>
+      <span class="pregunta pregunta--gato" aria-hidden="true">?</span>
+      <img src="{% static 'inicio/img/originales/mascotas_error_404.png' %}"
+           alt="Un perro golden retriever y un gato acostados, mirando con cara de confusión">
+    </div>
+
+    <a class="boton" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 11 12 3l9 8"/>
+        <path d="M5 9.5V21h14V9.5"/>
+        <path d="M10 21v-6h4v6"/>
+      </svg>
+      Volver al inicio
+    </a>
+
+  </main>
+</body>
+</html>
