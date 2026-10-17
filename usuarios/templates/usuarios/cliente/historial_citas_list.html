@@ -97,8 +97,6 @@
   </form>
 
   <section class="table-card">
-    <img src="{% static 'inicio/img/decoracion/ficha_rayas.png' %}" alt="" class="table-rayas" />
-    <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="table-huella" />
     {% if page_obj.object_list %}
     <div class="table-scroll">
       <table class="citas-table">
@@ -122,7 +120,7 @@
             <td>{{ cita.mascota.nombre|default:cita.nombre_mascota }}</td>
             <td>
               <span class="estado-pill estado-{{ cita.estado|lower }}">
-                <i class="bi bi-circle-fill"></i> {{ cita.get_estado_display }}
+                {{ cita.get_estado_display }}
               </span>
             </td>
             <td class="text-right nowrap">

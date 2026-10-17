@@ -179,28 +179,6 @@
     overflow: hidden;
 }
 
-.table-rayas {
-    position: absolute;
-    top: 0.4rem;
-    left: 0.45rem;
-    width: 16px;
-    z-index: 1;
-}
-
-.citas-table th:first-child,
-.citas-table td:first-child {
-    padding-left: 2rem;
-}
-
-.table-huella {
-    position: absolute;
-    top: 0.85rem;
-    right: 1rem;
-    width: 28px;
-    opacity: 0.4;
-    z-index: 1;
-}
-
 .table-scroll {
     overflow-x: auto;
 }
@@ -223,19 +201,11 @@
     background: #f7faf8;
 }
 
-.citas-table th:last-child {
-    padding-right: 3.5rem;
-}
-
 .citas-table td {
     padding: 1.1rem 1.4rem;
     vertical-align: middle;
     color: #1f2d2b;
     font-size: .92rem;
-}
-
-.citas-table td:last-child {
-    padding-right: 3.5rem;
 }
 
 .cita-group + .cita-group {
@@ -256,10 +226,6 @@
     font-weight: 600;
     background: #eef1f0;
     color: #3d4e4a;
-}
-
-.estado-pill i {
-    font-size: 0.45rem;
 }
 
 .estado-confirmada,
