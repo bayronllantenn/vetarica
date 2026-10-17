@@ -9,38 +9,59 @@ Vet Arica{% endblock %} {% block css %}
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %}
 {% block sidebar %} {% include 'usuarios/cliente/sidebar.html' %} {% endblock %}
 {% block content %}
-<div class="dash-shell">
+<div class="dash-shell dashboard-fondo">
   <main class="dash-content">
-    <section class="dash-hero">
-      <h1>¡Hola {{ user.first_name }}!</h1>
-      <p class="dash-subtitle">Resumen de tus mascotas y próximas citas.</p>
+    <section class="dash-hero dash-hero-cliente">
+      <div class="dash-hero-texto">
+        <h1>
+          ¡Hola {{ user.first_name }} {{ user.last_name }}!
+          <img src="{% static 'inicio/img/decoracion/rayas.png' %}" alt="" class="dash-hero-rayas" />
+        </h1>
+        <p class="dash-subtitle">Resumen de tus mascotas y próximas citas.</p>
+      </div>
+      <span class="dash-hero-mancha"></span>
+      <img src="{% static 'inicio/img/ilustraciones/perroYgato.png' %}" alt="" class="dash-hero-ilustracion" />
     </section>
 
     <section class="stat-grid">
-      <div class="stat-card stat-card-gris">
-        <span class="stat-label">Mascotas Registradas</span>
-        <strong class="stat-number">{{ mascotas|length }}</strong>
-      </div>
+      <a href="#mis-mascotas" class="stat-card stat-card-verde">
+        <span class="stat-icono">
+          <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="stat-icono-svg" />
+        </span>
+        <span class="stat-info">
+          <span class="stat-label">Mascotas registradas</span>
+          <strong class="stat-number">{{ mascotas|length }}</strong>
+        </span>
+        <span class="stat-flecha"><i class="bi bi-chevron-right"></i></span>
+      </a>
 
-      <div class="stat-card stat-card-verde">
-        <span class="stat-label">Próxima Cita</span>
-        {% if proxima_cita %}
-        <strong class="stat-number stat-number-sm"
-          >{{ proxima_cita.fecha_hora|date:"j M, H:i" }}</strong
-        >
-        <span class="stat-caption">{{ proxima_cita.nombre_mascota }}</span>
-        {% else %}
-        <strong class="stat-number stat-number-sm stat-number-vacio"
-          >Sin citas próximas</strong
-        >
-        {% endif %}
-      </div>
+      {% if proxima_cita %}
+      <a href="{% url 'historial_citas' %}" class="stat-card stat-card-azul">
+      {% else %}
+      <a href="{% url 'agendar' %}" class="stat-card stat-card-azul">
+      {% endif %}
+        <span class="stat-icono"><i class="bi bi-calendar-event"></i></span>
+        <span class="stat-info">
+          <span class="stat-label">Próxima cita</span>
+          {% if proxima_cita %}
+          <strong class="stat-number stat-number-sm">{{ proxima_cita.fecha_hora|date:"j M, H:i" }}</strong>
+          <span class="stat-caption">{{ proxima_cita.nombre_mascota }}</span>
+          {% else %}
+          <strong class="stat-number stat-number-sm stat-number-vacio">Sin citas próximas</strong>
+          <span class="stat-caption">Agenda una nueva cita</span>
+          {% endif %}
+        </span>
+        <span class="stat-flecha"><i class="bi bi-chevron-right"></i></span>
+      </a>
 
-      <div class="stat-card stat-card-azul">
-        <span class="stat-label">Citas Este Año</span>
-        <strong class="stat-number">{{ citas_anio|default:0 }}</strong>
-        <span class="stat-caption">Atenciones completadas</span>
-      </div>
+      <a href="{% url 'historial_citas' %}" class="stat-card stat-card-verde">
+        <span class="stat-icono"><i class="bi bi-clipboard2-check"></i></span>
+        <span class="stat-info">
+          <span class="stat-label">Citas este año</span>
+          <strong class="stat-number">{{ citas_anio|default:0 }}</strong>
+        </span>
+        <span class="stat-flecha"><i class="bi bi-chevron-right"></i></span>
+      </a>
     </section>
 
     <div class="mascotas-header">
@@ -54,73 +75,129 @@ Vet Arica{% endblock %} {% block css %}
 
     <div class="mascota-grid">
       {% for item in mascotas_info %}
-      <article class="mascota-card">
-        {% if item.mascota.imagen %}
-        <img
-          src="{{ item.mascota.imagen.url }}"
-          alt="{{ item.mascota.nombre }}"
-          class="mascota-card-img-top"
-        />
-        {% else %}
-        <div class="mascota-card-img-top mascota-card-img-vacia"></div>
-        {% endif %}
-
-        <div class="mascota-card-body">
-          <h3 class="mascota-nombre">{{ item.mascota.nombre }}</h3>
-          <p class="mascota-subinfo">
-            {{ item.mascota.sexo }} • {{ item.mascota.edad_valor }} {{ item.mascota.edad_unidad }}
-          </p>
-        </div>
-
-        <ul class="mascota-lista-flush">
-          <li>
-            <span>Última visita</span>
-            {% if item.ultima_ficha %}
-            <span>{{ item.ultima_ficha.fecha_atencion|date:"d M Y" }}</span>
+      <article class="mascota-card {% cycle 'mascota-card-verde' 'mascota-card-durazno' %}">
+        <div class="mascota-card-top">
+          <div class="mascota-card-foto-wrap">
+            {% if item.mascota.imagen %}
+            <img
+              src="{{ item.mascota.imagen.url }}"
+              alt="{{ item.mascota.nombre }}"
+              class="mascota-card-img-top"
+            />
             {% else %}
-            <span>Sin Registro</span>
+            <div class="mascota-card-img-top mascota-card-img-vacia">
+              <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="mascota-card-vacia-icono huella-verde" />
+              <img src="{% static 'inicio/img/iconos/huella_durazno.svg' %}" alt="" class="mascota-card-vacia-icono huella-durazno" />
+            </div>
             {% endif %}
-          </li>
-        </ul>
+          </div>
 
-        <div class="mascota-card-footer">
-          <a href="{% url 'ficha_mascota' item.mascota.id %}" class="mascota-card-btn mascota-card-btn-primary">
-            Ver ficha
-          </a>
-          <a href="{% url 'editar_mascota' item.mascota.id %}" class="mascota-card-btn mascota-card-btn-warning">
-            Editar
-          </a>
-          <form
-            action="{% url 'eliminar_mascota' item.mascota.id %}"
-            method="post"
-            class="mascota-eliminar-form"
-            onsubmit="return confirm('¿Seguro que quieres eliminar a {{ item.mascota.nombre }}? Esta acción no se puede deshacer.');"
-          >
-            {% csrf_token %}
-            <button type="submit" class="mascota-card-btn mascota-card-btn-danger">
-              Eliminar
-            </button>
-          </form>
+          <span class="mascota-card-mancha-esquina"></span>
+          <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="mascota-card-marca-agua huella-verde" />
+          <img src="{% static 'inicio/img/iconos/huella_durazno.svg' %}" alt="" class="mascota-card-marca-agua huella-durazno" />
+
+          <div class="mascota-card-body">
+            <div class="mascota-card-nombre-fila">
+              <h3 class="mascota-card-nombre">{{ item.mascota.nombre }}</h3>
+              <span class="mascota-card-sexo-badge">
+                {% if item.mascota.sexo == 'Macho' %}
+                <i class="bi bi-gender-male"></i>
+                {% else %}
+                <i class="bi bi-gender-female"></i>
+                {% endif %}
+              </span>
+            </div>
+            <p class="mascota-subinfo">
+              <span>Sexo: {{ item.mascota.sexo }}</span>
+              <span>Edad: {{ item.mascota.edad_valor }} {{ item.mascota.edad_unidad }}</span>
+            </p>
+
+            <div class="mascota-card-pills">
+              <span class="mascota-card-pill">
+                Especie: {% if item.mascota.especie == 'Canino' %}Perro{% elif item.mascota.especie == 'Felino' %}Gato{% else %}{{ item.mascota.especie }}{% endif %}
+              </span>
+              {% if item.mascota.raza %}
+              <span class="mascota-card-pill">
+                Raza: {{ item.mascota.raza }}
+              </span>
+              {% endif %}
+              <span class="mascota-card-pill">
+                <i class="bi bi-calendar3"></i>
+                {% if item.ultima_ficha %}
+                {{ item.ultima_ficha.fecha_atencion|date:"d M Y" }}
+                {% else %}
+                Sin visitas aún
+                {% endif %}
+              </span>
+            </div>
+
+            <div class="mascota-card-footer">
+              <a href="{% url 'ficha_mascota' item.mascota.id %}" class="mascota-card-btn-ficha">
+                <span>Ver ficha</span>
+              </a>
+              <a
+                href="{% url 'editar_mascota' item.mascota.id %}"
+                class="mascota-card-btn-circular mascota-card-btn-editar"
+                title="Editar"
+                aria-label="Editar a {{ item.mascota.nombre }}"
+              >
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form
+                action="{% url 'eliminar_mascota' item.mascota.id %}"
+                method="post"
+                class="mascota-eliminar-form"
+                onsubmit="return confirm('¿Seguro que quieres eliminar a {{ item.mascota.nombre }}? Esta acción no se puede deshacer.');"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="mascota-card-btn-circular mascota-card-btn-eliminar"
+                  title="Eliminar"
+                  aria-label="Eliminar a {{ item.mascota.nombre }}"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </article>
       {% endfor %}
 
       <a href="{% url 'agregar_mascota' %}" class="mascota-card-add">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mascota-add-icon">
+        <img src="{% static 'inicio/img/ilustraciones/perroYgato2.png' %}" alt="" class="mascota-add-deco mascota-add-deco-gato" />
+        <img src="{% static 'inicio/img/ilustraciones/perroYgato2.png' %}" alt="" class="mascota-add-deco mascota-add-deco-perro" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mascota-add-icon">
           <path stroke="none" d="M0 0h24v24H0z" fill="none" />
           <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
           <path d="M9 12h6" />
           <path d="M12 9v6" />
         </svg>
         <span class="mascota-add-text">Agregar mascota</span>
+        <span class="mascota-add-subtexto">Registra una nueva mascota en tu cuenta.</span>
       </a>
     </div>
 
-    <h2 class="dash-section-title" id="mis-citas">Recordatorio</h2>
+    <section class="recordatorio-card" id="mis-citas">
+      <span class="recordatorio-mancha recordatorio-mancha-izq"></span>
+      <span class="recordatorio-mancha recordatorio-mancha-der"></span>
+      <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="recordatorio-huella recordatorio-huella-1" />
+      <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="recordatorio-huella recordatorio-huella-2" />
 
-    {% if proxima_cita %}
-    <div class="cita-list">
-      <article class="cita-item">
+      <div class="recordatorio-header">
+        <span class="recordatorio-icono"><i class="bi bi-calendar-event"></i></span>
+        <div class="recordatorio-titulos">
+          <h2>Próximas citas / Recordatorio</h2>
+          <p>Aquí verás un resumen de tus próximas citas agendadas.</p>
+        </div>
+        <a href="{% url 'historial_citas' %}" class="recordatorio-ver-todas">
+          Ver todas mis citas <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+
+      {% if proxima_cita %}
+      <article class="cita-item recordatorio-cita">
         <div class="cita-fecha-texto">
           {{ proxima_cita.fecha_hora|date:"d M, H:i" }}
         </div>
@@ -139,15 +216,15 @@ Vet Arica{% endblock %} {% block css %}
           </span>
         </div>
       </article>
-    </div>
-    {% else %}
-    <div class="cita-empty">
-      <p>Todavía no tienes citas agendadas.</p>
-      <a href="{% url 'agendar' %}" class="btn btn-teal"
-        >Agendar mi primera cita</a
-      >
-    </div>
-    {% endif %}
+      {% else %}
+      <div class="recordatorio-vacio">
+        <p class="recordatorio-vacio-titulo">Todavía no tienes citas agendadas.</p>
+        <a href="{% url 'agendar' %}" class="btn-principal">
+          Agendar una cita
+        </a>
+      </div>
+      {% endif %}
+    </section>
   </main>
 </div>
 {% endblock %} {% block extra_js %}
