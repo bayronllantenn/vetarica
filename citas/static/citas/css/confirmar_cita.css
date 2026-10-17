@@ -1,0 +1,267 @@
+* {
+  box-sizing: border-box;
+}
+
+.confirmar-body {
+  position: relative;
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #f4f9f5;
+  color: #1f2d2b;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.confirmar-mancha {
+  position: fixed;
+  border-radius: 50%;
+  background: #e3efe5;
+  pointer-events: none;
+}
+
+.confirmar-mancha-izq {
+  left: -160px;
+  top: 18%;
+  width: 520px;
+  height: 520px;
+}
+
+.confirmar-mancha-der {
+  right: -160px;
+  top: 30%;
+  width: 480px;
+  height: 480px;
+}
+
+.confirmar-golden,
+.confirmar-gato {
+  position: fixed;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.confirmar-golden {
+  left: 0;
+  width: 330px;
+}
+
+.confirmar-gato {
+  right: 0;
+  bottom: 10%;
+  width: 300px;
+}
+
+.confirmar-contenido {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.confirmar-logo {
+  display: block;
+  width: 90px;
+  margin: 0 auto 1rem;
+}
+
+.confirmar-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 2rem;
+}
+
+.confirmar-card h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #123c33;
+}
+
+.confirmar-sub {
+  margin: 0.3rem 0 1.25rem;
+  color: #5b6b68;
+}
+
+.confirmar-seccion {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+  margin-bottom: 1rem;
+}
+
+.confirmar-seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: #f1f6f2;
+  padding: 0.6rem 1rem;
+}
+
+.confirmar-seccion-titulo h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #123c33;
+}
+
+.confirmar-seccion-icono {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #e3efe5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmar-seccion-icono img {
+  width: 20px;
+}
+
+.confirmar-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.65rem 1.2rem;
+  border-top: 1px solid #eef3ef;
+  font-size: 0.9rem;
+}
+
+.confirmar-fila img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.confirmar-etiqueta {
+  color: #5b6b68;
+}
+
+.confirmar-valor {
+  margin-left: auto;
+  text-align: right;
+  font-weight: 600;
+  color: #1f2d2b;
+  word-break: break-word;
+}
+
+.confirmar-fila-observaciones {
+  flex-wrap: wrap;
+}
+
+.confirmar-fila-observaciones .confirmar-valor {
+  margin-left: 0;
+  width: 100%;
+  text-align: left;
+  font-weight: 400;
+}
+
+.confirmar-total {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #f1f6f2;
+  border-radius: 16px;
+  padding: 1rem 1.4rem;
+  margin: 1.25rem 0;
+}
+
+.confirmar-total-icono {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e3efe5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.confirmar-total-icono img {
+  width: 30px;
+}
+
+.confirmar-total-texto {
+  display: block;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.confirmar-total-monto {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #123c33;
+  line-height: 1.1;
+}
+
+.confirmar-total-rayas {
+  width: 38px;
+  margin-left: auto;
+}
+
+.confirmar-btn-pagar,
+.confirmar-btn-cancelar {
+  display: block;
+  width: 100%;
+  border-radius: 999px;
+  text-align: center;
+  font-family: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.confirmar-btn-pagar {
+  background: #1f6b4a;
+  color: #fff;
+  font-size: 1.05rem;
+  padding: 0.85rem;
+}
+
+.confirmar-btn-pagar:hover {
+  background: #123c33;
+  color: #fff;
+}
+
+.confirmar-btn-cancelar {
+  margin-top: 0.6rem;
+  background: #fff;
+  border: 1.5px solid #1f6b4a;
+  color: #123c33;
+  font-size: 0.92rem;
+  padding: 0.6rem;
+}
+
+.confirmar-btn-cancelar:hover {
+  background: #f1f6f2;
+}
+
+@media (max-width: 1100px) {
+  .confirmar-golden,
+  .confirmar-gato {
+    display: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .confirmar-card {
+    padding: 1.4rem 1.1rem;
+  }
+
+  .confirmar-card h1 {
+    font-size: 1.6rem;
+  }
+
+  .confirmar-total-monto {
+    font-size: 1.8rem;
+  }
+
+  .confirmar-fila {
+    padding: 0.6rem 0.9rem;
+  }
+}

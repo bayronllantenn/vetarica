@@ -1,0 +1,155 @@
+body {
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eef7f2;
+    font-family: Arial, sans-serif;
+    color: #2b3b38;
+    overflow: hidden;
+}
+
+.nube {
+    position: fixed;
+    width: 320px;
+    z-index: 0;
+}
+
+.nube-izquierda {
+    top: 30px;
+    left: 0;
+}
+
+.nube-derecha {
+    bottom: 30px;
+    right: 0;
+}
+
+.mascota {
+    position: fixed;
+    bottom: 40px;
+    z-index: 0;
+}
+
+.mascota-perro {
+    width: 380px;
+    left: 3%;
+}
+
+.mascota-gato {
+    width: 320px;
+    right: 3%;
+}
+
+.tarjeta {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.logo {
+    display: block;
+    width: 130px;
+    margin: 0 auto;
+}
+
+.ilustracion {
+    display: block;
+    width: 60%;
+    margin: 15px auto 0;
+}
+
+.titulo {
+    margin: 15px 0 10px;
+    font-size: 28px;
+    color: #123c33;
+}
+
+.texto {
+    margin: 0 auto 20px;
+    max-width: 300px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #5b6b68;
+}
+
+.puntos {
+    margin-bottom: 25px;
+}
+
+.punto {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin: 0 3px;
+    border-radius: 50%;
+    background-color: #c9e3d6;
+    animation: parpadeo 1.2s infinite;
+}
+
+.punto:nth-child(2) {
+    animation-delay: 0.4s;
+}
+
+.punto:nth-child(3) {
+    animation-delay: 0.8s;
+}
+
+@keyframes parpadeo {
+    0%, 100% {
+        background-color: #c9e3d6;
+    }
+    50% {
+        background-color: #123c33;
+    }
+}
+
+.boton {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background-color: #dcefe5;
+    color: #123c33;
+    font-size: 17px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.boton i {
+    margin-left: 8px;
+}
+
+.boton:hover {
+    background-color: #1c7a5a;
+    color: #fff;
+}
+
+.pago-seguro {
+    margin: 18px 0 0;
+    font-size: 13px;
+    color: #5b6b68;
+}
+
+.pago-seguro i {
+    margin-right: 5px;
+    color: #1c7a5a;
+    font-size: 16px;
+}
+
+@media (max-width: 1000px) {
+    .mascota {
+        display: none;
+    }
+}

@@ -1,0 +1,150 @@
+body {
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eef7f2;
+    font-family: Arial, sans-serif;
+    color: #2b3b38;
+}
+
+.nube {
+    position: fixed;
+    width: 320px;
+    z-index: 0;
+}
+
+.nube-izquierda {
+    top: 30px;
+    left: 0;
+}
+
+.nube-derecha {
+    bottom: 30px;
+    right: 0;
+}
+
+.tarjeta {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.logo {
+    display: block;
+    width: 100px;
+    margin: 0 auto;
+}
+
+.ilustracion {
+    display: block;
+    width: 80%;
+    margin: 10px auto 0;
+}
+
+.titulo {
+    margin: 15px 0 10px;
+    font-size: 30px;
+    color: #c62f2f;
+}
+
+.texto {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: #5b6b68;
+}
+
+.resumen {
+    padding: 10px 15px;
+    background-color: #f3f8f5;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.fila {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 5px 0;
+    border-bottom: 1px solid #e3ece7;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.fila:last-child {
+    border-bottom: none;
+}
+
+.icono {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    border-radius: 50%;
+    background-color: #dcefe5;
+    color: #1c7a5a;
+    font-size: 20px;
+}
+
+.icono i {
+    -webkit-text-stroke: 0.4px;
+}
+
+.etiqueta {
+    color: #5b6b68;
+}
+
+.valor {
+    margin-left: auto;
+    font-weight: bold;
+    text-align: right;
+}
+
+.etiqueta-roja {
+    padding: 5px 12px;
+    border-radius: 20px;
+    background-color: #fde2e2;
+    color: #c62f2f;
+}
+
+.etiqueta-amarilla {
+    padding: 5px 12px;
+    border-radius: 20px;
+    background-color: #fdf0d0;
+    color: #2b3b38;
+}
+
+.boton {
+    display: block;
+    padding: 14px;
+    background-color: #1c7a5a;
+    color: #fff;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.boton:hover {
+    background-color: #123c33;
+}
+
+.enlace {
+    display: inline-block;
+    margin-top: 18px;
+    color: #1c7a5a;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.enlace:hover {
+    text-decoration: underline;
+}
