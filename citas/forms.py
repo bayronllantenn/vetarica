@@ -3,16 +3,7 @@ from datetime import datetime, timedelta
 from django import forms
 from django.utils import timezone
 
-from .models import (
-    ESPECIES_MASCOTA,
-    SEXOS_MASCOTA,
-    UNIDADES_EDAD_MASCOTA,
-    BloqueoHorario,
-    FichaMedica,
-    Mascota,
-    SolicitudCita,
-    TipoConsulta,
-)
+from .models import (ESPECIES_MASCOTA,SEXOS_MASCOTA, UNIDADES_EDAD_MASCOTA,BloqueoHorario,FichaMedica,Mascota,SolicitudCita,TipoConsulta,)
 
 DOMINIOS_CONOCIDOS = {
     'gmail': ['gmail.com'],
@@ -285,20 +276,38 @@ class SolicitudCitaForm(forms.ModelForm):
 class MascotaForm(forms.ModelForm):
     class Meta:
         model = Mascota
-        fields = ['nombre', 'especie', 'raza', 'sexo', 'edad_valor', 'edad_unidad', 'imagen']
+        fields = [
+            'nombre',
+            'especie',
+            'raza',
+            'sexo',
+            'estado_reproductivo',
+            'microchip',
+            'edad_valor',
+            'edad_unidad',
+            'imagen',
+        ]
         widgets = {
             'nombre': forms.TextInput(attrs={'placeholder': 'Nombre de la mascota', 'maxlength': '40'}),
             'raza': forms.TextInput(attrs={'placeholder': 'Raza (opcional)'}),
+            'microchip': forms.TextInput(attrs={'placeholder': 'Número de microchip (opcional)', 'maxlength': '20'}),
             'edad_valor': forms.NumberInput(attrs={'placeholder': 'Edad', 'min': 0, 'max': 480}),
             'imagen': forms.FileInput(attrs={'accept': 'image/*'}),
         }
         labels = {
+            'estado_reproductivo': 'Entero / Castrado',
             'edad_valor': 'Edad',
             'imagen': 'Foto de la mascota (opcional)',
         }
 
     def clean_nombre(self):
         return validar_nombre(self.cleaned_data['nombre'], 'El nombre de la mascota')
+
+    def clean_microchip(self):
+        microchip = self.cleaned_data.get('microchip', '').replace(' ', '')
+        if microchip and not microchip.isdigit():
+            raise forms.ValidationError('El microchip solo puede contener números.')
+        return microchip
 
     def clean_imagen(self):
         imagen = self.cleaned_data.get('imagen')
@@ -322,14 +331,62 @@ class MascotaForm(forms.ModelForm):
 class FichaMedicaForm(forms.ModelForm):
     class Meta:
         model = FichaMedica
-        fields = ['peso', 'motivo_consulta', 'diagnostico', 'tratamiento', 'observaciones']
+        fields = [
+            'peso',
+            'temperatura',
+            'frecuencia_cardiaca',
+            'frecuencia_respiratoria',
+            'deshidratacion',
+            'tiempo_llenado_capilar',
+            'motivo_consulta',
+            'diagnostico',
+            'tratamiento',
+            'vacunas',
+            'alergias',
+            'cirugias_previas',
+            'observaciones',
+            'proxima_atencion',
+        ]
         widgets = {
             'peso': forms.NumberInput(attrs={'placeholder': 'Peso en kg', 'step': '0.01', 'min': 0}),
+            'temperatura': forms.NumberInput(attrs={'placeholder': '°C', 'step': '0.1', 'min': 30, 'max': 45}),
+            'frecuencia_cardiaca': forms.NumberInput(attrs={'placeholder': 'latidos por minuto', 'min': 0}),
+            'frecuencia_respiratoria': forms.NumberInput(attrs={'placeholder': 'respiraciones por minuto', 'min': 0}),
+            'deshidratacion': forms.NumberInput(attrs={'placeholder': '%', 'min': 0, 'max': 100}),
+            'tiempo_llenado_capilar': forms.NumberInput(attrs={'placeholder': 'segundos', 'step': '0.1', 'min': 0}),
+            'proxima_atencion': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'motivo_consulta': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Motivo de la consulta'}),
             'diagnostico': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Diagnóstico'}),
             'tratamiento': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tratamiento indicado'}),
-            'observaciones': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Vacunas, alergias, cirugías previas u otras observaciones (opcional)'}),
+            'vacunas': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Vacunas aplicadas (opcional)'}),
+            'alergias': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Alergias conocidas (opcional)'}),
+            'cirugias_previas': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Cirugías previas (opcional)'}),
+            'observaciones': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Otras observaciones (opcional)'}),
         }
+        labels = {
+            'peso': 'Peso (kg)',
+            'temperatura': 'Temperatura (T°)',
+            'frecuencia_cardiaca': 'Frecuencia cardíaca (FC)',
+            'frecuencia_respiratoria': 'Frecuencia respiratoria (FR)',
+            'deshidratacion': 'Deshidratación (DHT %)',
+            'tiempo_llenado_capilar': 'Tiempo de llenado capilar (TLC)',
+            'motivo_consulta': 'Motivo de la consulta',
+            'diagnostico': 'Diagnóstico',
+            'cirugias_previas': 'Cirugías previas',
+            'proxima_atencion': 'Fecha de próxima atención (opcional)',
+        }
+
+    def clean_peso(self):
+        peso = self.cleaned_data['peso']
+        if peso <= 0:
+            raise forms.ValidationError('El peso debe ser mayor a 0.')
+        return peso
+
+    def clean_proxima_atencion(self):
+        fecha = self.cleaned_data.get('proxima_atencion')
+        if fecha and 'proxima_atencion' in self.changed_data and fecha <= timezone.localdate():
+            raise forms.ValidationError('La próxima atención debe ser una fecha futura.')
+        return fecha
 
 
 class BloqueoHorarioForm(forms.ModelForm):
