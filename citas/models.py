@@ -12,6 +12,11 @@ SEXOS_MASCOTA = [
     ('Hembra', 'Hembra'),
 ]
 
+ESTADOS_REPRODUCTIVOS = [
+    ('Entero', 'Entero'),
+    ('Castrado', 'Castrado'),
+]
+
 UNIDADES_EDAD_MASCOTA = [
     ('años', 'Años'),
     ('meses', 'Meses'),
@@ -98,11 +103,20 @@ class FichaMedica(models.Model):
     raza = models.CharField(max_length=100, blank=True)
     sexo = models.CharField(max_length=20, blank=True)
     edad_mascota = models.PositiveIntegerField(null=True, blank=True)
-    peso = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    peso = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    temperatura = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    frecuencia_cardiaca = models.PositiveIntegerField(null=True, blank=True)
+    frecuencia_respiratoria = models.PositiveIntegerField(null=True, blank=True)
+    deshidratacion = models.PositiveIntegerField(null=True, blank=True)
+    tiempo_llenado_capilar = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     motivo_consulta = models.TextField()
     diagnostico = models.TextField()
     tratamiento = models.TextField()
+    vacunas = models.TextField(blank=True)
+    alergias = models.TextField(blank=True)
+    cirugias_previas = models.TextField(blank=True)
     observaciones = models.TextField(blank=True)
+    proxima_atencion = models.DateField(null=True, blank=True)
     fecha_atencion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -127,6 +141,8 @@ class Mascota(models.Model):
     especie = models.CharField(max_length=20, choices=ESPECIES_MASCOTA)
     raza = models.CharField(max_length=100, blank=True)
     sexo = models.CharField(max_length=20, choices=SEXOS_MASCOTA, blank=False)
+    estado_reproductivo = models.CharField(max_length=10, choices=ESTADOS_REPRODUCTIVOS, blank=True)
+    microchip = models.CharField(max_length=20, blank=True)
     edad_valor = models.PositiveIntegerField()
     edad_unidad = models.CharField(max_length=10, choices=UNIDADES_EDAD_MASCOTA, default='años')
 
