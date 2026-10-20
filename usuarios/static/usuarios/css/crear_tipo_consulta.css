@@ -1,0 +1,79 @@
+body {
+    background-color: #eef7f2;
+    overflow: hidden;
+}
+
+.nube {
+    position: fixed;
+    width: 320px;
+    z-index: 0;
+}
+
+.nube-izquierda {
+    top: 30px;
+    left: 0;
+}
+
+.nube-derecha {
+    bottom: 30px;
+    right: 0;
+}
+
+.mascota {
+    position: fixed;
+    bottom: 40px;
+    z-index: 0;
+}
+
+.mascota-perro {
+    width: 380px;
+    left: 3%;
+}
+
+.mascota-gato {
+    width: 320px;
+    right: 3%;
+}
+
+.form {
+    position: relative;
+    z-index: 1;
+    max-width: 440px;
+}
+
+.logo {
+    display: block;
+    width: 90px;
+    margin: 0 auto 10px;
+}
+
+.form-subtitle {
+    margin-bottom: 19px;
+}
+
+.boton-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    background: #e3efe5;
+    color: #2f5f45;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.boton-volver:hover {
+    background: #d3e6d7;
+    color: #123c33;
+    transform: translateX(-2px);
+}
+
+@media (max-width: 1000px) {
+    .mascota {
+        display: none;
+    }
+}

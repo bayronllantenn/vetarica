@@ -39,6 +39,10 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'bloqueos_doctora' %}active{% endif %}">
     <i class="bi bi-calendar-x"></i> Bloqueos
   </a>
+  <a href="{% url 'tipos_servicios' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'tipos_servicios' %}active{% endif %}">
+    <i class="bi bi-clipboard2-pulse"></i> Tipos de servicios
+  </a>
   {% if request.user.rol == 'veterinaria' %}
   <a href="{% url 'ingresos_doctora' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'ingresos_doctora' %}active{% endif %}">
