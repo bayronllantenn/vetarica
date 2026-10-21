@@ -9,13 +9,28 @@ Vet Arica{% endblock %} {% block css %}
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
+<header class="bg-white border-bottom shadow-sm d-flex justify-content-end px-4 py-2">
+  <span class="d-inline-flex align-items-center gap-2 bg-light rounded-3 px-3 py-2 small fw-semibold text-capitalize">
+    <i class="bi bi-calendar-date-fill text-success"></i> {{ hoy|date:"j M, Y" }}
+  </span>
+</header>
 <div class="dash-shell">
   <main class="dash-content">
+    <section class="dash-hero">
+      <h1>Resumen General</h1>
+      <p class="dash-subtitle">Bienvenido de nuevo. Aquí tienes la actividad clínica de hoy.</p>
+    </section>
+
     <section class="stat-grid-eco">
       <div class="stat-card-eco stat-card-eco-gris">
         <div class="stat-card-eco-info">
-          <span class="stat-card-eco-label">Citas de hoy</span>
-          <strong class="stat-card-eco-numero">{{ citas_hoy|length }}</strong>
+          <span class="stat-card-eco-label">Próxima cita</span>
+          {% if proxima_cita %}
+          <strong class="stat-card-eco-numero">{{ proxima_cita.fecha_hora|date:"d/m H:i" }}</strong>
+          <span class="d-block small text-muted mt-1">{{ proxima_cita.nombre_mascota }}, {{ proxima_cita.tipo_consulta.nombre }}</span>
+          {% else %}
+          <span class="d-block text-dark">Sin citas próximas</span>
+          {% endif %}
         </div>
         <span class="stat-card-eco-icono">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -76,22 +91,8 @@ Vet Arica{% endblock %} {% block css %}
 
       <div class="grafico-card">
         <h2 class="dash-section-title">Atenciones por especie</h2>
-        <div class="especie-barras">
-          <div class="especie-fila">
-            <span class="especie-label">Perros</span>
-            <div class="especie-pista"><div class="especie-relleno especie-relleno-verde" style="width: 62%"></div></div>
-            <span class="especie-valor">62%</span>
-          </div>
-          <div class="especie-fila">
-            <span class="especie-label">Gatos</span>
-            <div class="especie-pista"><div class="especie-relleno especie-relleno-gris" style="width: 30%"></div></div>
-            <span class="especie-valor">30%</span>
-          </div>
-          <div class="especie-fila">
-            <span class="especie-label">Otros</span>
-            <div class="especie-pista"><div class="especie-relleno especie-relleno-gris" style="width: 8%"></div></div>
-            <span class="especie-valor">8%</span>
-          </div>
+        <div class="grafico-lienzo">
+          <canvas id="especies-chart"></canvas>
         </div>
       </div>
     </div>
@@ -161,30 +162,40 @@ Vet Arica{% endblock %} {% block css %}
   {% endfor %}
 </script>
 <script>
-  const mesesGrafico = ["Abr", "May", "Jun", "Jul", "Ago", "Sep"];
+  new Chart(document.getElementById("especies-chart"), {
+    type: "doughnut",
+    data: {
+      labels: ["Perros", "Gatos", "Otros"],
+      datasets: [
+        {
+          data: [{{ perros }}, {{ gatos }}, {{ otros }}],
+          backgroundColor: ["#0f8a7e", "#3d4e4a", "#cbd5d1"],
+        },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { color: "#1f2d2b", usePointStyle: true, boxWidth: 8, boxHeight: 8 },
+        },
+      },
+    },
+  });
 
   new Chart(document.getElementById("atenciones-chart"), {
     type: "line",
     data: {
-      labels: mesesGrafico,
+      labels: [{% for mes in meses_grafico %}"{{ mes }}",{% endfor %}],
       datasets: [
         {
-          label: "Consultas generales",
-          data: [58, 64, 61, 70, 73, 79],
+          label: "Atenciones",
+          data: [{% for cantidad in atenciones_por_mes %}{{ cantidad }},{% endfor %}],
           borderColor: "#0f8a7e",
           backgroundColor: "#0f8a7e",
           borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5,
-          tension: 0.3,
-        },
-        {
-          label: "Vacunas y controles",
-          data: [31, 28, 35, 40, 38, 44],
-          borderColor: "#3d4e4a",
-          backgroundColor: "#3d4e4a",
-          borderWidth: 2,
-          pointRadius: 0,
+          pointRadius: 3,
           pointHoverRadius: 5,
           tension: 0.3,
         },
@@ -196,7 +207,7 @@ Vet Arica{% endblock %} {% block css %}
         y: {
           beginAtZero: true,
           grid: { color: "#e6e8e7" },
-          ticks: { color: "#5b6b68" },
+          ticks: { color: "#5b6b68", precision: 0 },
         },
         x: {
           grid: { display: false },

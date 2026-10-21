@@ -167,11 +167,38 @@ def inicio_doctora(request):
 
     tipos_consulta = TipoConsulta.objects.all()
 
+    proxima_cita = SolicitudCita.objects.filter(fecha_hora__gte=ahora, estado_pago='Pagado').exclude(estado='Cancelada').order_by('fecha_hora').first()
+
+    citas_pagadas = SolicitudCita.objects.filter(estado_pago='Pagado').exclude(estado='Cancelada')
+
+    perros = citas_pagadas.filter(especie_mascota='Canino').count()
+    gatos = citas_pagadas.filter(especie_mascota='Felino').count()
+    otros = citas_pagadas.count() - perros - gatos
+
+    meses_grafico = []
+    atenciones_por_mes = []
+    for mes in range(1, 13):
+        cantidad = 0
+        for cita in citas_pagadas:
+            fecha = timezone.localtime(cita.fecha_hora)
+            if fecha.month == mes and fecha.year == hoy.year:
+                cantidad = cantidad + 1
+
+        meses_grafico.append(MESES_ABREVIADOS[mes - 1].capitalize())
+        atenciones_por_mes.append(cantidad)
+
     context = {
         'citas_hoy': citas_hoy,
         'citas_hoy_info': citas_hoy_info,
         'ingresos_mes': ingresos_mes,
         'tipos_consulta': tipos_consulta,
+        'hoy': hoy,
+        'proxima_cita': proxima_cita,
+        'perros': perros,
+        'gatos': gatos,
+        'otros': otros,
+        'meses_grafico': meses_grafico,
+        'atenciones_por_mes': atenciones_por_mes,
     }
     return render(request, 'usuarios/doctora/inicio.html', context)
 
