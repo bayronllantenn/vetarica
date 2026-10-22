@@ -1,5 +1,4 @@
 from datetime import date, datetime, timedelta
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
@@ -9,12 +8,10 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-
 from usuarios.views import es_personal_clinica
 from .forms import FichaMedicaForm, MascotaForm, SolicitudCitaForm, obtener_horas_disponibles, rango_del_dia
 from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .utils import get_webpay_transaction
-
 
 def puede_ver_solicitud(request, solicitud):
     if solicitud.cliente_id:
@@ -342,6 +339,10 @@ def ficha_medica_detalle(request, cita_id):
             ficha_nueva.sexo = solicitud.sexo_mascota
             ficha_nueva.edad_mascota = solicitud.edad_valor_mascota
             ficha_nueva.save()
+
+            solicitud.estado = 'Finalizado'
+            solicitud.save()
+
             messages.success(request, 'Ficha clínica guardada correctamente.')
             return redirect('agenda_doctora')
         messages.error(request, 'Revisa los campos marcados en rojo.')
@@ -354,3 +355,42 @@ def ficha_medica_detalle(request, cita_id):
         'form': form,
     }
     return render(request, 'citas/ficha_medica_form.html', context)
+
+
+def citas_sin_ficha(mascota):
+    citas = SolicitudCita.objects.filter(mascota=mascota, estado_pago='Pagado', ficha_medica__isnull=True)
+    citas = citas.exclude(estado='Cancelada')
+    return citas.order_by('-fecha_hora')
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def pacientes(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    buscar = request.GET.get('buscar', '').strip()
+    mascotas = Mascota.objects.order_by('dueno__first_name', 'nombre')
+
+    if buscar:
+        por_mascota = mascotas.filter(nombre__icontains=buscar)
+        por_nombre = mascotas.filter(dueno__first_name__icontains=buscar)
+        por_apellido = mascotas.filter(dueno__last_name__icontains=buscar)
+        por_rut = mascotas.filter(dueno__rut__icontains=buscar)
+        mascotas = por_mascota | por_nombre | por_apellido | por_rut
+
+    lista_pacientes = []
+    for mascota in mascotas:
+        fichas = FichaMedica.objects.filter(solicitud__mascota=mascota).order_by('-fecha_atencion')
+        lista_pacientes.append({
+            'mascota': mascota,
+            'cantidad_fichas': fichas.count(),
+            'ultima_ficha': fichas.first(),
+            'cita_sin_ficha': citas_sin_ficha(mascota).first(),
+        })
+
+    context = {
+        'lista_pacientes': lista_pacientes,
+        'buscar': buscar,
+    }
+    return render(request, 'citas/pacientes.html', context)

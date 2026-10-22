@@ -1,4 +1,15 @@
+.dash-content > .volver {
+  max-width: none;
+  margin: 0 0 16px;
+}
 
+.ficha-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
 .ficha-encabezado h1 {
   font-size: 1.6rem;
   font-weight: 700;
