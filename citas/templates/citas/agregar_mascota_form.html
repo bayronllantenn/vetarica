@@ -109,6 +109,21 @@
             {{ form.raza|as_crispy_field }}
           </div>
 
+          <div class="row g-3">
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.estado_reproductivo.id_for_label }}">
+                <i class="bi bi-heart-pulse"></i> Entero / Castrado
+              </label>
+              {{ form.estado_reproductivo|as_crispy_field }}
+            </div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.microchip.id_for_label }}">
+                <i class="bi bi-cpu"></i> Microchip
+              </label>
+              {{ form.microchip|as_crispy_field }}
+            </div>
+          </div>
+
           <div class="d-none">
             {{ form.imagen|as_crispy_field }}
           </div>

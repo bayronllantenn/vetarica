@@ -16,4 +16,5 @@ urlpatterns = [
 
     path('ingresos/', views.ingresos_doctora, name='ingresos_doctora'),
     path('ficha/<int:cita_id>/', views.ficha_medica_detalle, name='ficha_medica_detalle'),
+    path('pacientes/', views.pacientes, name='pacientes'),
 ]

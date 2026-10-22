@@ -1,0 +1,46 @@
+.dash-content > .volver {
+  max-width: none;
+  margin: 0 0 16px;
+}
+
+.ficha-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.ficha-encabezado h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.ficha-encabezado p {
+  margin: 0;
+  color: #71717a;
+}
+.ficha-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+}
+.ficha-seccion {
+  padding: 20px 24px;
+}
+.ficha-seccion h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 16px;
+}
+.asteriskField {
+  display: none;
+}
+.ficha-seccion form h2 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+@media (max-width: 767.98px) {
+  .ficha-encabezado {
+    flex-direction: column;
+  }
+}

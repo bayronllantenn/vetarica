@@ -122,6 +122,9 @@
   margin: 0 auto;
   padding: 24px;
 }
+.tarjeta-formulario .asteriskField {
+  display: none;
+}
 
 .formulario-botones {
   display: flex;

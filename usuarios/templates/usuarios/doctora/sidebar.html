@@ -39,6 +39,10 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'bloqueos_doctora' %}active{% endif %}">
     <i class="bi bi-calendar-x"></i> Bloqueos
   </a>
+  <a href="{% url 'pacientes' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'pacientes' %}active{% endif %}">
+    <i class="bi bi-clipboard2-pulse"></i> Pacientes
+  </a>
   {% if request.user.rol == 'veterinaria' %}
   <a href="{% url 'ingresos_doctora' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'ingresos_doctora' %}active{% endif %}">
@@ -53,7 +57,7 @@
 </nav>
   <div class="sidebar-footer">
     <a href="{% url 'logout' %}" class="sidebar-link">
-      <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+      <i class="bi bi-box-arrow-right"></i> Cerrar sesiÃ³n
     </a>
   </div>
 </aside>
