@@ -2,26 +2,92 @@
 Vet Arica{% endblock %} {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/ficha_medica.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
 <div class="dash-shell">
   <main class="dash-content">
-    <section class="dash-hero">
-      <h1>Ficha clínica</h1>
-      <p class="dash-subtitle"><strong>Paciente:</strong> {{ solicitud.nombre_mascota }}</p>
-      <p class="dash-subtitle"><strong>Dueño:</strong> {{ solicitud.nombre }} {{ solicitud.apellido }}</p>
-    </section>
+    <a href="{% url 'agenda_doctora' %}" class="volver">
+      <i class="bi bi-chevron-left"></i> Volver
+    </a>
 
-    <div class="card">
-      <div class="card-body">
-        <form method="post" novalidate>
-          {% csrf_token %}
-          {{ form|crispy }}
-          <button type="submit" class="btn btn-teal">Guardar ficha</button>
-        </form>
+    <div class="ficha-encabezado">
+      <div>
+        <h1>Ficha clínica</h1>
+        <p class="ficha-resumen">
+          <span><strong>Paciente:</strong> {{ solicitud.nombre_mascota }}</span>
+          <span><strong>Consulta:</strong> {{ solicitud.tipo_consulta.nombre }}</span>
+          <span><strong>Fecha:</strong> {{ solicitud.fecha_hora|date:"d/m/Y H:i" }}</span>
+        </p>
+        <p class="ficha-resumen">
+          <span><strong>Dueño:</strong> {{ solicitud.nombre }} {{ solicitud.apellido }}</span>
+          <span><strong>Teléfono:</strong> {{ solicitud.telefono }}</span>
+        </p>
+        {% if solicitud.mascota %}
+        <p class="ficha-resumen">
+          <span><strong>N° de historia:</strong> {{ solicitud.mascota.id|stringformat:"06d" }}</span>
+          <span><strong>Especie:</strong> {{ solicitud.mascota.especie }}</span>
+          <span><strong>Sexo:</strong> {{ solicitud.mascota.sexo }}</span>
+          <span><strong>Edad:</strong> {{ solicitud.mascota.edad }}</span>
+          {% if solicitud.mascota.estado_reproductivo %}
+          <span><strong>Entero / Castrado:</strong> {{ solicitud.mascota.estado_reproductivo }}</span>
+          {% endif %}
+          {% if solicitud.mascota.microchip %}
+          <span><strong>Microchip:</strong> {{ solicitud.mascota.microchip }}</span>
+          {% endif %}
+        </p>
+        {% endif %}
       </div>
+    </div>
+
+    <div class="tarjeta ficha-seccion">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <h2>Atención</h2>
+        <p><strong>Atendido por:</strong> María Isabel Mundaca Burlando</p>
+        <div class="row g-3">
+          <div class="col-md-6">{{ form.peso|as_crispy_field }}</div>
+        </div>
+
+        <h2 class="mt-3">Constantes fisiológicas <span class="texto-suave fw-normal">(opcional)</span></h2>
+        <div class="row g-3">
+          <div class="col-md-4">{{ form.temperatura|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.frecuencia_cardiaca|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.frecuencia_respiratoria|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.deshidratacion|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.tiempo_llenado_capilar|as_crispy_field }}</div>
+        </div>
+
+        <h2 class="mt-3">Consulta</h2>
+        {{ form.motivo_consulta|as_crispy_field }}
+        {{ form.diagnostico|as_crispy_field }}
+        {{ form.tratamiento|as_crispy_field }}
+
+        <h2 class="mt-3">Antecedentes</h2>
+        <div class="row g-3">
+          <div class="col-md-4">{{ form.vacunas|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.alergias|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.cirugias_previas|as_crispy_field }}</div>
+        </div>
+
+        <h2 class="mt-3">Cierre</h2>
+        {{ form.observaciones|as_crispy_field }}
+        <div class="row g-3">
+          <div class="col-md-6">{{ form.proxima_atencion|as_crispy_field }}</div>
+        </div>
+
+        <div class="formulario-botones">
+          <a href="{% url 'agenda_doctora' %}" class="btn btn-vet-borde">Cancelar</a>
+          <button type="submit" class="btn btn-vet">Guardar ficha</button>
+        </div>
+      </form>
     </div>
   </main>
 </div>

@@ -205,6 +205,23 @@
   background: #fdecb5;
 }
 
+.agenda-semana-celda-enlace {
+  color: inherit;
+  text-decoration: none;
+}
+
+.agenda-semana-celda-enlace:hover {
+  color: inherit;
+  filter: brightness(0.96);
+}
+
+.agenda-ficha-estado {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
 .agenda-semana-celda-ocupada.agenda-cita-confirmada {
   background: #d4f5e2;
   border-left-color: #146c43;

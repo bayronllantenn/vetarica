@@ -57,7 +57,17 @@ Vet Arica{% endblock %} {% block css %}
       <div class="agenda-semana-fila">
         <div class="agenda-semana-hora">{{ fila.hora }}</div>
         {% for celda in fila.celdas %}
-        {% if celda.cita %}
+        {% if celda.cita and user.rol != 'tecnico' %}
+        <a href="{% url 'ficha_medica_detalle' celda.cita.id %}" class="agenda-semana-celda agenda-semana-celda-ocupada agenda-semana-celda-enlace agenda-cita-{{ celda.cita.estado|lower }}" title="Abrir ficha clínica">
+          <strong>{{ fila.hora }} {{ celda.cita.nombre_mascota }}</strong>
+          <span>{{ celda.cita.tipo_consulta.nombre }}, {{ celda.cita.nombre }} {{ celda.cita.apellido }}</span>
+          {% if celda.cita.ficha_medica %}
+          <span class="agenda-ficha-estado"><i class="bi bi-check2"></i> Con ficha</span>
+          {% else %}
+          <span class="agenda-ficha-estado"><i class="bi bi-plus-lg"></i> Agregar ficha</span>
+          {% endif %}
+        </a>
+        {% elif celda.cita %}
         <div class="agenda-semana-celda agenda-semana-celda-ocupada agenda-cita-{{ celda.cita.estado|lower }}">
           <strong>{{ fila.hora }} {{ celda.cita.nombre_mascota }}</strong>
           <span>{{ celda.cita.tipo_consulta.nombre }}, {{ celda.cita.nombre }} {{ celda.cita.apellido }}</span>
