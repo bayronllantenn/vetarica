@@ -27,6 +27,30 @@
       </div>
     </section>
 
+    <section id="nosotros" class="py-5">
+      <div class="container py-4">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-5">
+            <div class="nosotros-foto-wrap">
+              <span class="nosotros-circulo"></span>
+              <img src="{% static 'inicio/img/marca/doctora_sin_fondo.png' %}" alt="Dra. María Isabel Mundaca Burlando" class="nosotros-foto" />
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <span class="nosotros-etiqueta">Nosotros</span>
+            <h2 class="section-title mb-3">Conoce a nuestra doctora</h2>
+            <h5 class="mb-1">Dra. María Isabel Mundaca Burlando</h5>
+            <p class="text-secondary mb-0">Médica Veterinaria</p>
+
+            <blockquote class="nosotros-cita">
+              Llevo 20 años dedicada a la atención de mascotas en forma integral demostrando diariamente su calidad,
+              realizando permanentemente cursos de especialización y diplomada en oftalmología veterinaria.
+            </blockquote>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="servicios" class="py-5">
       <div class="container py-4">
         <h2 class="section-title text-center mb-5">Nuestros Servicios</h2>
@@ -38,7 +62,7 @@
           bienestar de tu mascota.
         </p>
         <div class="row g-4">
-          <div class="col-md-6 col-lg-4">
+          <div class="col-lg-6">
             <div class="service-card h-100">
               <img
                 src="{% static 'inicio/img/inicio/servicios/consulta-general.jpg' %}"
@@ -53,7 +77,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 col-lg-4">
+          <div class="col-lg-6">
             <div class="service-card h-100">
               <img
                 src="{% static 'inicio/img/inicio/servicios/oftalmologia.jpg' %}"
@@ -68,7 +92,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 col-lg-4">
+          <div class="col-lg-6">
             <div class="service-card h-100">
               <img
                 src="{% static 'inicio/img/inicio/servicios/dermatologia.jpg' %}"
@@ -83,7 +107,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 col-lg-4">
+          <div class="col-lg-6">
             <div class="service-card h-100">
               <img
                 src="{% static 'inicio/img/inicio/servicios/odontologia.jpg' %}"
@@ -98,7 +122,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 col-lg-4">
+          <div class="col-lg-6">
             <div class="service-card h-100">
               <img
                 src="{% static 'inicio/img/inicio/servicios/cirugia.jpg' %}"
@@ -113,7 +137,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-6 col-lg-4">
+          <div class="col-lg-6">
             <div class="service-card h-100">
               <img
                 src="{% static 'inicio/img/inicio/servicios/ecografia.jpg' %}"
@@ -158,8 +182,8 @@
               </div>
               <div>
                 <div class="fw-semibold">Horario de Atención</div>
-                <div class="text-secondary">Lunes a Viernes:</div>
-                <div class="text-secondary">Sábado:</div>
+                <div class="text-secondary">Lunes a Viernes: 11:00 - 14:00 hrs y 17:00 - 21:00 hrs</div>
+                <div class="text-secondary">Sábados: domicilios previo agendamiento</div>
               </div>
             </div>
           </div>
@@ -181,14 +205,14 @@
         <div class="text-center mb-5">
           <h2 class="section-title mb-2">Lo que dicen de nosotros</h2>
           <div class="text-warning fs-5">
-            4.8 <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
+            4,4 <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
             ><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
             ><i class="bi bi-star-half"></i>
           </div>
         </div>
         <div class="row g-4">
           <div class="col-md-4">
-            <div class="border rounded-4 p-4 h-100">
+            <div class="opinion-card h-100">
               <div class="text-warning mb-2">
                 <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
                 ><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
@@ -197,14 +221,14 @@
               <p class="text-secondary mb-3">
                 "Excelente lugar."
               </p>
-              <div class="d-flex align-items-center gap-2">
+              <div class="opinion-autor">
                 <div class="avatar-circle">MC</div>
                 <span class="fw-semibold">Manuel Cornejo</span>
               </div>
             </div>
           </div>
           <div class="col-md-4">
-            <div class="border rounded-4 p-4 h-100">
+            <div class="opinion-card h-100">
               <div class="text-warning mb-2">
                 <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
                 ><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
@@ -214,14 +238,14 @@
                 "Muy agradable y explica muy bien la doctora, se da el tiempo
                 de explicar bien. Muy recomendable."
               </p>
-              <div class="d-flex align-items-center gap-2">
+              <div class="opinion-autor">
                 <div class="avatar-circle">SU</div>
                 <span class="fw-semibold">Shirley Urquieta</span>
               </div>
             </div>
           </div>
           <div class="col-md-4">
-            <div class="border rounded-4 p-4 h-100">
+            <div class="opinion-card h-100">
               <div class="text-warning mb-2">
                 <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
                 ><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i
@@ -236,7 +260,7 @@
                 (uno castrado, rescatado a la semana y media, otra
                 esterilizada, rescatada al mes y medio)."
               </p>
-              <div class="d-flex align-items-center gap-2">
+              <div class="opinion-autor">
                 <div class="avatar-circle">VA</div>
                 <span class="fw-semibold">Valentina Andrade</span>
               </div>
@@ -252,8 +276,9 @@
           <div class="col-lg-3 col-md-6">
             <h6 class="footer-heading">Vet Arica</h6>
             <p class="mb-1">Villa El Bosque, Payachatas 1749, Arica</p>
-            <p class="mb-1">contacto@vetarica.cl</p>
-            <p class="mb-4">+56 58 233 4455</p>
+            <p class="mb-1">cvetarica@gmail.com</p>
+            <p class="mb-1">Fonos: 2263303 - 98713092</p>
+            <p class="mb-4">Urgencias: 98713092</p>
             <h6 class="footer-heading">Síguenos</h6>
             <div class="d-flex gap-2">
               <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
@@ -276,6 +301,7 @@
           <div class="col-lg-3 col-md-6">
             <h6 class="footer-heading">Navegación</h6>
             <ul class="footer-links">
+              <li><a href="#nosotros">Nosotros</a></li>
               <li><a href="#ubicacion">Ubicación</a></li>
               <li><a href="#opiniones">Opiniones</a></li>
               <li><a href="{% url 'agendar' %}">Agendar Cita</a></li>
@@ -285,7 +311,7 @@
             class="col-lg-3 col-md-6 d-flex flex-column align-items-end justify-content-between footer-photo-col"
           >
             <img
-              src="{% static 'inicio/img/marca/logo2.png' %}"
+              src="{% static 'inicio/img/marca/favicon.png' %}"
               alt="Vet Arica"
               class="footer-logo align-self-center mb-3"
             />
