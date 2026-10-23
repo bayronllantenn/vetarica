@@ -165,8 +165,6 @@ def inicio_doctora(request):
     # separa los miles con punto
     ingresos_mes = format(ingresos_mes, ',').replace(',', '.')
 
-    tipos_consulta = TipoConsulta.objects.all()
-
     proxima_cita = SolicitudCita.objects.filter(fecha_hora__gte=ahora, estado_pago='Pagado').exclude(estado='Cancelada').order_by('fecha_hora').first()
 
     citas_pagadas = SolicitudCita.objects.filter(estado_pago='Pagado').exclude(estado='Cancelada')
@@ -191,7 +189,6 @@ def inicio_doctora(request):
         'citas_hoy': citas_hoy,
         'citas_hoy_info': citas_hoy_info,
         'ingresos_mes': ingresos_mes,
-        'tipos_consulta': tipos_consulta,
         'hoy': hoy,
         'proxima_cita': proxima_cita,
         'perros': perros,
@@ -201,6 +198,16 @@ def inicio_doctora(request):
         'atenciones_por_mes': atenciones_por_mes,
     }
     return render(request, 'usuarios/doctora/inicio.html', context)
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def tipos_servicios(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    tipos_consulta = TipoConsulta.objects.all()
+    return render(request, 'usuarios/doctora/tipos_servicios.html', {'tipos_consulta': tipos_consulta})
 
 
 @never_cache
@@ -504,6 +511,21 @@ def editar_mascota(request, mascota_id):
     return render(request, 'usuarios/cliente/editar_mascota.html', {'form': form, 'mascota': mascota})
 
 @login_required(login_url='sin_acceso')
+def crear_tipo_consulta(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        form = TipoConsultaForm(request.POST)
+        if form.is_valid():
+            tipo = form.save()
+            messages.success(request, f'{tipo.nombre} fue agregado correctamente.')
+            return redirect('tipos_servicios')
+    else:
+        form = TipoConsultaForm()
+    return render(request, 'usuarios/doctora/crear_tipo_consulta.html', {'form': form})
+
+@login_required(login_url='sin_acceso')
 def editar_tipo_consulta(request, tipo_id):
     if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
@@ -514,10 +536,24 @@ def editar_tipo_consulta(request, tipo_id):
         if form.is_valid():
             form.save()
             messages.success(request, f'{tipo.nombre} fue actualizado correctamente.')
-            return redirect('inicio_doctora')
+            return redirect('tipos_servicios')
     else:
         form = TipoConsultaForm(instance=tipo)
     return render(request, 'usuarios/doctora/editar_tipo_consulta.html', {'form': form, 'tipo': tipo})
+
+@login_required(login_url='sin_acceso')
+def eliminar_tipo_consulta(request, tipo_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    tipo = get_object_or_404(TipoConsulta, id=tipo_id)
+    if request.method == 'POST':
+        if tipo.solicitudes.exists():
+            messages.error(request, f'{tipo.nombre} no se puede eliminar porque tiene citas asociadas.')
+        else:
+            tipo.delete()
+            messages.success(request, f'{tipo.nombre} fue eliminado correctamente.')
+    return redirect('tipos_servicios')
 
 def error_404(request, exception=None):
     return render(request, '404.html', status=404)

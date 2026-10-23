@@ -1,0 +1,87 @@
+{% extends 'inicio/base.html' %} {% load static %} {% block title %}Tipos de servicios -
+Vet Arica{% endblock %} {% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/agenda.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %} {% block content %}
+<div class="dash-shell">
+  <main class="dash-content">
+    <div class="grafico-card grafico-card-ancho">
+      <div class="tabla-titulo">
+        <h2 class="dash-section-title">Tipos de servicios</h2>
+        <a href="{% url 'crear_tipo_consulta' %}" class="btn btn-sm btn-vet-borde">
+          <i class="bi bi-plus-lg"></i> Agregar servicio
+        </a>
+      </div>
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Tipo de servicio</th>
+            <th>Valor</th>
+            <th class="acciones-servicio">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tipo in tipos_consulta %}
+          <tr>
+            <td>{{ tipo.nombre }}</td>
+            <td>${{ tipo.precio_base }}</td>
+            <td class="acciones-servicio">
+              <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="btn btn-sm btn-vet-borde">
+                <i class="bi bi-pencil-square"></i> Editar
+              </a>
+
+              <form
+                action="{% url 'eliminar_tipo_consulta' tipo.id %}"
+                method="post"
+                onsubmit="return confirm('¿Seguro que quieres eliminar este servicio?');"
+              >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-eliminar">
+                  <i class="bi bi-trash"></i> Eliminar
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3">No hay servicios registrados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarEl = document.getElementById("sidebar");
+  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+  if (sidebarToggle && sidebarEl && sidebarBackdrop) {
+    sidebarToggle.addEventListener("click", function () {
+      sidebarEl.classList.add("sidebar-open");
+      sidebarBackdrop.classList.add("show");
+    });
+    sidebarBackdrop.addEventListener("click", function () {
+      sidebarEl.classList.remove("sidebar-open");
+      sidebarBackdrop.classList.remove("show");
+    });
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}

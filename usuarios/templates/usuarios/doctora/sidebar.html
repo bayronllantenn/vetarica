@@ -43,6 +43,10 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'pacientes' %}active{% endif %}">
     <i class="bi bi-clipboard2-pulse"></i> Pacientes
   </a>
+  <a href="{% url 'tipos_servicios' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'tipos_servicios' %}active{% endif %}">
+    <i class="bi bi-tags"></i> Tipos de servicios
+  </a>
   {% if request.user.rol == 'veterinaria' %}
   <a href="{% url 'ingresos_doctora' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'ingresos_doctora' %}active{% endif %}">
@@ -57,7 +61,7 @@
 </nav>
   <div class="sidebar-footer">
     <a href="{% url 'logout' %}" class="sidebar-link">
-      <i class="bi bi-box-arrow-right"></i> Cerrar sesiÃ³n
+      <i class="bi bi-box-arrow-right"></i> Cerrar sesión
     </a>
   </div>
 </aside>
