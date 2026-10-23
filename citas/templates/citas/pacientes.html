@@ -15,6 +15,9 @@
         <h2>Pacientes</h2>
         <p>{{ lista_pacientes|length }} mascotas registradas</p>
       </div>
+      <a href="{% url 'agregar_mascota' %}" class="btn btn-vet">
+        <i class="bi bi-plus-lg"></i> Nuevo paciente
+      </a>
     </div>
     <div class="tarjeta">
       <div class="tarjeta-header">
@@ -73,19 +76,4 @@
   </main>
 </div>
 {% endblock %} {% block extra_js %}
-<script>
-  const sidebarToggle = document.getElementById("sidebarToggle");
-  const sidebarEl = document.getElementById("sidebar");
-  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
-  if (sidebarToggle && sidebarEl && sidebarBackdrop) {
-    sidebarToggle.addEventListener("click", function () {
-      sidebarEl.classList.add("sidebar-open");
-      sidebarBackdrop.classList.add("show");
-    });
-    sidebarBackdrop.addEventListener("click", function () {
-      sidebarEl.classList.remove("sidebar-open");
-      sidebarBackdrop.classList.remove("show");
-    });
-  }
-</script>
 {% endblock %}

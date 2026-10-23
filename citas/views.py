@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
+from usuarios.models import Persona
 from usuarios.views import es_personal_clinica
 from .forms import FichaMedicaForm, MascotaForm, SolicitudCitaForm, obtener_horas_disponibles, rango_del_dia
 from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
@@ -38,17 +39,38 @@ def enviar_correo_confirmacion(solicitud):
 
 @login_required(login_url='sin_acceso')
 def agregar_mascota(request):
+    es_personal = es_personal_clinica(request.user)
+
+    clientes = []
+    if es_personal:
+        clientes = Persona.objects.filter(rol='cliente', is_active=True).order_by('first_name', 'last_name')
+
+    dueno = request.user
     if request.method == 'POST':
         form = MascotaForm(request.POST, request.FILES)
-        if form.is_valid():
+
+        if es_personal:
+            dueno = Persona.objects.filter(id=request.POST.get('dueno_id'), rol='cliente').first()
+            if dueno is None:
+                messages.error(request, 'Elige el dueño de la mascota.')
+
+        if form.is_valid() and dueno is not None:
             mascota = form.save(commit=False)
-            mascota.dueno = request.user
+            mascota.dueno = dueno
             mascota.save()
             messages.success(request, 'Mascota agregada correctamente.')
+            if es_personal:
+                return redirect('pacientes')
             return redirect('dashboard')
     else:
         form = MascotaForm()
-    return render(request, 'citas/agregar_mascota_form.html', {'form': form})
+
+    context = {
+        'form': form,
+        'clientes': clientes,
+        'dueno_elegido': dueno,
+    }
+    return render(request, 'citas/agregar_mascota_form.html', context)
 
 
 def agendar_view(request):
