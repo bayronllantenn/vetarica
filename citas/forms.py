@@ -14,14 +14,13 @@ DOMINIOS_CONOCIDOS = {
 
 HORAS_ATENCION = [
     ('', 'Selecciona una hora'),
-    ('09:00', '09:00'), ('09:30', '09:30'),
-    ('10:00', '10:00'), ('10:30', '10:30'),
     ('11:00', '11:00'), ('11:30', '11:30'),
     ('12:00', '12:00'), ('12:30', '12:30'),
     ('13:00', '13:00'), ('13:30', '13:30'),
-    ('16:00', '16:00'), ('16:30', '16:30'),
     ('17:00', '17:00'), ('17:30', '17:30'),
     ('18:00', '18:00'), ('18:30', '18:30'),
+    ('19:00', '19:00'), ('19:30', '19:30'),
+    ('20:00', '20:00'), ('20:30', '20:30'),
 ]
 
 MINUTOS_PARA_PAGAR = 15
@@ -53,8 +52,8 @@ def citas_que_bloquean():
 
 
 def obtener_horas_disponibles(fecha):
-    # los domingos no se atiende, asi que no hay horas para elegir
-    if fecha.weekday() == 6:
+    # los sabados y domingos no se atiende en la clinica, asi que no hay horas para elegir
+    if fecha.weekday() == 5 or fecha.weekday() == 6:
         return [('', 'Selecciona una hora')]
 
     citas = citas_que_bloquean().filter(fecha_hora__range=rango_del_dia(fecha))
@@ -227,6 +226,8 @@ class SolicitudCitaForm(forms.ModelForm):
 
         if fecha < hoy:
             raise forms.ValidationError('No puedes agendar en una fecha pasada.')
+        if fecha.weekday() == 5:
+            raise forms.ValidationError('Los sábados solo atendemos a domicilio.')
         if fecha.weekday() == 6:
             raise forms.ValidationError('No atendemos los domingos.')
         if fecha > hoy + timedelta(days=60):

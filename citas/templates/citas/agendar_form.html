@@ -169,6 +169,12 @@
             </div>
           </div>
 
+          {% if fecha_seleccionada.weekday == 5 %}
+          <div class="bloqueo-aviso">
+            <p>Los sábados solo atendemos a domicilio. Coordínalo llamando al 98713092.</p>
+          </div>
+          {% endif %}
+
           {% if fecha_seleccionada.weekday == 6 %}
           <div class="bloqueo-aviso">
             <p>Los domingos no atendemos, elige otra fecha.</p>
