@@ -33,11 +33,6 @@ body {
     gap: .6rem;
 }
 
-.material-symbols-outlined {
-    font-size: 1.1em;
-    vertical-align: -2px;
-}
-
 .auth-logo {
     display: block;
     height: 60px;

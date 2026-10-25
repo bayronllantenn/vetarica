@@ -106,21 +106,6 @@ Vet Arica{% endblock %} {% block css %}
   </main>
 </div>
 {% endblock %} {% block extra_js %}
-<script>
-  const sidebarToggle = document.getElementById("sidebarToggle");
-  const sidebarEl = document.getElementById("sidebar");
-  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
-  if (sidebarToggle && sidebarEl && sidebarBackdrop) {
-    sidebarToggle.addEventListener("click", function () {
-      sidebarEl.classList.add("sidebar-open");
-      sidebarBackdrop.classList.add("show");
-    });
-    sidebarBackdrop.addEventListener("click", function () {
-      sidebarEl.classList.remove("sidebar-open");
-      sidebarBackdrop.classList.remove("show");
-    });
-  }
-</script>
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 <script>
   const notyf = new Notyf({

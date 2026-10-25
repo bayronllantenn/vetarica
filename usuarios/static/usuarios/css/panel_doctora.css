@@ -93,17 +93,6 @@
   color: white;
 }
 
-.btn-bloquear {
-  background: white;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.btn-bloquear:hover {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
 .acciones-servicio {
   text-align: right;
 }

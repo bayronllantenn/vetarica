@@ -133,18 +133,5 @@
   {% for message in messages %}
   notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
   {% endfor %}
-  const sidebarToggle = document.getElementById("sidebarToggle");
-  const sidebarEl = document.getElementById("sidebar");
-  const sidebarBackdrop = document.getElementById("sidebarBackdrop");
-  if (sidebarToggle && sidebarEl && sidebarBackdrop) {
-    sidebarToggle.addEventListener("click", function () {
-      sidebarEl.classList.add("sidebar-open");
-      sidebarBackdrop.classList.add("show");
-    });
-    sidebarBackdrop.addEventListener("click", function () {
-      sidebarEl.classList.remove("sidebar-open");
-      sidebarBackdrop.classList.remove("show");
-    });
-  }
 </script>
 {% endblock %}

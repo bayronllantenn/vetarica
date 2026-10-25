@@ -36,7 +36,11 @@ def cancelar_citas_vencidas():
 
 
 def rango_del_dia(fecha):
-    return timezone.make_aware(datetime.combine(fecha, datetime.min.time())), timezone.make_aware(datetime.combine(fecha, datetime.max.time()))
+    inicio = datetime.combine(fecha, datetime.min.time())
+    fin = datetime.combine(fecha, datetime.max.time())
+    inicio = timezone.make_aware(inicio)
+    fin = timezone.make_aware(fin)
+    return inicio, fin
 
 
 def citas_que_bloquean():
@@ -64,7 +68,8 @@ def obtener_horas_disponibles(fecha):
     # las horas que la doctora bloqueo ese dia tambien cuentan como ocupadas
     bloqueos = BloqueoHorario.objects.filter(fecha=fecha)
     for bloqueo in bloqueos:
-        for hora, etiqueta in HORAS_ATENCION:
+        for opcion in HORAS_ATENCION:
+            hora = opcion[0]
             if hora:
                 si_esta_en_el_bloqueo = hora >= bloqueo.hora_inicio and hora < bloqueo.hora_fin
                 if si_esta_en_el_bloqueo:
@@ -76,10 +81,11 @@ def obtener_horas_disponibles(fecha):
         hora_actual = '00:00'
 
     horas_disponibles = []
-    for hora, etiqueta in HORAS_ATENCION:
+    for opcion in HORAS_ATENCION:
+        hora = opcion[0]
         si_esta_libre = hora not in horas_ocupadas and hora > hora_actual
         if not hora or si_esta_libre:
-            horas_disponibles.append((hora, etiqueta))
+            horas_disponibles.append(opcion)
     return horas_disponibles
 
 
@@ -209,7 +215,9 @@ class SolicitudCitaForm(forms.ModelForm):
             raise forms.ValidationError('El teléfono debe tener 9 dígitos y empezar con 9.')
 
         resto = telefono[1:]
-        if resto == resto[0] * 8 or resto in ('12345678', '87654321'):
+        todos_iguales = resto == resto[0] * 8
+        es_seguido = resto == '12345678' or resto == '87654321'
+        if todos_iguales or es_seguido:
             raise forms.ValidationError('Ingresa un número de teléfono real.')
 
         return telefono

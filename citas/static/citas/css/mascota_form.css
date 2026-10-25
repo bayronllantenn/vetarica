@@ -207,11 +207,6 @@ body.mascota-form-body {
   transition: all 0.2s ease;
 }
 
-.material-symbols-outlined {
-  font-size: 1.1em;
-  vertical-align: -2px;
-}
-
 .agendar-card-wrapper {
   max-width: 760px;
 }
