@@ -1,5 +1,10 @@
+from datetime import timedelta
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
+
+MAXIMO_REAGENDAMIENTOS = 1
+HORAS_MINIMAS_PARA_REAGENDAR = 24
 
 ESPECIES_MASCOTA = [
     ('Canino', 'Canino'),
@@ -36,14 +41,14 @@ class SolicitudCita(models.Model):
     ESTADOS = [
         ('Pendiente', 'Pendiente'),
         ('Confirmada', 'Confirmada'),
-        ('Cancelada', 'Cancelada'), 
+        ('Cancelada', 'Cancelada'),
         ('Finalizado', 'Finalizado'),
+        ('Ausente', 'No asistió'),
     ]
     ESTADOS_PAGO = [
         ('Pendiente', 'Pendiente'),
         ('Pagado', 'Pagado'),
         ('Rechazado', 'Rechazado'),
-        ('Anulado', 'Anulado'),
     ]
 
     # si el que agenda tiene cuenta y esta logueado, lo guardamos aca
@@ -90,11 +95,22 @@ class SolicitudCita(models.Model):
 
     estado = models.CharField(max_length=20, choices=ESTADOS, default='Pendiente')
 
-    # fecha en la que se creo la solicitud
+    veces_reagendada = models.PositiveIntegerField(default=0)
+
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.nombre} {self.apellido} - {self.nombre_mascota}"
+
+    def puede_reagendarse(self):
+        if self.estado != 'Confirmada' or self.estado_pago != 'Pagado':
+            return False
+        if self.veces_reagendada >= MAXIMO_REAGENDAMIENTOS:
+            return False
+        limite = timezone.now() + timedelta(hours=HORAS_MINIMAS_PARA_REAGENDAR)
+        if self.fecha_hora < limite:
+            return False
+        return True
 
 
 class FichaMedica(models.Model):
