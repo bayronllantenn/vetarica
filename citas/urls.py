@@ -13,8 +13,14 @@ urlpatterns = [
     path('pago/exitosa/<int:id>/', views.reserva_exitosa, name='reserva_exitosa'),
     path('pago/fallida/', views.reserva_fallida, name='reserva_fallida'),
     path('pago/fallida/<int:id>/', views.reserva_fallida, name='reserva_fallida_id'),
-
     path('ingresos/', views.ingresos_doctora, name='ingresos_doctora'),
+
+    # ficha medica
     path('ficha/<int:cita_id>/', views.ficha_medica_detalle, name='ficha_medica_detalle'),
+    path('ficha/mascota/<int:mascota_id>/', views.ficha_sin_cita, name='ficha_sin_cita'),
+    path('ficha/<int:ficha_id>/editar/', views.editar_ficha, name='editar_ficha'),
+    
+    # pacientes
     path('pacientes/', views.pacientes, name='pacientes'),
+    path('pacientes/<int:mascota_id>/fichas/', views.fichas_paciente, name='fichas_paciente'),
 ]

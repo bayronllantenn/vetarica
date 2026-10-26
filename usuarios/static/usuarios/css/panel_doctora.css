@@ -127,6 +127,11 @@
   text-decoration: none;
 }
 
+.volver-ancho {
+  max-width: none;
+  margin: 0 0 16px;
+}
+
 .tarjeta-formulario {
   max-width: 600px;
   margin: 0 auto;

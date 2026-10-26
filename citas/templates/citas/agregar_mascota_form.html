@@ -70,16 +70,30 @@
           {% if user.rol == 'veterinaria' or user.rol == 'secretaria' %}
           <div class="campo mb-3">
             <label class="campo-label" for="dueno_id">
-              <i class="bi bi-person"></i> Dueño
+              <i class="bi bi-person"></i> Dueño (opcional)
             </label>
             <select id="dueno_id" name="dueno_id" class="form-select">
-              <option value="">Selecciona el dueño</option>
+              <option value="">Sin cuenta</option>
               {% for cliente in clientes %}
               <option value="{{ cliente.id }}" {% if cliente.id == dueno_elegido.id %}selected{% endif %}>
                 {{ cliente.first_name }} {{ cliente.last_name }} ({{ cliente.rut }})
               </option>
               {% endfor %}
             </select>
+          </div>
+          <div class="row g-3" id="datosSinCuenta">
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.nombre_dueno.id_for_label }}">
+                <i class="bi bi-person-vcard"></i> Nombre del dueño
+              </label>
+              {{ form.nombre_dueno|as_crispy_field }}
+            </div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.rut_dueno.id_for_label }}">
+                <i class="bi bi-credit-card-2-front"></i> RUT del dueño
+              </label>
+              {{ form.rut_dueno|as_crispy_field }}
+            </div>
           </div>
           {% endif %}
 

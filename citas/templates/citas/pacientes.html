@@ -5,6 +5,7 @@
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
@@ -44,8 +45,13 @@
             <tr>
               <td class="fw-semibold">{{ paciente.mascota.nombre }}</td>
               <td class="texto-suave">{{ paciente.mascota.especie }}</td>
+              {% if paciente.mascota.dueno %}
               <td>{{ paciente.mascota.dueno.first_name }} {{ paciente.mascota.dueno.last_name }}</td>
               <td class="texto-suave">{{ paciente.mascota.dueno.rut }}</td>
+              {% else %}
+              <td>{{ paciente.mascota.nombre_dueno|default:"Sin cuenta" }}</td>
+              <td class="texto-suave">{{ paciente.mascota.rut_dueno|default:"-" }}</td>
+              {% endif %}
               <td class="texto-suave">
                 {% if paciente.ultima_ficha %}
                   {{ paciente.ultima_ficha.fecha_atencion|date:"d/m/Y" }}
@@ -56,8 +62,15 @@
               <td>{{ paciente.cantidad_fichas }}</td>
               <td class="text-end">
                 <div class="acciones">
+                  <a href="{% url 'fichas_paciente' paciente.mascota.id %}" class="btn btn-sm btn-vet-borde">
+                    <i class="bi bi-file-earmark-text"></i> Ver fichas
+                  </a>
                   {% if paciente.cita_sin_ficha %}
                   <a href="{% url 'ficha_medica_detalle' paciente.cita_sin_ficha.id %}" class="btn btn-sm btn-vet">
+                    <i class="bi bi-plus-lg"></i> Agregar ficha
+                  </a>
+                  {% else %}
+                  <a href="{% url 'ficha_sin_cita' paciente.mascota.id %}" class="btn btn-sm btn-vet">
                     <i class="bi bi-plus-lg"></i> Agregar ficha
                   </a>
                   {% endif %}
@@ -76,4 +89,14 @@
   </main>
 </div>
 {% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
 {% endblock %}

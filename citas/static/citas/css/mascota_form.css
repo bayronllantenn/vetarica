@@ -473,3 +473,7 @@ body.mascota-form-body {
     width: 220px;
   }
 }
+
+.campos-con-icono:has(#dueno_id option:not([value=""]):checked) #datosSinCuenta {
+  display: none;
+}

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django import forms
 from django.utils import timezone
 
+from usuarios.forms import validar_rut
 from .models import (ESPECIES_MASCOTA,SEXOS_MASCOTA, UNIDADES_EDAD_MASCOTA,BloqueoHorario,FichaMedica,Mascota,SolicitudCita,TipoConsulta,)
 
 DOMINIOS_CONOCIDOS = {
@@ -295,9 +296,13 @@ class MascotaForm(forms.ModelForm):
             'edad_valor',
             'edad_unidad',
             'imagen',
+            'nombre_dueno',
+            'rut_dueno',
         ]
         widgets = {
             'nombre': forms.TextInput(attrs={'placeholder': 'Nombre de la mascota', 'maxlength': '40'}),
+            'nombre_dueno': forms.TextInput(attrs={'placeholder': 'Nombre y apellido', 'maxlength': '80'}),
+            'rut_dueno': forms.TextInput(attrs={'placeholder': 'RUT (ej: 12345678-9)', 'maxlength': '12'}),
             'raza': forms.TextInput(attrs={'placeholder': 'Raza (opcional)'}),
             'microchip': forms.TextInput(attrs={'placeholder': 'Número de microchip (opcional)', 'maxlength': '20'}),
             'edad_valor': forms.NumberInput(attrs={'placeholder': 'Edad', 'min': 0, 'max': 480}),
@@ -307,11 +312,33 @@ class MascotaForm(forms.ModelForm):
             'estado_reproductivo': 'Entero / Castrado',
             'edad_valor': 'Edad',
             'imagen': 'Foto de la mascota (opcional)',
+            'nombre_dueno': 'Nombre del dueño',
+            'rut_dueno': 'RUT del dueño',
         }
+
+    def __init__(self, data=None, files=None, instance=None, sin_cuenta=False):
+        super().__init__(data, files, instance=instance)
+        if sin_cuenta:
+            self.fields['nombre_dueno'].required = True
+            self.fields['nombre_dueno'].error_messages['required'] = 'Escribe el nombre del dueño.'
+            self.fields['rut_dueno'].required = True
+            self.fields['rut_dueno'].error_messages['required'] = 'Escribe el RUT del dueño.'
 
     def clean_nombre(self):
         return validar_nombre(self.cleaned_data['nombre'], 'El nombre de la mascota')
 
+    def clean_nombre_dueno(self):
+        nombre = self.cleaned_data.get('nombre_dueno', '')
+        if nombre:
+            return validar_nombre(nombre, 'El nombre del dueño', maximo=80)
+        return nombre
+
+    def clean_rut_dueno(self):
+        rut = self.cleaned_data.get('rut_dueno', '')
+        if rut:
+            return validar_rut(rut)
+        return rut
+    
     def clean_microchip(self):
         microchip = self.cleaned_data.get('microchip', '').replace(' ', '')
         if microchip and not microchip.isdigit():

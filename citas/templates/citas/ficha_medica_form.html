@@ -10,13 +10,19 @@ Vet Arica{% endblock %} {% block css %}
 {% endblock %} {% block content %}
 <div class="dash-shell">
   <main class="dash-content">
-    <a href="{% url 'agenda_doctora' %}" class="volver">
+    <a href="{{ volver_url }}" class="volver">
       <i class="bi bi-chevron-left"></i> Volver
     </a>
 
     <div class="ficha-encabezado">
       <div>
-        <h1>Ficha clínica</h1>
+        <h1>{% if ficha %}Editar ficha clínica{% else %}Ficha clínica{% endif %}</h1>
+        {% if ficha %}
+        <p class="ficha-resumen">
+          <span><strong>Atención registrada:</strong> {{ ficha.fecha_atencion|date:"d/m/Y H:i" }}</span>
+        </p>
+        {% endif %}
+        {% if solicitud %}
         <p class="ficha-resumen">
           <span><strong>Paciente:</strong> {{ solicitud.nombre_mascota }}</span>
           <span><strong>Consulta:</strong> {{ solicitud.tipo_consulta.nombre }}</span>
@@ -26,17 +32,34 @@ Vet Arica{% endblock %} {% block css %}
           <span><strong>Dueño:</strong> {{ solicitud.nombre }} {{ solicitud.apellido }}</span>
           <span><strong>Teléfono:</strong> {{ solicitud.telefono }}</span>
         </p>
-        {% if solicitud.mascota %}
+        {% else %}
         <p class="ficha-resumen">
-          <span><strong>N° de historia:</strong> {{ solicitud.mascota.id|stringformat:"06d" }}</span>
-          <span><strong>Especie:</strong> {{ solicitud.mascota.especie }}</span>
-          <span><strong>Sexo:</strong> {{ solicitud.mascota.sexo }}</span>
-          <span><strong>Edad:</strong> {{ solicitud.mascota.edad }}</span>
-          {% if solicitud.mascota.estado_reproductivo %}
-          <span><strong>Entero / Castrado:</strong> {{ solicitud.mascota.estado_reproductivo }}</span>
+          <span><strong>Paciente:</strong> {{ mascota.nombre }}</span>
+          <span><strong>Consulta:</strong> Sin cita</span>
+        </p>
+        <p class="ficha-resumen">
+          {% if mascota.dueno %}
+          <span><strong>Dueño:</strong> {{ mascota.dueno.first_name }} {{ mascota.dueno.last_name }}</span>
+          <span><strong>Teléfono:</strong> {{ mascota.dueno.telefono }}</span>
+          {% else %}
+          <span><strong>Dueño:</strong> {{ mascota.nombre_dueno|default:"Sin cuenta" }}</span>
+          {% if mascota.rut_dueno %}
+          <span><strong>RUT:</strong> {{ mascota.rut_dueno }}</span>
           {% endif %}
-          {% if solicitud.mascota.microchip %}
-          <span><strong>Microchip:</strong> {{ solicitud.mascota.microchip }}</span>
+          {% endif %}
+        </p>
+        {% endif %}
+        {% if mascota %}
+        <p class="ficha-resumen">
+          <span><strong>N° de historia:</strong> {{ mascota.id|stringformat:"06d" }}</span>
+          <span><strong>Especie:</strong> {{ mascota.especie }}</span>
+          <span><strong>Sexo:</strong> {{ mascota.sexo }}</span>
+          <span><strong>Edad:</strong> {{ mascota.edad }}</span>
+          {% if mascota.estado_reproductivo %}
+          <span><strong>Entero / Castrado:</strong> {{ mascota.estado_reproductivo }}</span>
+          {% endif %}
+          {% if mascota.microchip %}
+          <span><strong>Microchip:</strong> {{ mascota.microchip }}</span>
           {% endif %}
         </p>
         {% endif %}
@@ -84,7 +107,7 @@ Vet Arica{% endblock %} {% block css %}
         </div>
 
         <div class="formulario-botones">
-          <a href="{% url 'agenda_doctora' %}" class="btn btn-vet-borde">Cancelar</a>
+          <a href="{{ volver_url }}" class="btn btn-vet-borde">Cancelar</a>
           <button type="submit" class="btn btn-vet">Guardar ficha</button>
         </div>
       </form>

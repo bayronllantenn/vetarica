@@ -1,0 +1,97 @@
+{% extends 'inicio/base.html' %}
+{% load static %}
+{% block title %}Fichas de {{ mascota.nombre }} - Vet Arica{% endblock %}
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %} {% block content %}
+<div class="dash-shell">
+  <main class="dash-content">
+    <a href="{% url 'pacientes' %}" class="volver volver-ancho">
+      <i class="bi bi-chevron-left"></i> Volver
+    </a>
+    <div class="usuarios-encabezado">
+      <div>
+        <h2>Fichas de {{ mascota.nombre }}</h2>
+        <p>
+          {{ mascota.especie }}
+          {% if mascota.dueno %}
+          {{ mascota.dueno.first_name }} {{ mascota.dueno.last_name }}
+          {% else %}
+          {{ mascota.nombre_dueno|default:"Sin cuenta" }}
+          {% endif %}
+          {{ fichas|length }} fichas
+        </p>
+      </div>
+      {% if cita_sin_ficha %}
+      <a href="{% url 'ficha_medica_detalle' cita_sin_ficha.id %}" class="btn btn-vet">
+        <i class="bi bi-plus-lg"></i> Agregar ficha
+      </a>
+      {% else %}
+      <a href="{% url 'ficha_sin_cita' mascota.id %}" class="btn btn-vet">
+        <i class="bi bi-plus-lg"></i> Agregar ficha
+      </a>
+      {% endif %}
+    </div>
+    <div class="tarjeta">
+      <div class="table-responsive">
+        <table class="table align-middle tabla-usuarios">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Consulta</th>
+              <th>Motivo</th>
+              <th>Diagnóstico</th>
+              <th>Peso</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ficha in fichas %}
+            <tr>
+              <td class="fw-semibold">{{ ficha.fecha_atencion|date:"d/m/Y H:i" }}</td>
+              <td class="texto-suave">
+                {% if ficha.solicitud %}
+                  {{ ficha.solicitud.tipo_consulta.nombre }}
+                {% else %}
+                  Sin cita
+                {% endif %}
+              </td>
+              <td>{{ ficha.motivo_consulta }}</td>
+              <td>{{ ficha.diagnostico }}</td>
+              <td class="texto-suave">{% if ficha.peso %}{{ ficha.peso }} kg{% else %}-{% endif %}</td>
+              <td class="text-end">
+                <div class="acciones">
+                  <a href="{% url 'editar_ficha' ficha.id %}" class="btn btn-sm btn-vet">
+                    <i class="bi bi-pencil"></i> Ver / editar
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="sin-resultados">Esta mascota todavía no tiene fichas.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}

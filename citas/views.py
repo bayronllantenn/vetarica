@@ -42,21 +42,23 @@ def agregar_mascota(request):
     es_personal = es_personal_clinica(request.user)
 
     clientes = []
+    dueno = request.user
     if es_personal:
         clientes = Persona.objects.filter(rol='cliente', is_active=True).order_by('first_name', 'last_name')
+        dueno = None
 
-    dueno = request.user
     if request.method == 'POST':
-        form = MascotaForm(request.POST, request.FILES)
-
         if es_personal:
-            dueno = Persona.objects.filter(id=request.POST.get('dueno_id'), rol='cliente').first()
-            if dueno is None:
-                messages.error(request, 'Elige el dueño de la mascota.')
+            dueno = Persona.objects.filter(id=request.POST.get('dueno_id') or None, rol='cliente').first()
 
-        if form.is_valid() and dueno is not None:
+        form = MascotaForm(request.POST, request.FILES, sin_cuenta=dueno is None)
+
+        if form.is_valid():
             mascota = form.save(commit=False)
             mascota.dueno = dueno
+            if dueno is not None:
+                mascota.nombre_dueno = ''
+                mascota.rut_dueno = ''
             mascota.save()
             messages.success(request, 'Mascota agregada correctamente.')
             if es_personal:
@@ -356,6 +358,7 @@ def ficha_medica_detalle(request, cita_id):
         if form.is_valid():
             ficha_nueva = form.save(commit=False)
             ficha_nueva.solicitud = solicitud
+            ficha_nueva.mascota = solicitud.mascota
             ficha_nueva.especie = solicitud.especie_mascota
             ficha_nueva.raza = solicitud.raza_mascota
             ficha_nueva.sexo = solicitud.sexo_mascota
@@ -373,11 +376,70 @@ def ficha_medica_detalle(request, cita_id):
 
     context = {
         'solicitud': solicitud,
+        'mascota': solicitud.mascota,
         'ficha': ficha,
         'form': form,
+        'volver_url': reverse('agenda_doctora'),
     }
     return render(request, 'citas/ficha_medica_form.html', context)
 
+@never_cache
+@login_required(login_url='sin_acceso')
+def ficha_sin_cita(request, mascota_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    mascota = get_object_or_404(Mascota, id=mascota_id)
+    if request.method == 'POST':
+        form = FichaMedicaForm(request.POST)
+        if form.is_valid():
+            ficha_nueva = form.save(commit=False)
+            ficha_nueva.mascota = mascota
+            ficha_nueva.especie = mascota.especie
+            ficha_nueva.raza = mascota.raza
+            ficha_nueva.sexo = mascota.sexo
+            ficha_nueva.edad_mascota = mascota.edad_valor
+            ficha_nueva.save()
+            messages.success(request, 'Ficha clínica guardada correctamente.')
+            return redirect('pacientes')
+        messages.error(request, 'Revisa los campos marcados en rojo.')
+    else:
+        form = FichaMedicaForm()
+    context = {'mascota': mascota, 'form': form,'volver_url': reverse('pacientes'),}
+    return render(request, 'citas/ficha_medica_form.html', context)
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def fichas_paciente(request, mascota_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    mascota = get_object_or_404(Mascota, id=mascota_id)
+    fichas = FichaMedica.objects.filter(mascota=mascota).select_related('solicitud__tipo_consulta')
+    context = {'mascota': mascota,'fichas': fichas.order_by('-fecha_atencion'),'cita_sin_ficha': citas_sin_ficha(mascota).first(),}
+    return render(request, 'citas/fichas_paciente.html', context)
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def editar_ficha(request, ficha_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    
+    ficha = get_object_or_404(FichaMedica, id=ficha_id)
+    if ficha.mascota_id:
+        volver_url = reverse('fichas_paciente', args=[ficha.mascota_id])
+    else:
+        volver_url = reverse('pacientes')
+
+    if request.method == 'POST':
+        form = FichaMedicaForm(request.POST, instance=ficha)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ficha clínica actualizada correctamente.')
+            return redirect(volver_url)
+        messages.error(request, 'Revisa los campos marcados en rojo.')
+    else:
+        form = FichaMedicaForm(instance=ficha)
+    context = {'solicitud': ficha.solicitud,'mascota': ficha.mascota,'ficha': ficha,'form': form,'volver_url': volver_url,}
+    return render(request, 'citas/ficha_medica_form.html', context)
 
 def citas_sin_ficha(mascota):
     citas = SolicitudCita.objects.filter(mascota=mascota, estado_pago='Pagado', ficha_medica__isnull=True)
@@ -399,11 +461,13 @@ def pacientes(request):
         por_nombre = mascotas.filter(dueno__first_name__icontains=buscar)
         por_apellido = mascotas.filter(dueno__last_name__icontains=buscar)
         por_rut = mascotas.filter(dueno__rut__icontains=buscar)
-        mascotas = por_mascota | por_nombre | por_apellido | por_rut
+        por_nombre_sin_cuenta = mascotas.filter(nombre_dueno__icontains=buscar)
+        por_rut_sin_cuenta = mascotas.filter(rut_dueno__icontains=buscar)
+        mascotas = por_mascota | por_nombre | por_apellido | por_rut | por_nombre_sin_cuenta | por_rut_sin_cuenta
 
     lista_pacientes = []
     for mascota in mascotas:
-        fichas = FichaMedica.objects.filter(solicitud__mascota=mascota).order_by('-fecha_atencion')
+        fichas = FichaMedica.objects.filter(mascota=mascota).order_by('-fecha_atencion')
         lista_pacientes.append({
             'mascota': mascota,
             'cantidad_fichas': fichas.count(),
