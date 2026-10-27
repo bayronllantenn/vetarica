@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from usuarios.models import Persona
 from usuarios.views import es_personal_clinica
-from .forms import FichaMedicaForm, MascotaForm, SolicitudCitaForm, obtener_horas_disponibles, rango_del_dia
+from .forms import FichaMedicaForm, MascotaForm, ReagendarCitaForm, SolicitudCitaForm, obtener_horas_disponibles, rango_del_dia
 from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .utils import get_webpay_transaction
 
@@ -351,6 +351,27 @@ def ficha_medica_detalle(request, cita_id):
     except FichaMedica.DoesNotExist:
         ficha = None
 
+    ahora = timezone.now()
+    esta_pagada = solicitud.estado_pago == 'Pagado'
+    dia_de_la_cita = timezone.localtime(solicitud.fecha_hora).date()
+
+    puede_llenar_ficha = False
+    if esta_pagada and (solicitud.estado == 'Confirmada' or solicitud.estado == 'Finalizado'):
+        if dia_de_la_cita <= timezone.localdate():
+            puede_llenar_ficha = True
+
+    puede_reagendar = False
+    if esta_pagada and solicitud.estado == 'Confirmada' and solicitud.fecha_hora > ahora:
+        puede_reagendar = True
+
+    puede_marcar_ausente = False
+    if esta_pagada and solicitud.estado == 'Confirmada' and solicitud.fecha_hora <= ahora and ficha is None:
+        puede_marcar_ausente = True
+
+    if request.method == 'POST' and not puede_llenar_ficha:
+        messages.error(request, 'No se puede registrar la ficha de esta cita.')
+        return redirect('ficha_medica_detalle', cita_id=solicitud.id)
+
     if request.method == 'POST':
         form = FichaMedicaForm(request.POST, instance=ficha)
         if form.is_valid():
@@ -375,13 +396,101 @@ def ficha_medica_detalle(request, cita_id):
         'solicitud': solicitud,
         'ficha': ficha,
         'form': form,
+        'puede_llenar_ficha': puede_llenar_ficha,
+        'puede_reagendar': puede_reagendar,
+        'puede_marcar_ausente': puede_marcar_ausente,
     }
     return render(request, 'citas/ficha_medica_form.html', context)
 
 
+@login_required(login_url='sin_acceso')
+def marcar_no_asistio(request, cita_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    if request.method != 'POST':
+        return redirect('ficha_medica_detalle', cita_id=cita_id)
+
+    solicitud = get_object_or_404(SolicitudCita, id=cita_id)
+    ya_paso = solicitud.fecha_hora <= timezone.now()
+
+    if solicitud.estado == 'Confirmada' and solicitud.estado_pago == 'Pagado' and ya_paso:
+        solicitud.estado = 'Ausente'
+        solicitud.save()
+        messages.success(request, 'La cita quedó marcada como "No asistió".')
+    else:
+        messages.error(request, 'Esta cita no se puede marcar como "No asistió".')
+
+    return redirect('agenda_doctora')
+
+
+def enviar_correo_reagendada(solicitud):
+    if not solicitud.email:
+        return
+
+    fecha = timezone.localtime(solicitud.fecha_hora).strftime('%d/%m/%Y %H:%M')
+    asunto = 'Tu cita fue reagendada - Vet Arica'
+    mensaje = (
+        f'Hola {solicitud.nombre}, tu cita para {solicitud.nombre_mascota} '
+        f'quedó para el {fecha}. Te esperamos en Vet Arica.'
+    )
+    try:
+        send_mail(asunto, mensaje, None, [solicitud.email])
+    except Exception:
+        pass
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def reagendar_cita(request, id):
+    solicitud = get_object_or_404(SolicitudCita, id=id)
+    es_personal = es_personal_clinica(request.user)
+
+    if es_personal:
+        puede = solicitud.estado == 'Confirmada' and solicitud.estado_pago == 'Pagado' and solicitud.fecha_hora > timezone.now()
+    else:
+        puede = solicitud.cliente_id == request.user.id and solicitud.puede_reagendarse()
+
+    if not puede:
+        messages.error(request, 'Esta cita ya no se puede reagendar.')
+        if es_personal:
+            return redirect('agenda_doctora')
+        return redirect('historial_citas')
+
+    fecha_param = request.GET.get('fecha') or request.POST.get('fecha')
+    try:
+        fecha_seleccionada = datetime.strptime(str(fecha_param), '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        fecha_seleccionada = timezone.localtime(solicitud.fecha_hora).date()
+
+    if request.method == 'POST':
+        form = ReagendarCitaForm(request.POST)
+        form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
+        if form.is_valid():
+            solicitud.fecha_hora = form.fecha_hora
+            if not es_personal:
+                solicitud.veces_reagendada = solicitud.veces_reagendada + 1
+            solicitud.save()
+            enviar_correo_reagendada(solicitud)
+            messages.success(request, 'La cita fue reagendada correctamente.')
+            if es_personal:
+                return redirect('agenda_doctora')
+            return redirect('historial_citas')
+    else:
+        form = ReagendarCitaForm(initial={'fecha': fecha_seleccionada})
+        form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
+
+    context = {
+        'form': form,
+        'solicitud': solicitud,
+        'fecha_seleccionada': fecha_seleccionada,
+        'es_personal': es_personal,
+    }
+    return render(request, 'citas/reagendar_cita.html', context)
+
+
 def citas_sin_ficha(mascota):
     citas = SolicitudCita.objects.filter(mascota=mascota, estado_pago='Pagado', ficha_medica__isnull=True)
-    citas = citas.exclude(estado='Cancelada')
+    citas = citas.exclude(estado='Cancelada').exclude(estado='Ausente')
     return citas.order_by('-fecha_hora')
 
 

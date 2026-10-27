@@ -40,9 +40,44 @@ Vet Arica{% endblock %} {% block css %}
           {% endif %}
         </p>
         {% endif %}
+        <p class="ficha-resumen">
+          <span><strong>Estado:</strong> {{ solicitud.get_estado_display }}</span>
+        </p>
       </div>
+      {% if puede_reagendar or puede_marcar_ausente %}
+      <div class="acciones">
+        {% if puede_reagendar %}
+        <a href="{% url 'reagendar_cita' solicitud.id %}" class="btn btn-sm btn-vet-borde">
+          <i class="bi bi-calendar2-week"></i> Reagendar
+        </a>
+        {% endif %}
+        {% if puede_marcar_ausente %}
+        <form method="post" action="{% url 'marcar_no_asistio' solicitud.id %}" class="m-0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Marcar esta cita como No asistió?')">
+            <i class="bi bi-person-x"></i> No asistió
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
 
+    {% if not puede_llenar_ficha %}
+    <div class="tarjeta ficha-seccion">
+      <p class="mb-0 texto-suave">
+        {% if solicitud.estado == 'Cancelada' %}
+        Esta cita fue cancelada, no se puede registrar ficha.
+        {% elif solicitud.estado == 'Ausente' %}
+        El paciente no asistió a esta cita, no se puede registrar ficha.
+        {% elif solicitud.estado_pago != 'Pagado' %}
+        Esta cita no está pagada, no se puede registrar ficha.
+        {% else %}
+        La ficha se podrá registrar el día de la cita.
+        {% endif %}
+      </p>
+    </div>
+    {% else %}
     <div class="tarjeta ficha-seccion">
       <form method="post" novalidate>
         {% csrf_token %}
@@ -89,6 +124,7 @@ Vet Arica{% endblock %} {% block css %}
         </div>
       </form>
     </div>
+    {% endif %}
   </main>
 </div>
 {% endblock %} {% block extra_js %}

@@ -1,0 +1,104 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reagendar Cita - Vet Arica</title>
+    <link rel="icon" href="{% static 'inicio/img/marca/favicon.png' %}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+    <link href="{% static 'citas/css/mascota_form.css' %}" rel="stylesheet" />
+    <link href="{% static 'citas/css/agendar.css' %}" rel="stylesheet" />
+  </head>
+  <body class="mascota-form-body">
+    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="form-deco fondo-camino" />
+    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-1" />
+    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-2" />
+    <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
+    <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
+    <div class="mascota-card-wrapper agendar-card-wrapper">
+      <form class="mascota-form-card" method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="form-top-nav">
+          {% if es_personal %}
+          <a href="{% url 'ficha_medica_detalle' solicitud.id %}" class="btn-back-pill"><i class="bi bi-chevron-left"></i> Volver</a>
+          {% else %}
+          <a href="{% url 'historial_citas' %}" class="btn-back-pill"><i class="bi bi-chevron-left"></i> Volver</a>
+          {% endif %}
+        </div>
+
+        <div class="form-header">
+          <h1>Reagendar cita</h1>
+          <p>
+            {{ solicitud.nombre_mascota }}, {{ solicitud.tipo_consulta.nombre }}.
+            Hora actual: <strong>{{ solicitud.fecha_hora|date:"d/m/Y H:i" }}</strong>
+          </p>
+          {% if not es_personal %}
+          <p>Puedes reagendar tu cita una sola vez, hasta 24 horas antes.</p>
+          {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-error">
+          {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="crispy-fields-wrap campos-con-icono">
+          <div class="row g-3">
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.fecha.id_for_label }}">
+                <i class="bi bi-calendar-event"></i> Nueva fecha
+              </label>
+              {{ form.fecha|as_crispy_field }}
+            </div>
+            <div class="col-md-6 campo">
+              <label class="campo-label" for="{{ form.hora.id_for_label }}">
+                <i class="bi bi-clock"></i> Nueva hora
+              </label>
+              {{ form.hora|as_crispy_field }}
+            </div>
+          </div>
+
+          {% if fecha_seleccionada.weekday == 5 %}
+          <div class="bloqueo-aviso">
+            <p>Los sábados solo atendemos a domicilio. Coordínalo llamando al 98713092.</p>
+          </div>
+          {% endif %}
+
+          {% if fecha_seleccionada.weekday == 6 %}
+          <div class="bloqueo-aviso">
+            <p>Los domingos no atendemos, elige otra fecha.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-submit-mascota">Guardar nueva hora</button>
+        </div>
+      </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script>
+      const notyf = new Notyf({
+        duration: 3000,
+        position: { x: "center", y: "top" },
+      });
+
+      {% for message in messages %}
+      notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+      {% endfor %}
+
+      function recargarFormulario(form) {
+        form.method = "get";
+        form.submit();
+      }
+    </script>
+  </body>
+</html>

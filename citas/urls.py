@@ -16,5 +16,7 @@ urlpatterns = [
 
     path('ingresos/', views.ingresos_doctora, name='ingresos_doctora'),
     path('ficha/<int:cita_id>/', views.ficha_medica_detalle, name='ficha_medica_detalle'),
+    path('ficha/<int:cita_id>/no-asistio/', views.marcar_no_asistio, name='marcar_no_asistio'),
+    path('reagendar/<int:id>/', views.reagendar_cita, name='reagendar_cita'),
     path('pacientes/', views.pacientes, name='pacientes'),
 ]

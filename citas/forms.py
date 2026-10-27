@@ -89,6 +89,35 @@ def obtener_horas_disponibles(fecha):
     return horas_disponibles
 
 
+def validar_fecha_cita(fecha):
+    hoy = timezone.localdate()
+
+    if fecha < hoy:
+        raise forms.ValidationError('No puedes agendar en una fecha pasada.')
+    if fecha.weekday() == 5:
+        raise forms.ValidationError('Los sábados solo atendemos a domicilio.')
+    if fecha.weekday() == 6:
+        raise forms.ValidationError('No atendemos los domingos.')
+    if fecha > hoy + timedelta(days=60):
+        raise forms.ValidationError('Solo puedes agendar hasta 60 días hacia adelante.')
+
+    return fecha
+
+
+def revisar_horario(fecha, hora):
+    hora_elegida = datetime.strptime(hora, '%H:%M').time()
+    fecha_hora = timezone.make_aware(datetime.combine(fecha, hora_elegida))
+
+    if fecha_hora < timezone.now() + timedelta(minutes=MINUTOS_ANTICIPACION_MINIMA):
+        return fecha_hora, 'Elige un horario con al menos 1 hora de anticipación.'
+    if citas_que_bloquean().filter(fecha_hora=fecha_hora).exists():
+        return fecha_hora, 'Ese horario ya está ocupado, elige otro.'
+    if BloqueoHorario.objects.filter(fecha=fecha, hora_inicio__lte=hora, hora_fin__gt=hora).exists():
+        return fecha_hora, 'La doctora no atiende en ese horario, elige otro.'
+
+    return fecha_hora, None
+
+
 def validar_edad(valor, unidad):
     if valor <= 0:
         return 'La edad debe ser mayor a 0.'
@@ -229,19 +258,7 @@ class SolicitudCitaForm(forms.ModelForm):
         return tipo
 
     def clean_fecha(self):
-        fecha = self.cleaned_data['fecha']
-        hoy = timezone.localdate()
-
-        if fecha < hoy:
-            raise forms.ValidationError('No puedes agendar en una fecha pasada.')
-        if fecha.weekday() == 5:
-            raise forms.ValidationError('Los sábados solo atendemos a domicilio.')
-        if fecha.weekday() == 6:
-            raise forms.ValidationError('No atendemos los domingos.')
-        if fecha > hoy + timedelta(days=60):
-            raise forms.ValidationError('Solo puedes agendar hasta 60 días hacia adelante.')
-
-        return fecha
+        return validar_fecha_cita(self.cleaned_data['fecha'])
 
     def clean_observaciones(self):
         observaciones = self.cleaned_data.get('observaciones')
@@ -267,17 +284,41 @@ class SolicitudCitaForm(forms.ModelForm):
                 self.add_error('edad_valor_mascota', error)
 
         if fecha and hora:
-            hora_elegida = datetime.strptime(hora, '%H:%M').time()
-            fecha_hora = timezone.make_aware(datetime.combine(fecha, hora_elegida))
-
-            if fecha_hora < timezone.now() + timedelta(minutes=MINUTOS_ANTICIPACION_MINIMA):
-                self.add_error('hora', 'Elige un horario con al menos 1 hora de anticipación.')
-            elif citas_que_bloquean().filter(fecha_hora=fecha_hora).exists():
-                self.add_error('hora', 'Ese horario ya está ocupado, elige otro.')
-            elif BloqueoHorario.objects.filter(fecha=fecha, hora_inicio__lte=hora, hora_fin__gt=hora).exists():
-                self.add_error('hora', 'La doctora no atiende en ese horario, elige otro.')
+            fecha_hora, error = revisar_horario(fecha, hora)
+            if error:
+                self.add_error('hora', error)
             else:
                 self.instance.fecha_hora = fecha_hora
+
+        return cleaned_data
+
+
+class ReagendarCitaForm(forms.Form):
+    fecha = forms.DateField(
+        label='Nueva fecha',
+        widget=forms.DateInput(attrs={'type': 'date', 'onchange': 'recargarFormulario(this.form)'}, format='%Y-%m-%d'),
+        error_messages={'required': 'Elige una fecha.'},
+    )
+    hora = forms.ChoiceField(
+        label='Nueva hora',
+        choices=HORAS_ATENCION,
+        error_messages={'required': 'Elige una hora.'},
+    )
+
+    def clean_fecha(self):
+        return validar_fecha_cita(self.cleaned_data['fecha'])
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha = cleaned_data.get('fecha')
+        hora = cleaned_data.get('hora')
+
+        if fecha and hora:
+            fecha_hora, error = revisar_horario(fecha, hora)
+            if error:
+                self.add_error('hora', error)
+            else:
+                self.fecha_hora = fecha_hora
 
         return cleaned_data
 
