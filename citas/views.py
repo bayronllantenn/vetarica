@@ -99,7 +99,9 @@ def agendar_view(request):
         and request.user.telefono
     )
 
-    if request.method == 'POST':
+    recargando = request.POST.get('recargar') == '1'
+
+    if request.method == 'POST' and not recargando:
         datos = request.POST.copy()
         if cuenta_completa:
             datos.update({
@@ -132,9 +134,14 @@ def agendar_view(request):
             'nombre_mascota', 'especie_mascota', 'raza_mascota', 'sexo_mascota',
             'edad_valor_mascota', 'edad_unidad_mascota', 'tipo_consulta', 'observaciones',
         ]
+        if recargando:
+            datos_previos = request.POST
+        else:
+            datos_previos = request.GET
+
         initial = {}
         for campo in campos_del_form:
-            valor = request.GET.get(campo)
+            valor = datos_previos.get(campo)
             if valor:
                 initial[campo] = valor
         initial['fecha'] = fecha_seleccionada
