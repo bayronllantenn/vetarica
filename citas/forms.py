@@ -158,10 +158,11 @@ class SolicitudCitaForm(forms.ModelForm):
         error_messages={'required': 'Elige una hora.'},
     )
     tipo_consulta = forms.ModelChoiceField(
-        queryset=TipoConsulta.objects.all(),
+        queryset=TipoConsulta.objects.filter(visible_en_web=True),
         empty_label=None,
         error_messages={'required': 'Elige un tipo de consulta.'},
     )
+
     especie_mascota = forms.ChoiceField(
         label='Especie',
         choices=[('', 'Especie de tu mascota')] + ESPECIES_MASCOTA,
@@ -514,7 +515,10 @@ class BloqueoHorarioForm(forms.ModelForm):
 class TipoConsultaForm(forms.ModelForm):
     class Meta:
         model = TipoConsulta
-        fields = ['nombre', 'precio_base']
+        fields = ['nombre', 'precio_base', 'visible_en_web']
+        labels = {
+            'visible_en_web': 'Mostrar en la web (los clientes pueden agendarlo)',
+        }
 
     def clean_precio_base(self):
         precio = self.cleaned_data.get('precio_base')

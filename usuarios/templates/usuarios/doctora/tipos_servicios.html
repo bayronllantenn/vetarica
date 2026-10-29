@@ -22,6 +22,7 @@ Vet Arica{% endblock %} {% block css %}
           <tr>
             <th>Tipo de servicio</th>
             <th>Valor</th>
+            <th>Disponible en</th>
             <th class="acciones-servicio">Acciones</th>
           </tr>
         </thead>
@@ -30,6 +31,13 @@ Vet Arica{% endblock %} {% block css %}
           <tr>
             <td>{{ tipo.nombre }}</td>
             <td>${{ tipo.precio_base }}</td>
+            <td>
+              {% if tipo.visible_en_web %}
+              <span class="estado estado-activo">Web</span>
+              {% else %}
+              <span class="estado">Interno</span>
+              {% endif %}
+            </td>
             <td class="acciones-servicio">
               <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="btn btn-sm btn-vet-borde">
                 <i class="bi bi-pencil-square"></i> Editar
@@ -49,7 +57,7 @@ Vet Arica{% endblock %} {% block css %}
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3">No hay servicios registrados.</td>
+            <td colspan="4">No hay servicios registrados.</td>
           </tr>
           {% endfor %}
         </tbody>
