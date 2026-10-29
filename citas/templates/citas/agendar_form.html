@@ -24,6 +24,7 @@
     <div class="mascota-card-wrapper agendar-card-wrapper">
       <form class="mascota-form-card" method="post" novalidate>
         {% csrf_token %}
+        <input type="hidden" name="recargar" value="" />
 
         <div class="form-top-nav">
           {% if user.rol == 'veterinaria' or user.rol == 'secretaria' %}
@@ -124,7 +125,7 @@
                 </label>
                 {{ form.raza_mascota|as_crispy_field }}
               </div>
-            </div>
+            </div>  
             <div class="row g-3">
               <div class="col-md-4 campo">
                 <label class="campo-label" for="{{ form.sexo_mascota.id_for_label }}">
@@ -221,9 +222,9 @@
       notyf.error("Revisa los campos marcados en rojo.");
       {% endif %}
 
-      // recarga la pagina mandando el formulario como GET para que se mantengan los datos ingresados
+      // recarga la pagina mandando el formulario como POST para que se mantengan los datos ingresados sin que salgan en la url
       function recargarFormulario(form) {
-        form.method = "get";
+        form.recargar.value = "1";
         form.submit();
       }
     </script>
