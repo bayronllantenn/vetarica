@@ -239,6 +239,7 @@
     color: #8a5a00;
 }
 
+.estado-ausente,
 .estado-cancelada {
     background: #fbe4e4;
     color: #9c2e2e;

@@ -27,6 +27,22 @@ html {
   padding: 2.5rem 2rem 3.5rem;
 }
 
+.dash-shell.fondo-huellas {
+  margin: 0;
+  padding: 30px;
+  min-height: 100vh;
+  background-image: url("../../inicio/img/decoracion/Patron_de_huellas_y_huesos_menta.png");
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.fondo-huellas .dash-content {
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
 .dash-hero {
   margin-bottom: 1.75rem;
 }

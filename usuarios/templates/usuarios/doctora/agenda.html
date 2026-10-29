@@ -7,7 +7,7 @@ Vet Arica{% endblock %} {% block css %}
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
-<div class="dash-shell">
+<div class="dash-shell fondo-huellas">
   <main class="dash-content dash-content-agenda">
     <section class="dash-hero agenda-dia-hero">
       <div>
@@ -63,6 +63,8 @@ Vet Arica{% endblock %} {% block css %}
           <span>{{ celda.cita.tipo_consulta.nombre }}, {{ celda.cita.nombre }} {{ celda.cita.apellido }}</span>
           {% if celda.cita.ficha_medica %}
           <span class="agenda-ficha-estado"><i class="bi bi-check2"></i> Con ficha</span>
+          {% elif celda.cita.estado == 'Ausente' %}
+          <span class="agenda-ficha-estado"><i class="bi bi-person-x"></i> No asistió</span>
           {% else %}
           <span class="agenda-ficha-estado"><i class="bi bi-plus-lg"></i> Agregar ficha</span>
           {% endif %}

@@ -167,7 +167,7 @@ def inicio_doctora(request):
 
     proxima_cita = SolicitudCita.objects.filter(fecha_hora__gte=ahora, estado_pago='Pagado').exclude(estado='Cancelada').order_by('fecha_hora').first()
 
-    citas_pagadas = SolicitudCita.objects.filter(estado_pago='Pagado').exclude(estado='Cancelada')
+    citas_pagadas = SolicitudCita.objects.filter(estado_pago='Pagado').exclude(estado='Cancelada').exclude(estado='Ausente')
 
     perros = citas_pagadas.filter(especie_mascota='Canino').count()
     gatos = citas_pagadas.filter(especie_mascota='Felino').count()

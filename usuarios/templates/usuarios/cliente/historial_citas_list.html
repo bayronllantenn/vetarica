@@ -108,6 +108,7 @@
             <th>Mascota</th>
             <th>Estado</th>
             <th class="text-right">Valor</th>
+            <th></th>
           </tr>
         </thead>
 
@@ -125,6 +126,11 @@
             </td>
             <td class="text-right nowrap">
               {% if cita.tipo_consulta.precio_base %}${{ cita.tipo_consulta.precio_base|floatformat:"0g" }}{% else %}—{% endif %}
+            </td>
+            <td class="text-right nowrap">
+              {% if cita.puede_reagendarse %}
+              <a href="{% url 'reagendar_cita' cita.id %}" class="pager-btn">Reagendar</a>
+              {% endif %}
             </td>
           </tr>
         </tbody>
