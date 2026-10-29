@@ -339,7 +339,7 @@ def ingresos_doctora(request):
     }
     return render(request, 'citas/ingresos.html', context)
 
-
+# Ficha medica 
 @never_cache
 @login_required(login_url='sin_acceso')
 def ficha_medica_detalle(request, cita_id):
@@ -440,6 +440,17 @@ def editar_ficha(request, ficha_id):
         form = FichaMedicaForm(instance=ficha)
     context = {'solicitud': ficha.solicitud,'mascota': ficha.mascota,'ficha': ficha,'form': form,'volver_url': volver_url,}
     return render(request, 'citas/ficha_medica_form.html', context)
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def imprimir_ficha(request, ficha_id):
+    ficha = get_object_or_404(FichaMedica, id=ficha_id)
+    es_personal = es_personal_clinica(request.user)
+    if not es_personal and not (ficha.mascota and ficha.mascota.dueno == request.user):
+        return redirect('sin_acceso')
+    antecedentes = {'Vacunas': ficha.vacunas,'Alergias': ficha.alergias,'Cirugías previas': ficha.cirugias_previas,'Observaciones': ficha.observaciones,}
+    antecedentes = {titulo: texto for titulo, texto in antecedentes.items() if texto}
+    return render(request, 'citas/imprimir_ficha.html', {'ficha': ficha, 'antecedentes': antecedentes, 'es_personal': es_personal})
 
 def citas_sin_ficha(mascota):
     citas = SolicitudCita.objects.filter(mascota=mascota, estado_pago='Pagado', ficha_medica__isnull=True)

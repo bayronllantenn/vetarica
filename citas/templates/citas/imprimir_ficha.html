@@ -1,0 +1,171 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ficha clínica - Vet Arica</title>
+    <link rel="icon" href="{% static 'inicio/img/marca/favicon.png' %}" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link href="{% static 'citas/css/imprimir_ficha.css' %}" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="barra">
+      <a href="{% if not es_personal %}{% url 'ficha_mascota' ficha.mascota_id %}{% elif ficha.mascota_id %}{% url 'fichas_paciente' ficha.mascota_id %}{% else %}{% url 'pacientes' %}{% endif %}" class="barra-boton"><i class="bi bi-chevron-left"></i> Volver</a>
+      <button type="button" class="barra-boton barra-imprimir" onclick="window.print()">
+        <i class="bi bi-printer"></i> Imprimir
+      </button>
+    </div>
+    <main class="hoja">
+      <header class="encabezado">
+        <div class="marca">
+          <img src="{% static 'inicio/img/marca/favicon.png' %}" alt="Vet Arica" />
+          <div>
+            <p class="marca-nombre">Vet Arica</p>
+            <p class="marca-sub">Atención veterinaria</p>
+          </div>
+        </div>
+        <div class="encabezado-datos">
+          <h1>Ficha clínica</h1>
+          <p>N° {{ ficha.id }}</p>
+          <p>{{ ficha.fecha_atencion|date:"d/m/Y H:i" }}</p>
+        </div>
+      </header>
+      <section class="seccion">
+        <h2><i class="bi bi-heart-pulse"></i> Datos del paciente</h2>
+        <div class="grilla">
+          <div class="dato">
+            <span>Nombre</span>
+            <strong>{% if ficha.mascota %}{{ ficha.mascota.nombre }}{% else %}{{ ficha.solicitud.nombre_mascota }}{% endif %}</strong>
+          </div>
+          <div class="dato">
+            <span>Especie</span>
+            <strong>{{ ficha.especie }}</strong>
+          </div>
+          <div class="dato">
+            <span>Raza</span>
+            <strong>{{ ficha.raza|default:"—" }}</strong>
+          </div>
+          <div class="dato">
+            <span>Sexo</span>
+            <strong>{{ ficha.sexo|default:"—" }}</strong>
+          </div>
+          <div class="dato">
+            <span>Edad</span>
+            <strong>{{ ficha.mascota.edad|default:"—" }}</strong>
+          </div>
+          <div class="dato">
+            <span>Tipo de consulta</span>
+            <strong>{% if ficha.solicitud %}{{ ficha.solicitud.tipo_consulta.nombre }}{% else %}Sin cita{% endif %}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="seccion">
+        <h2><i class="bi bi-person"></i> Datos del tutor</h2>
+        <div class="grilla">
+          {% if ficha.mascota.dueno %}
+          <div class="dato">
+            <span>Nombre</span>
+            <strong>{{ ficha.mascota.dueno.first_name }} {{ ficha.mascota.dueno.last_name }}</strong>
+          </div>
+          <div class="dato">
+            <span>RUT</span>
+            <strong>{{ ficha.mascota.dueno.rut|default:"—" }}</strong>
+          </div>
+          <div class="dato">
+            <span>Teléfono</span>
+            <strong>{{ ficha.mascota.dueno.telefono|default:"—" }}</strong>
+          </div>
+          {% elif ficha.mascota %}
+          <div class="dato">
+            <span>Nombre</span>
+            <strong>{{ ficha.mascota.nombre_dueno|default:"Sin cuenta" }}</strong>
+          </div>
+          <div class="dato">
+            <span>RUT</span>
+            <strong>{{ ficha.mascota.rut_dueno|default:"—" }}</strong>
+          </div>
+          {% else %}
+          <div class="dato">
+            <span>Nombre</span>
+            <strong>{{ ficha.solicitud.nombre }} {{ ficha.solicitud.apellido }}</strong>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="seccion">
+        <h2><i class="bi bi-thermometer-half"></i> Examen físico</h2>
+        <div class="grilla grilla-signos">
+          <div class="dato">
+            <span>Peso</span>
+            <strong>{% if ficha.peso %}{{ ficha.peso }} kg{% else %} — {% endif %}</strong>
+          </div>
+          <div class="dato">
+            <span>Temperatura</span>
+            <strong>{% if ficha.temperatura %}{{ ficha.temperatura }} °C{% else %} — {% endif %}</strong>
+          </div>
+          <div class="dato">
+            <span>Frec. cardíaca</span>
+            <strong>{% if ficha.frecuencia_cardiaca %}{{ ficha.frecuencia_cardiaca }} lpm{% else %} — {% endif %}</strong>
+          </div>
+          <div class="dato">
+            <span>Frec. respiratoria</span>
+            <strong>{% if ficha.frecuencia_respiratoria %}{{ ficha.frecuencia_respiratoria }} rpm{% else %} — {% endif %}</strong>
+          </div>
+          <div class="dato">
+            <span>Deshidratación</span>
+            <strong>{% if ficha.deshidratacion %}{{ ficha.deshidratacion }} %{% else %} — {% endif %}</strong>
+          </div>
+          <div class="dato">
+            <span>Llenado capilar</span>
+            <strong>{% if ficha.tiempo_llenado_capilar %}{{ ficha.tiempo_llenado_capilar }} s{% else %} — {% endif %}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="seccion">
+        <h2><i class="bi bi-clipboard2-pulse"></i> Consulta</h2>
+        <div class="texto">
+          <span>Motivo de consulta</span>
+          <p>{{ ficha.motivo_consulta }}</p>
+        </div>
+        <div class="texto">
+          <span>Diagnóstico</span>
+          <p>{{ ficha.diagnostico }}</p>
+        </div>
+        <div class="texto">
+          <span>Tratamiento</span>
+          <p>{{ ficha.tratamiento }}</p>
+        </div>
+      </section>
+      {% if antecedentes %}
+      <section class="seccion">
+        <h2><i class="bi bi-journal-medical"></i> Antecedentes</h2>
+        <div class="antecedentes">
+          {% for titulo, texto in antecedentes.items %}
+          <div class="texto">
+            <span>{{ titulo }}</span>
+            <p>{{ texto }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+      <footer class="pie">
+        <div class="proxima">
+          <span>Próxima atención</span>
+          <strong>{{ ficha.proxima_atencion|date:"d/m/Y"|default:"No agendada" }}</strong>
+        </div>
+        <div class="firma">
+          <div class="firma-linea"></div>
+          <span>Firma médico veterinario</span>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html>

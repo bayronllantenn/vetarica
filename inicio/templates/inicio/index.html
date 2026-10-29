@@ -3,6 +3,10 @@
 
 {% block title %}Vet Arica - Clínica Veterinaria{% endblock %}
 
+{% block css %}
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
     <section class="hero-photo-section">
       <img
@@ -327,4 +331,14 @@
         <div class="text-center small">Vet Arica © {% now "Y" %}</div>
       </div>
     </footer>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({duration: 2000,position: { x: "center", y: "top" },});
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
 {% endblock %}
