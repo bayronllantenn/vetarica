@@ -31,6 +31,35 @@ def validar_nombre(valor, etiqueta):
     return valor.capitalize()
 
 
+def validar_rut(rut):
+    rut = rut.replace('.', '').replace('-', '').upper()
+
+    cuerpo = rut[:-1]
+    dv_rut = rut[-1:]
+
+    if not cuerpo.isdigit() or len(cuerpo) < 7 or len(cuerpo) > 8:
+        raise ValidationError('El rut ingresado es invalido.')
+
+    suma = 0
+    multiplo = 2
+    for digito in reversed(cuerpo):
+        suma += int(digito) * multiplo
+        multiplo += 1
+        if multiplo > 7:
+            multiplo = 2
+
+    resto = 11 - (suma % 11)
+    if resto == 11:
+        dv_esperado = '0'
+    elif resto == 10:
+        dv_esperado = 'K'
+    else:
+        dv_esperado = str(resto)
+
+    if dv_rut != dv_esperado:
+        raise ValidationError('El rut ingresado es invalido.')
+    return rut
+
 class RegisterForm(UserCreationForm):
     class Meta:
         model = Persona
@@ -72,34 +101,7 @@ class RegisterForm(UserCreationForm):
         return telefono
 
     def clean_rut(self):
-        rut = self.cleaned_data['rut'].replace('.', '').replace('-', '').upper()
-
-        cuerpo = rut[:-1]  # tambien puede sin el digito verificador, pero se necesita para validar
-        dv_rut = rut[-1]  # necesita que tenga el digito verificardor al final 
-
-        if not cuerpo.isdigit() or len(cuerpo) < 7 or len(cuerpo) > 8:
-            raise ValidationError('El rut ingresado es invalido.')
-
-        suma = 0
-        multiplo = 2
-        for digito in reversed(cuerpo):
-            suma += int(digito) * multiplo
-            multiplo += 1
-            if multiplo > 7:
-                multiplo = 2
-
-        resto = 11 - (suma % 11)
-        if resto == 11:
-            dv_esperado = '0'
-        elif resto == 10:
-            dv_esperado = 'K'
-        else:
-            dv_esperado = str(resto)
-
-        if dv_rut != dv_esperado:
-            raise ValidationError('El rut ingresado es invalido.')
-
-        return rut
+        return validar_rut(self.cleaned_data['rut'])
 
     def clean_first_name(self):
         return validar_nombre(self.cleaned_data['first_name'], 'El nombre')

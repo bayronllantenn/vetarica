@@ -106,6 +106,9 @@
             {% if ficha.peso %}
             <p class="ficha-texto"><strong>Peso registrado:</strong> {{ ficha.peso }} kg</p>
             {% endif %}
+            <a href="{% url 'imprimir_ficha' ficha.id %}" class="ficha-editar-link mt-2">
+              <i class="bi bi-printer"></i> Imprimir ficha
+            </a>
           </article>
           {% endfor %}
           {% else %}

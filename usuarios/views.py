@@ -97,7 +97,7 @@ def dashboard_usuario(request):
 
     mascotas_info = []
     for mascota in mascotas:
-        fichas_mascota = FichaMedica.objects.filter(solicitud__mascota=mascota)
+        fichas_mascota = FichaMedica.objects.filter(mascota=mascota)
         fichas_mascota = fichas_mascota.order_by('-fecha_atencion')
         ultima_ficha = fichas_mascota.first()
         mascotas_info.append({
@@ -466,7 +466,7 @@ def historial_citas(request):
 @login_required(login_url='sin_acceso')
 def ficha_mascota(request, mascota_id):
     mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user)
-    historial = FichaMedica.objects.filter(solicitud__mascota=mascota)
+    historial = FichaMedica.objects.filter(mascota=mascota)
     historial = historial.order_by('-fecha_atencion')
     context = {
         'mascota': mascota,

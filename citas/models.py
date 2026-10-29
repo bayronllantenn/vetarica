@@ -114,7 +114,8 @@ class SolicitudCita(models.Model):
 
 
 class FichaMedica(models.Model):
-    solicitud = models.OneToOneField(SolicitudCita, on_delete=models.CASCADE, related_name='ficha_medica')
+    solicitud = models.OneToOneField(SolicitudCita, on_delete=models.CASCADE, related_name='ficha_medica', null=True, blank=True)
+    mascota = models.ForeignKey('Mascota', on_delete=models.CASCADE, related_name='fichas', null=True, blank=True)
     especie = models.CharField(max_length=50, default='No especifica')
     raza = models.CharField(max_length=100, blank=True)
     sexo = models.CharField(max_length=20, blank=True)
@@ -136,6 +137,8 @@ class FichaMedica(models.Model):
     fecha_atencion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        if self.mascota:
+            return f"Ficha de {self.mascota.nombre}"
         return f"Ficha de {self.solicitud.nombre_mascota}"
 
 
@@ -151,7 +154,9 @@ class BloqueoHorario(models.Model):
 
 
 class Mascota(models.Model):
-    dueno = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mascotas')
+    dueno = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mascotas', null=True, blank=True)
+    nombre_dueno = models.CharField(max_length=80, blank=True)
+    rut_dueno = models.CharField(max_length=12, blank=True)
     nombre = models.CharField(max_length=100)
     imagen = models.ImageField(upload_to='mascotas/', blank=True, null=True)
     especie = models.CharField(max_length=20, choices=ESPECIES_MASCOTA)

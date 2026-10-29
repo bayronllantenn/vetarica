@@ -408,12 +408,12 @@ body.mascota-form-body {
 .form-actions {
   margin-top: 1.75rem;
   display: flex;
-  flex-direction: column;
+  flex-direction: row-reverse;
   gap: 0.75rem;
 }
 
 .btn-submit-mascota {
-  width: 100%;
+  flex: 1;
   height: 48px;
   border: none;
   border-radius: 999px;
@@ -439,16 +439,17 @@ body.mascota-form-body {
 }
 
 .btn-cancel-mascota {
-  align-self: center;
-  min-width: 45%;
-  text-align: center;
+  flex: 1;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #2f5f45;
   background: #e3efe5;
   border-radius: 999px;
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   text-decoration: none;
   font-weight: 600;
-  padding: 0.7rem 1.5rem;
   transition: background-color 0.15s ease;
 }
 
@@ -472,4 +473,8 @@ body.mascota-form-body {
   .fondo-nube-der {
     width: 220px;
   }
+}
+
+.campos-con-icono:has(#dueno_id option:not([value=""]):checked) #datosSinCuenta {
+  display: none;
 }
