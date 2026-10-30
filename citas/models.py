@@ -50,6 +50,7 @@ class SolicitudCita(models.Model):
         ('Pendiente', 'Pendiente'),
         ('Pagado', 'Pagado'),
         ('Rechazado', 'Rechazado'),
+        ('En clinica', 'Pago en clínica'),
     ]
 
     # si el que agenda tiene cuenta y esta logueado, lo guardamos aca
@@ -149,6 +150,7 @@ class BloqueoHorario(models.Model):
     hora_fin = models.CharField(max_length=5)
     motivo = models.CharField(max_length=200, blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    cita = models.ForeignKey(SolicitudCita, on_delete=models.CASCADE, null=True, blank=True, related_name='bloqueos')
 
     def __str__(self):
         return f"Bloqueo {self.fecha} de {self.hora_inicio} a {self.hora_fin}"
