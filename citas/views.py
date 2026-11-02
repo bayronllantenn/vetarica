@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from usuarios.models import Persona
 from usuarios.views import es_personal_clinica
-from .forms import FichaMedicaForm, MascotaForm, ReagendarCitaForm, SolicitudCitaForm, obtener_horas_disponibles, rango_del_dia
+from .forms import CitaInternaForm, FichaMedicaForm, MascotaForm, ReagendarCitaForm, SolicitudCitaForm, obtener_horas_disponibles, rango_del_dia
 from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .utils import get_webpay_transaction
 
@@ -607,3 +607,75 @@ def pacientes(request):
         'buscar': buscar,
     }
     return render(request, 'citas/pacientes.html', context)
+
+
+def copiar_datos_de_mascota(solicitud, mascota):
+    solicitud.mascota = mascota
+    solicitud.nombre_mascota = mascota.nombre
+    solicitud.especie_mascota = mascota.especie
+    solicitud.raza_mascota = mascota.raza
+    solicitud.sexo_mascota = mascota.sexo
+    solicitud.edad_valor_mascota = mascota.edad_valor
+    solicitud.edad_unidad_mascota = mascota.edad_unidad
+
+    if mascota.dueno:
+        solicitud.cliente = mascota.dueno
+        solicitud.nombre = mascota.dueno.first_name
+        solicitud.apellido = mascota.dueno.last_name
+        solicitud.email = mascota.dueno.email
+        solicitud.telefono = mascota.dueno.telefono
+    else:
+        solicitud.nombre = mascota.nombre_dueno
+
+
+def buscar_mascotas(buscar):
+    mascotas = Mascota.objects.select_related('dueno').order_by('nombre')
+    por_mascota = mascotas.filter(nombre__icontains=buscar)
+    por_nombre = mascotas.filter(dueno__first_name__icontains=buscar)
+    por_apellido = mascotas.filter(dueno__last_name__icontains=buscar)
+    por_rut = mascotas.filter(dueno__rut__icontains=buscar)
+    por_nombre_sin_cuenta = mascotas.filter(nombre_dueno__icontains=buscar)
+    por_rut_sin_cuenta = mascotas.filter(rut_dueno__icontains=buscar)
+    return por_mascota | por_nombre | por_apellido | por_rut | por_nombre_sin_cuenta | por_rut_sin_cuenta
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def crear_cita_interna(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        buscar = request.POST.get('buscar', '').strip()
+        form = CitaInternaForm(request.POST)
+        if form.is_valid():
+            solicitud = form.save(commit=False)
+            mascota = form.cleaned_data['mascota']
+            if mascota:
+                copiar_datos_de_mascota(solicitud, mascota)
+            solicitud.estado = 'Confirmada'
+            solicitud.estado_pago = 'En clinica'
+            solicitud.save()
+
+            bloqueo = BloqueoHorario()
+            bloqueo.fecha = form.cleaned_data['fecha']
+            bloqueo.hora_inicio = form.cleaned_data['hora_inicio']
+            bloqueo.hora_fin = form.cleaned_data['hora_fin']
+            bloqueo.motivo = f'Cita interna: {solicitud.nombre_mascota}'
+            bloqueo.cita = solicitud
+            bloqueo.save()
+
+            messages.success(request, 'Cita agendada y horario bloqueado correctamente.')
+            return redirect('agenda_doctora')
+        messages.error(request, 'Revisa los campos marcados en rojo.')
+    else:
+        buscar = request.GET.get('buscar', '').strip()
+        form = CitaInternaForm()
+
+    if buscar:
+        form.fields['mascota'].queryset = buscar_mascotas(buscar)
+    else:
+        form.fields['mascota'].queryset = Mascota.objects.none()
+
+    form.fields['fecha'].widget.attrs['min'] = timezone.localdate().isoformat()
+    return render(request, 'citas/cita_interna_form.html', {'form': form, 'buscar': buscar})

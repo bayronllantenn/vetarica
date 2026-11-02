@@ -1,0 +1,118 @@
+{% extends 'inicio/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Nueva cita - Vet Arica
+{% endblock %}
+
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/cita_interna.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block topbar %}{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="dash-shell fondo-huellas">
+  <main class="dash-content">
+    <section class="dash-hero">
+      <h1>Nueva cita</h1>
+      <p class="dash-subtitle">Agenda una cita en la clínica. El horario queda bloqueado para que nadie más agende ahí.</p>
+    </section>
+
+    <form id="form-buscar" method="get"></form>
+
+    <form method="post" novalidate class="cita-interna-form">
+      {% csrf_token %}
+      <input type="hidden" name="buscar" value="{{ buscar }}" />
+
+      <div class="cita-seccion">
+        <h2 class="cita-seccion-titulo"><i class="bi bi-heart-pulse"></i> Paciente</h2>
+        <label class="form-label">Buscar paciente registrado</label>
+        <div class="cita-buscador">
+          <input type="text" name="buscar" value="{{ buscar }}" form="form-buscar" class="form-control" placeholder="Nombre de la mascota, del dueño o RUT" />
+          <button type="submit" form="form-buscar" class="btn btn-teal"><i class="bi bi-search"></i> Buscar</button>
+        </div>
+        {% if buscar and not form.fields.mascota.queryset.exists %}
+        <p class="cita-sin-resultados">No se encontraron pacientes con "{{ buscar }}".</p>
+        {% endif %}
+        {{ form.mascota|as_crispy_field }}
+
+        <div id="datos-paciente-nuevo">
+          <div class="row gx-3">
+            <div class="col-md-4">{{ form.nombre_mascota|as_crispy_field }}</div>
+            <div class="col-md-4">{{ form.especie_mascota|as_crispy_field }}</div>
+            <div class="col-md-4">{{ form.sexo_mascota|as_crispy_field }}</div>
+          </div>
+          {{ form.raza_mascota|as_crispy_field }}
+
+          <h2 class="cita-seccion-titulo cita-seccion-titulo-separado"><i class="bi bi-person"></i> Dueño</h2>
+          <div class="row gx-3">
+            <div class="col-md-6">{{ form.nombre|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.apellido|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.telefono|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.email|as_crispy_field }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cita-seccion">
+        <h2 class="cita-seccion-titulo"><i class="bi bi-clock"></i> Horario</h2>
+        <div class="row gx-3">
+          <div class="col-md-4">{{ form.fecha|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.hora_inicio|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.hora_fin|as_crispy_field }}</div>
+        </div>
+        {{ form.tipo_consulta|as_crispy_field }}
+      </div>
+
+      <div class="cita-seccion">
+        {{ form.observaciones|as_crispy_field }}
+      </div>
+
+      <div class="cita-acciones">
+        <a href="{% url 'agenda_doctora' %}" class="btn btn-outline-secondary">Volver</a>
+        <button type="submit" class="btn btn-teal">Agendar cita</button>
+      </div>
+    </form>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+
+  // si se elige un paciente registrado se esconden los campos del paciente nuevo
+  const selectPaciente = document.getElementById("id_mascota");
+  const datosPacienteNuevo = document.getElementById("datos-paciente-nuevo");
+
+  function mostrarDatosPacienteNuevo() {
+    if (selectPaciente.value === "") {
+      datosPacienteNuevo.hidden = false;
+    } else {
+      datosPacienteNuevo.hidden = true;
+    }
+  }
+
+  selectPaciente.addEventListener("change", mostrarDatosPacienteNuevo);
+  mostrarDatosPacienteNuevo();
+</script>
+{% endblock %}

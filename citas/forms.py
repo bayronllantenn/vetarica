@@ -105,9 +105,14 @@ def validar_fecha_cita(fecha):
     return fecha
 
 
-def revisar_horario(fecha, hora):
+def juntar_fecha_y_hora(fecha, hora):
     hora_elegida = datetime.strptime(hora, '%H:%M').time()
-    fecha_hora = timezone.make_aware(datetime.combine(fecha, hora_elegida))
+    fecha_hora = datetime.combine(fecha, hora_elegida)
+    return timezone.make_aware(fecha_hora)
+
+
+def revisar_horario(fecha, hora):
+    fecha_hora = juntar_fecha_y_hora(fecha, hora)
 
     if fecha_hora < timezone.now() + timedelta(minutes=MINUTOS_ANTICIPACION_MINIMA):
         return fecha_hora, 'Elige un horario con al menos 1 hora de anticipación.'
@@ -158,7 +163,7 @@ class SolicitudCitaForm(forms.ModelForm):
         error_messages={'required': 'Elige una hora.'},
     )
     tipo_consulta = forms.ModelChoiceField(
-        queryset=TipoConsulta.objects.filter(visible_en_web=True),
+        queryset=TipoConsulta.objects.filter(visible_en_web=True, activo=True),
         empty_label=None,
         error_messages={'required': 'Elige un tipo de consulta.'},
     )
@@ -525,3 +530,138 @@ class TipoConsultaForm(forms.ModelForm):
         if precio is not None and precio <= 0:
             raise forms.ValidationError('El precio debe ser mayor a 0.')
         return precio
+
+
+CAMPOS_PACIENTE_NUEVO = ['nombre', 'apellido', 'telefono', 'nombre_mascota', 'especie_mascota', 'sexo_mascota']
+
+
+def nombre_mascota_con_dueno(mascota):
+    if mascota.dueno:
+        return f'{mascota.nombre} ({mascota.dueno.first_name} {mascota.dueno.last_name}, {mascota.dueno.rut})'
+    return f'{mascota.nombre} ({mascota.nombre_dueno}, {mascota.rut_dueno})'
+
+
+def nombre_servicio_con_precio(tipo):
+    precio = format(tipo.precio_base, ',').replace(',', '.')
+    return f'{tipo.nombre} - ${precio}'
+
+
+class CitaInternaForm(forms.ModelForm):
+    mascota = forms.ModelChoiceField(
+        label='Paciente registrado',
+        queryset=Mascota.objects.all(),
+        required=False,
+        empty_label='Paciente nuevo (escribe los datos abajo)',
+    )
+    tipo_consulta = forms.ModelChoiceField(
+        label='Servicio',
+        queryset=TipoConsulta.objects.filter(activo=True),
+        empty_label=None,
+        error_messages={'required': 'Elige un servicio.'},
+    )
+    fecha = forms.DateField(
+        label='Fecha',
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+        error_messages={'required': 'Elige una fecha.'},
+    )
+    hora_inicio = forms.ChoiceField(
+        label='Desde',
+        choices=HORAS_ATENCION,
+        error_messages={'required': 'Elige la hora de inicio.'},
+    )
+    hora_fin = forms.ChoiceField(
+        label='Hasta',
+        choices=HORAS_ATENCION,
+        error_messages={'required': 'Elige la hora de termino.'},
+    )
+    especie_mascota = forms.ChoiceField(
+        label='Especie',
+        choices=[('', 'Elige la especie')] + ESPECIES_MASCOTA,
+        required=False,
+    )
+    sexo_mascota = forms.ChoiceField(
+        label='Sexo',
+        choices=[('', 'Elige el sexo')] + SEXOS_MASCOTA,
+        required=False,
+    )
+
+    class Meta:
+        model = SolicitudCita
+        fields = ['tipo_consulta', 'nombre', 'apellido', 'telefono', 'email', 'nombre_mascota', 'especie_mascota', 'sexo_mascota', 'raza_mascota', 'observaciones']
+        widgets = {
+            'nombre_mascota': forms.TextInput(attrs={'placeholder': 'Ej: Firulais'}),
+            'raza_mascota': forms.TextInput(attrs={'placeholder': 'Ej: Quiltro'}),
+            'nombre': forms.TextInput(attrs={'placeholder': 'Ej: Juan'}),
+            'apellido': forms.TextInput(attrs={'placeholder': 'Ej: Pérez'}),
+            'telefono': forms.TextInput(attrs={'placeholder': '912345678', 'inputmode': 'numeric', 'maxlength': '9'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'nombre@gmail.com'}),
+            'observaciones': forms.Textarea(attrs={'placeholder': 'Ej: viene en ayuno, traer exámenes', 'rows': 3}),
+        }
+        labels = {
+            'nombre': 'Nombre del dueño',
+            'apellido': 'Apellido del dueño',
+            'telefono': 'Teléfono',
+            'email': 'Correo (opcional)',
+            'nombre_mascota': 'Nombre de la mascota',
+            'raza_mascota': 'Raza (opcional)',
+            'observaciones': 'Observaciones (opcional)',
+        }
+
+    def __init__(self, data=None):
+        super().__init__(data)
+        self.fields['mascota'].label_from_instance = nombre_mascota_con_dueno
+        self.fields['tipo_consulta'].label_from_instance = nombre_servicio_con_precio
+        for campo in CAMPOS_PACIENTE_NUEVO:
+            self.fields[campo].required = False
+
+    def clean_fecha(self):
+        fecha = self.cleaned_data['fecha']
+        if fecha < timezone.localdate():
+            raise forms.ValidationError('No puedes agendar en una fecha pasada.')
+        if fecha.weekday() == 6:
+            raise forms.ValidationError('No atendemos los domingos.')
+        return fecha
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data.get('telefono', '').replace(' ', '')
+        if telefono == '':
+            return telefono
+        if not telefono.isdigit() or len(telefono) != 9:
+            raise forms.ValidationError('El teléfono debe tener 9 números.')
+        return telefono
+
+    def clean(self):
+        cleaned_data = super().clean()
+        mascota = cleaned_data.get('mascota')
+        fecha = cleaned_data.get('fecha')
+        hora_inicio = cleaned_data.get('hora_inicio')
+        hora_fin = cleaned_data.get('hora_fin')
+
+        if mascota is None:
+            for campo in CAMPOS_PACIENTE_NUEVO:
+                if not cleaned_data.get(campo) and campo not in self.errors:
+                    self.add_error(campo, 'Completa este campo o elige un paciente registrado.')
+
+        if not fecha or not hora_inicio or not hora_fin:
+            return cleaned_data
+
+        if hora_fin <= hora_inicio:
+            self.add_error('hora_fin', 'La hora de termino debe ser despues de la hora de inicio.')
+            return cleaned_data
+
+        inicio = juntar_fecha_y_hora(fecha, hora_inicio)
+        if inicio < timezone.now():
+            self.add_error('hora_inicio', 'Esa hora ya pasó.')
+            return cleaned_data
+
+        if BloqueoHorario.objects.filter(fecha=fecha, hora_inicio__lt=hora_fin, hora_fin__gt=hora_inicio).exists():
+            self.add_error('hora_inicio', 'Ese horario ya está bloqueado.')
+            return cleaned_data
+
+        fin = juntar_fecha_y_hora(fecha, hora_fin)
+        if citas_que_bloquean().filter(fecha_hora__gte=inicio, fecha_hora__lt=fin).exists():
+            self.add_error('hora_inicio', 'Ya hay una cita agendada en ese horario.')
+            return cleaned_data
+
+        self.instance.fecha_hora = inicio
+        return cleaned_data

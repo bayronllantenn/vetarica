@@ -186,8 +186,11 @@
           <div class="bloqueo-aviso">
             {% for bloqueo in bloqueos_del_dia %}
             <p>
-              La doctora no atiende de {{ bloqueo.hora_inicio }} a {{ bloqueo.hora_fin }}
-              {% if bloqueo.motivo %}({{ bloqueo.motivo }}){% endif %}.
+              {% if bloqueo.cita %}
+              La doctora estará atendiendo un procedimiento de {{ bloqueo.hora_inicio }} a {{ bloqueo.hora_fin }}.
+              {% else %}
+              No hay horas disponibles de {{ bloqueo.hora_inicio }} a {{ bloqueo.hora_fin }}.
+              {% endif %}
             </p>
             {% endfor %}
             <p>Elige otra fecha u otra hora disponible.</p>
