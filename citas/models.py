@@ -32,6 +32,7 @@ class TipoConsulta(models.Model):
     nombre = models.CharField(max_length=100)
     precio_base = models.PositiveIntegerField()
     visible_en_web = models.BooleanField(default=False)
+    activo = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.nombre} - ${self.precio_base}"

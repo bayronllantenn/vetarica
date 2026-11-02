@@ -32,7 +32,9 @@ Vet Arica{% endblock %} {% block css %}
             <td>{{ tipo.nombre }}</td>
             <td>${{ tipo.precio_base }}</td>
             <td>
-              {% if tipo.visible_en_web %}
+              {% if not tipo.activo %}
+              <span class="estado">Oculto</span>
+              {% elif tipo.visible_en_web %}
               <span class="estado estado-activo">Web</span>
               {% else %}
               <span class="estado">Interno</span>
@@ -43,16 +45,25 @@ Vet Arica{% endblock %} {% block css %}
                 <i class="bi bi-pencil-square"></i> Editar
               </a>
 
+              {% if tipo.activo %}
               <form
-                action="{% url 'eliminar_tipo_consulta' tipo.id %}"
+                action="{% url 'ocultar_tipo_consulta' tipo.id %}"
                 method="post"
-                onsubmit="return confirm('¿Seguro que quieres eliminar este servicio?');"
+                onsubmit="return confirm('¿Seguro que quieres ocultar este servicio? Ya no se podrá agendar, pero las citas anteriores no se borran.');"
               >
                 {% csrf_token %}
                 <button type="submit" class="btn btn-sm btn-eliminar">
-                  <i class="bi bi-trash"></i> Eliminar
+                  <i class="bi bi-eye-slash"></i> Ocultar
                 </button>
               </form>
+              {% else %}
+              <form action="{% url 'ocultar_tipo_consulta' tipo.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-vet">
+                  <i class="bi bi-eye"></i> Mostrar
+                </button>
+              </form>
+              {% endif %}
             </td>
           </tr>
           {% empty %}

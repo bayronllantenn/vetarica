@@ -542,17 +542,19 @@ def editar_tipo_consulta(request, tipo_id):
     return render(request, 'usuarios/doctora/editar_tipo_consulta.html', {'form': form, 'tipo': tipo})
 
 @login_required(login_url='sin_acceso')
-def eliminar_tipo_consulta(request, tipo_id):
+def ocultar_tipo_consulta(request, tipo_id):
     if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
 
     tipo = get_object_or_404(TipoConsulta, id=tipo_id)
     if request.method == 'POST':
-        if tipo.solicitudes.exists():
-            messages.error(request, f'{tipo.nombre} no se puede eliminar porque tiene citas asociadas.')
+        if tipo.activo:
+            tipo.activo = False
+            messages.success(request, f'{tipo.nombre} fue ocultado y ya no se puede agendar.')
         else:
-            tipo.delete()
-            messages.success(request, f'{tipo.nombre} fue eliminado correctamente.')
+            tipo.activo = True
+            messages.success(request, f'{tipo.nombre} se puede agendar de nuevo.')
+        tipo.save()
     return redirect('tipos_servicios')
 
 def error_404(request, exception=None):
