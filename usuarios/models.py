@@ -38,7 +38,7 @@ class Persona(AbstractUser):
     foto = models.ImageField(upload_to='perfiles/', blank=True, null=True)
 
     USERNAME_FIELD = 'email'  # esto es porque vamos a logear al usuario con correo
-    REQUIRED_FIELDS = []  # si lo saco se rompe el codigo porque abstractuser ya trae email aca por defecto y no puede repetirse con el username field
+    REQUIRED_FIELDS = ['rut', 'telefono']  # no se pone email aca porque ya es el username field y no puede repetirse
 
     objects = PersonaManager()  # type: ignore  # esta linea le dice a Persona que use el manager de arriba en vez del de django
 
