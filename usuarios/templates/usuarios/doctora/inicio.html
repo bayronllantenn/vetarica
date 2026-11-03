@@ -50,6 +50,7 @@ Vet Arica{% endblock %} {% block css %}
         </span>
       </div>
 
+      {% if request.user.rol == 'veterinaria' %}
       <div class="stat-card-eco stat-card-eco-verde">
         <div class="stat-card-eco-info">
           <span class="stat-card-eco-label">Ingresos del mes</span>
@@ -64,6 +65,7 @@ Vet Arica{% endblock %} {% block css %}
           </svg>
         </span>
       </div>
+      {% endif %}
     </section>
 
     <div class="dash-mid-grid">
