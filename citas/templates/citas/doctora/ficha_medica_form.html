@@ -95,7 +95,7 @@ Vet Arica{% endblock %} {% block css %}
         Esta cita fue cancelada, no se puede registrar ficha.
         {% elif solicitud.estado == 'Ausente' %}
         El paciente no asistió a esta cita, no se puede registrar ficha.
-        {% elif solicitud.estado_pago != 'Pagado' %}
+        {% elif solicitud.estado_pago != 'Pagado' and solicitud.estado_pago != 'En clinica' %}
         Esta cita no está pagada, no se puede registrar ficha.
         {% else %}
         La ficha se podrá registrar el día de la cita.

@@ -170,7 +170,7 @@ def agendar_view(request):
 
     bloqueos_del_dia = BloqueoHorario.objects.filter(fecha=fecha_seleccionada)
 
-    return render(request, 'citas/agendar_form.html', {
+    return render(request, 'citas/cliente/agendar_form.html', {
         'form': form,
         'mascotas': mascotas,
         'fecha_seleccionada': fecha_seleccionada,
@@ -184,7 +184,7 @@ def confirmar_cita(request, id):
     solicitud = get_object_or_404(SolicitudCita, id=id)
     if not puede_ver_solicitud(request, solicitud):
         raise Http404
-    return render(request, 'citas/confirmar_cita.html', {'solicitud': solicitud})
+    return render(request, 'citas/cliente/confirmar_cita.html', {'solicitud': solicitud})
 
 
 def cancelar_solicitud(request, id):
@@ -344,7 +344,7 @@ def ingresos_doctora(request):
         'nombre_mes_actual': nombre_mes_actual,
         'ingresos_mes_actual': format(ingresos_mes_actual, ',').replace(',', '.'),
     }
-    return render(request, 'citas/ingresos.html', context)
+    return render(request, 'citas/doctora/ingresos.html', context)
 
 # Ficha medica 
 @never_cache
@@ -362,19 +362,21 @@ def ficha_medica_detalle(request, cita_id):
 
     ahora = timezone.now()
     esta_pagada = solicitud.estado_pago == 'Pagado'
+    paga_en_clinica = solicitud.estado_pago == 'En clinica'
     dia_de_la_cita = timezone.localtime(solicitud.fecha_hora).date()
 
     puede_llenar_ficha = False
-    if esta_pagada and (solicitud.estado == 'Confirmada' or solicitud.estado == 'Finalizado'):
-        if dia_de_la_cita <= timezone.localdate():
-            puede_llenar_ficha = True
+    if esta_pagada or paga_en_clinica:
+        if solicitud.estado == 'Confirmada' or solicitud.estado == 'Finalizado':
+            if dia_de_la_cita <= timezone.localdate():
+                puede_llenar_ficha = True
 
     puede_reagendar = False
     if esta_pagada and solicitud.estado == 'Confirmada' and solicitud.fecha_hora > ahora:
         puede_reagendar = True
 
     puede_marcar_ausente = False
-    if esta_pagada and solicitud.estado == 'Confirmada' and solicitud.fecha_hora <= ahora and ficha is None:
+    if (esta_pagada or paga_en_clinica) and solicitud.estado == 'Confirmada' and solicitud.fecha_hora <= ahora and ficha is None:
         puede_marcar_ausente = True
 
     if request.method == 'POST' and not puede_llenar_ficha:
@@ -412,7 +414,7 @@ def ficha_medica_detalle(request, cita_id):
         'puede_marcar_ausente': puede_marcar_ausente,
         'volver_url': reverse('agenda_doctora'),
     }
-    return render(request, 'citas/ficha_medica_form.html', context)
+    return render(request, 'citas/doctora/ficha_medica_form.html', context)
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -436,7 +438,7 @@ def ficha_sin_cita(request, mascota_id):
     else:
         form = FichaMedicaForm()
     context = {'mascota': mascota, 'form': form, 'volver_url': reverse('pacientes'), 'puede_llenar_ficha': True}
-    return render(request, 'citas/ficha_medica_form.html', context)
+    return render(request, 'citas/doctora/ficha_medica_form.html', context)
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -446,7 +448,7 @@ def fichas_paciente(request, mascota_id):
     mascota = get_object_or_404(Mascota, id=mascota_id)
     fichas = FichaMedica.objects.filter(mascota=mascota).select_related('solicitud__tipo_consulta')
     context = {'mascota': mascota,'fichas': fichas.order_by('-fecha_atencion'),'cita_sin_ficha': citas_sin_ficha(mascota).first(),}
-    return render(request, 'citas/fichas_paciente.html', context)
+    return render(request, 'citas/doctora/fichas_paciente.html', context)
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -470,7 +472,7 @@ def editar_ficha(request, ficha_id):
     else:
         form = FichaMedicaForm(instance=ficha)
     context = {'solicitud': ficha.solicitud, 'mascota': ficha.mascota, 'ficha': ficha, 'form': form, 'volver_url': volver_url, 'puede_llenar_ficha': True}
-    return render(request, 'citas/ficha_medica_form.html', context)
+    return render(request, 'citas/doctora/ficha_medica_form.html', context)
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -492,10 +494,12 @@ def marcar_no_asistio(request, cita_id):
 
     solicitud = get_object_or_404(SolicitudCita, id=cita_id)
     ya_paso = solicitud.fecha_hora <= timezone.now()
+    esta_pagada = solicitud.estado_pago == 'Pagado' or solicitud.estado_pago == 'En clinica'
 
-    if solicitud.estado == 'Confirmada' and solicitud.estado_pago == 'Pagado' and ya_paso:
+    if solicitud.estado == 'Confirmada' and esta_pagada and ya_paso:
         solicitud.estado = 'Ausente'
         solicitud.save()
+        solicitud.bloqueos.all().delete()
         messages.success(request, 'La cita quedó marcada como "No asistió".')
     else:
         messages.error(request, 'Esta cita no se puede marcar como "No asistió".')
@@ -569,7 +573,7 @@ def reagendar_cita(request, id):
 
 
 def citas_sin_ficha(mascota):
-    citas = SolicitudCita.objects.filter(mascota=mascota, estado_pago='Pagado', ficha_medica__isnull=True)
+    citas = SolicitudCita.objects.filter(mascota=mascota, estado_pago__in=['Pagado', 'En clinica'], ficha_medica__isnull=True)
     citas = citas.exclude(estado='Cancelada').exclude(estado='Ausente')
     return citas.order_by('-fecha_hora')
 
@@ -606,7 +610,7 @@ def pacientes(request):
         'lista_pacientes': lista_pacientes,
         'buscar': buscar,
     }
-    return render(request, 'citas/pacientes.html', context)
+    return render(request, 'citas/doctora/pacientes.html', context)
 
 
 def copiar_datos_de_mascota(solicitud, mascota):
@@ -678,4 +682,4 @@ def crear_cita_interna(request):
         form.fields['mascota'].queryset = Mascota.objects.none()
 
     form.fields['fecha'].widget.attrs['min'] = timezone.localdate().isoformat()
-    return render(request, 'citas/cita_interna_form.html', {'form': form, 'buscar': buscar})
+    return render(request, 'citas/doctora/cita_interna_form.html', {'form': form, 'buscar': buscar})
