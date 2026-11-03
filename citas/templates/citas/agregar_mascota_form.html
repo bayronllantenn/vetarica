@@ -53,7 +53,7 @@
         <div class="avatar-upload-section">
           <div class="avatar-wrap">
             <label class="avatar-preview-box" for="{{ form.imagen.id_for_label }}" title="Haz clic para seleccionar foto">
-              <img id="avatarImage" src="" alt="Vista previa" class="avatar-img-preview d-none" />
+              <img id="avatarImage" src="" alt="Vista previa" class="avatar-img-preview" />
               <div class="avatar-placeholder" id="avatarPlaceholder">
                 <i class="bi bi-camera"></i>
                 <span>Agregar foto</span>
@@ -187,6 +187,7 @@
       {% for error in form.non_field_errors %}
       notyf.error("{{ error|escapejs }}");
       {% endfor %}
+      document.getElementById("{{ form.imagen.id_for_label }}").onchange = (e) => {avatarImage.src = URL.createObjectURL(e.target.files[0]);};
     </script>
   </body>
 </html>

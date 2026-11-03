@@ -474,7 +474,12 @@ body.mascota-form-body {
     width: 220px;
   }
 }
-
 .campos-con-icono:has(#dueno_id option:not([value=""]):checked) #datosSinCuenta {
+  display: none;
+}
+#avatarImage[src=""] {
+  display: none;
+}
+.avatar-preview-box:has(#avatarImage:not([src=""])) .avatar-placeholder {
   display: none;
 }

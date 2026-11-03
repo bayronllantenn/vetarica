@@ -65,12 +65,12 @@
                     <form method="post" action="{% url 'bloquear_usuario' usuario.id %}" class="m-0">
                       {% csrf_token %}
                       {% if usuario.is_active %}
-                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                        <button type="submit" class="btn btn-sm btn-eliminar"
                                 onclick="return confirm('¿Bloquear a {{ usuario.email|escapejs }}? No podrá iniciar sesión.')">
                           <i class="bi bi-lock"></i> Bloquear
                         </button>
                       {% else %}
-                        <button type="submit" class="btn btn-sm btn-outline-success">
+                        <button type="submit" class="btn btn-sm btn-success">
                           <i class="bi bi-unlock"></i> Desbloquear
                         </button>
                       {% endif %}

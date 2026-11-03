@@ -50,17 +50,10 @@
         <div class="avatar-upload-section">
           <div class="avatar-wrap">
             <label class="avatar-preview-box editar-foto" for="{{ form.imagen.id_for_label }}" title="Haz clic para cambiar la foto">
-              {% if mascota.imagen %}
-                <img id="avatarImage" src="{{ mascota.imagen.url }}" alt="{{ mascota.nombre }}" class="avatar-img-preview" />
-                <div class="avatar-placeholder d-none" id="avatarPlaceholder">
-                  <span>FOTO</span>
-                </div>
-              {% else %}
-                <img id="avatarImage" src="" alt="Vista previa" class="avatar-img-preview d-none" />
-                <div class="avatar-placeholder" id="avatarPlaceholder">
-                  <span>SUBIR FOTO</span>
-                </div>
-              {% endif %}
+              <img id="avatarImage" src="{% if mascota.imagen %}{{ mascota.imagen.url }}{% endif %}" alt="{{ mascota.nombre }}" class="avatar-img-preview" />
+              <div class="avatar-placeholder" id="avatarPlaceholder">
+                <span>SUBIR FOTO</span>
+              </div>
             </label>
             <label class="editar-foto-camara" for="{{ form.imagen.id_for_label }}">
               <i class="bi bi-camera"></i>
@@ -166,6 +159,7 @@
       {% for error in form.non_field_errors %}
       notyf.error("{{ error|escapejs }}");
       {% endfor %}
+      document.getElementById("{{ form.imagen.id_for_label }}").onchange = (e) => {avatarImage.src = URL.createObjectURL(e.target.files[0]);};
     </script>
   </body>
 </html>

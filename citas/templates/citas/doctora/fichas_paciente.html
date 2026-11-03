@@ -9,7 +9,7 @@
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
-<div class="dash-shell">
+<div class="dash-shell fondo-huellas">
   <main class="dash-content">
     <a href="{% url 'pacientes' %}" class="volver volver-ancho">
       <i class="bi bi-chevron-left"></i> Volver
@@ -69,8 +69,8 @@
                   <a href="{% url 'editar_ficha' ficha.id %}" class="btn btn-sm btn-vet">
                     <i class="bi bi-pencil"></i> Ver / editar
                   </a>
-                  <a href="{% url 'imprimir_ficha' ficha.id %}" class="btn btn-sm btn-outline-dark" title="Imprimir ficha">
-                    <i class="bi bi-printer"></i>
+                  <a href="{% url 'imprimir_ficha' ficha.id %}" class="btn btn-sm btn-outline-dark">
+                    <i class="bi bi-printer"></i> Imprimir
                   </a>
                 </div>
               </td>
