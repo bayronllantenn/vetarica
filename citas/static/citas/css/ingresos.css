@@ -1,3 +1,18 @@
+.ingresos-filtro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.ingresos-filtro label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
 .stat-grid-eco {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -63,17 +78,7 @@
   }
 }
 
-.grafico-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 220px;
-  background: #f3f4f3;
-  text-align: center;
-  padding: 1rem;
-}
-
-.grafico-placeholder span {
-  font-size: 0.85rem;
-  color: #8a8f8c;
+.grafico-lienzo {
+  position: relative;
+  height: 220px;
 }

@@ -2,8 +2,10 @@
 Vet Arica{% endblock %} {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
 <link href="{% static 'citas/css/ingresos.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
@@ -14,29 +16,43 @@ Vet Arica{% endblock %} {% block css %}
       <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas.</p>
     </section>
 
+    <form method="get" class="ingresos-filtro">
+      <div>
+        <label for="desde">Desde</label>
+        <input type="date" id="desde" name="desde" value="{{ desde|date:'Y-m-d' }}" class="form-control" />
+      </div>
+      <div>
+        <label for="hasta">Hasta</label>
+        <input type="date" id="hasta" name="hasta" value="{{ hasta|date:'Y-m-d' }}" class="form-control" />
+      </div>
+      <button type="submit" class="btn btn-vet">Filtrar</button>
+      <a href="{% url 'ingresos_doctora' %}" class="btn btn-vet-borde">Este mes</a>
+    </form>
+
     <section class="stat-grid-eco">
       <div class="stat-card-eco stat-card-eco-verde">
-        <span class="stat-card-eco-label">{{ nombre_mes_actual|capfirst }}, mes en curso</span>
-        <strong class="stat-card-eco-numero">${{ ingresos_mes_actual }}</strong>
+        <span class="stat-card-eco-label">Ingresos del {{ desde|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</span>
+        <strong class="stat-card-eco-numero">${{ total }}</strong>
       </div>
 
       <div class="stat-card-eco stat-card-eco-gris">
-        <span class="stat-card-eco-label">Mes pasado</span>
+        <span class="stat-card-eco-label">Citas pagadas en el período</span>
+        <strong class="stat-card-eco-numero">{{ cantidad }}</strong>
       </div>
     </section>
 
     <div class="dash-mid-grid">
       <div class="grafico-card">
         <h2 class="dash-section-title">Ingresos por mes</h2>
-        <div class="grafico-placeholder">
-          <span>Gráfico de barras: ingresos totales por mes</span>
+        <div class="grafico-lienzo">
+          <canvas id="grafico-meses"></canvas>
         </div>
       </div>
 
       <div class="grafico-card">
         <h2 class="dash-section-title">Ingresos por tipo de consulta</h2>
-        <div class="grafico-placeholder">
-          <span>Gráfico: ingresos por tipo de consulta</span>
+        <div class="grafico-lienzo">
+          <canvas id="grafico-tipos"></canvas>
         </div>
       </div>
     </div>
@@ -65,7 +81,7 @@ Vet Arica{% endblock %} {% block css %}
     </div>
     {% else %}
     <div class="cita-empty">
-      <p>Todavía no hay citas pagadas.</p>
+      <p>No hay citas pagadas en este período.</p>
     </div>
     {% endif %}
   </main>
@@ -81,5 +97,42 @@ Vet Arica{% endblock %} {% block css %}
   {% for message in messages %}
   notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
   {% endfor %}
+</script>
+<script>
+  new Chart(document.getElementById("grafico-meses"), {
+    type: "bar",
+    data: {
+      labels: [{% for mes in meses %}"{{ mes }}",{% endfor %}],
+      datasets: [
+        {
+          label: "Ingresos",
+          data: [{% for monto in montos_por_mes %}{{ monto }},{% endfor %}],
+          backgroundColor: "#0f8a7e",
+        },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } },
+    },
+  });
+
+  new Chart(document.getElementById("grafico-tipos"), {
+    type: "doughnut",
+    data: {
+      labels: [{% for tipo in tipos %}"{{ tipo|escapejs }}",{% endfor %}],
+      datasets: [
+        {
+          data: [{% for monto in montos_por_tipo %}{{ monto }},{% endfor %}],
+          backgroundColor: ["#0f8a7e", "#3d4e4a", "#cbd5d1", "#64748b", "#94d2c8"],
+        },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" } },
+    },
+  });
 </script>
 {% endblock %}
