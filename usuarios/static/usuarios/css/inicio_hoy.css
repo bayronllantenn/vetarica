@@ -1,0 +1,389 @@
+.inicio-hoy.fondo-huellas {
+  padding: 0;
+  color: #111;
+}
+
+.ih-canvas {
+  padding: 24px 20px;
+}
+
+.ih-hoja {
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 16px 8px;
+  background: #fff;
+  border-radius: 16px;
+}
+
+.ih-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 44px 4px;
+}
+
+.ih-fecha {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5f6368;
+}
+
+.ih-fecha::first-letter {
+  text-transform: uppercase;
+}
+
+.ih-titulo h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.ih-acciones {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.ih-enlace {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0b5e56;
+  text-decoration: none;
+}
+
+.ih-enlace:hover {
+  text-decoration: underline;
+}
+
+.ih-boton {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #0b7268;
+  border-radius: 6px;
+  background: #0b7268;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ih-boton:hover {
+  background: #0b5e56;
+  color: #fff;
+}
+
+.ih-boton-sec,
+.ih-boton-sec:hover {
+  border-color: #d5dedb;
+  color: #111;
+}
+
+.ih-boton-sec {
+  background: #fff;
+}
+
+.ih-boton-sec:hover {
+  background: #f4f8f7;
+}
+
+.ih-boton:focus-visible {
+  outline: 2px solid #0b5e56;
+  outline-offset: 2px;
+}
+
+.ih-fila {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.ih-panel {
+  padding: 24px 44px;
+}
+
+.ih-citas,
+.ih-meses {
+  grid-column: span 8;
+  display: flex;
+  flex-direction: column;
+}
+
+.ih-citas:only-child {
+  grid-column: 1 / -1;
+}
+
+.ih-resumen,
+.ih-especie {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+}
+
+.ih-resumen {
+  gap: 12px;
+}
+
+.ih-panel-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ih-panel h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ih-titulo p,
+.ih-meta,
+.ih-detalle,
+.ih-etiqueta,
+.ih-sin-dato,
+.ih-vacio,
+.ih-paciente span {
+  display: block;
+  margin: 0;
+  font-size: 13px;
+  color: #5f6368;
+}
+
+.ih-titulo p,
+.ih-sin-dato,
+.ih-vacio {
+  font-size: 14px;
+}
+
+.ih-detalle {
+  margin-top: 2px;
+}
+
+.ih-etiqueta {
+  margin-bottom: 4px;
+}
+
+.ih-vacio {
+  padding: 12px 14px;
+  border: 1px dashed #e1ebe8;
+  border-radius: 8px;
+}
+
+.ih-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ih-lista a {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 8px 10px;
+  margin: 0 -10px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.ih-lista li + li a {
+  border-top: 1px solid #edf3f1;
+}
+
+.ih-lista a:hover,
+.ih-lista a:focus-visible {
+  background: #e8f5f3;
+  outline: none;
+}
+
+.ih-hora {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ih-siguiente .ih-hora {
+  color: #0b5e56;
+}
+
+.ih-pasada {
+  opacity: 0.6;
+}
+
+.ih-paciente {
+  min-width: 0;
+}
+
+.ih-paciente strong,
+.ih-paciente span {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ih-paciente strong {
+  font-size: 14px;
+}
+
+.ih-estado {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: #f0f2f1;
+  color: #3a3b3b;
+}
+
+.ih-estado-pagado {
+  background: #dcfae5;
+  color: #04250e;
+}
+
+.ih-estado-clinica {
+  background: #e8f5f3;
+  color: #0b5e56;
+}
+
+.ih-bloque {
+  padding: 14px 20px;
+  background: #f4f8f7;
+  border-radius: 8px;
+}
+
+.ih-cifra {
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ih-especies {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.ih-especie-fila {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 12px;
+}
+
+.ih-especie-fila strong {
+  font-weight: 500;
+}
+
+.ih-especie-barra {
+  grid-column: 1 / -1;
+  height: 2px;
+  margin-top: 4px;
+  background: #cdeae4;
+}
+
+.ih-especie-primera .ih-especie-barra {
+  background: #0f8a7e;
+}
+
+.ih-total {
+  padding-top: 16px;
+}
+
+.ih-grafico {
+  height: 260px;
+}
+
+@media (min-width: 1200px) and (min-height: 700px) {
+  .ih-canvas {
+    height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .ih-hoja {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .ih-fila-graficos {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .ih-citas {
+    max-height: 340px;
+  }
+
+  .ih-lista {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .ih-grafico {
+    flex: 1;
+    min-height: 160px;
+    height: auto;
+    position: relative;
+  }
+}
+
+@media (max-width: 1199.98px) {
+  .ih-citas,
+  .ih-resumen,
+  .ih-meses,
+  .ih-especie {
+    grid-column: 1 / -1;
+  }
+
+  .ih-resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .ih-canvas {
+    padding: 12px 12px 24px;
+  }
+
+  .ih-titulo {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 16px 4px;
+  }
+
+  .ih-panel {
+    padding: 20px 16px;
+  }
+
+  .ih-acciones {
+    justify-content: space-between;
+  }
+
+  .ih-boton {
+    height: 44px;
+  }
+
+  .ih-lista a {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .ih-estado {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
