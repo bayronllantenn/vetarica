@@ -143,22 +143,14 @@ Vet Arica{% endblock %} {% block css %}
               >
                 <i class="bi bi-pencil"></i>
               </a>
-              <form
-                action="{% url 'eliminar_mascota' item.mascota.id %}"
-                method="post"
-                class="mascota-eliminar-form"
-                onsubmit="return confirm('¿Seguro que quieres eliminar a {{ item.mascota.nombre }}? Esta acción no se puede deshacer.');"
+              <a
+                href="#eliminar-{{ item.mascota.id }}"
+                class="mascota-card-btn-circular mascota-card-btn-eliminar"
+                title="Eliminar"
+                aria-label="Eliminar a {{ item.mascota.nombre }}"
               >
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  class="mascota-card-btn-circular mascota-card-btn-eliminar"
-                  title="Eliminar"
-                  aria-label="Eliminar a {{ item.mascota.nombre }}"
-                >
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
+                <i class="bi bi-trash"></i>
+              </a>
             </div>
           </div>
         </div>
@@ -178,6 +170,23 @@ Vet Arica{% endblock %} {% block css %}
         <span class="mascota-add-subtexto">Registra una nueva mascota en tu cuenta.</span>
       </a>
     </div>
+    {% for item in mascotas_info %}
+    <div class="modal-eliminar" id="eliminar-{{ item.mascota.id }}">
+      <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+      <div class="modal-eliminar-caja">
+        <span class="modal-eliminar-icono"><i class="bi bi-trash"></i></span>
+        <h3>¿Eliminar a {{ item.mascota.nombre }}?</h3>
+        <p>Se borrarán sus datos. Esta acción no se puede deshacer.</p>
+        <div class="modal-eliminar-botones">
+          <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
+          <form action="{% url 'eliminar_mascota' item.mascota.id %}" method="post" class="mascota-eliminar-form">
+            {% csrf_token %}
+            <button type="submit" class="modal-eliminar-confirmar">Sí, eliminar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
 
     <section class="recordatorio-card" id="mis-citas">
       <span class="recordatorio-mancha recordatorio-mancha-izq"></span>

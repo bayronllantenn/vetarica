@@ -46,16 +46,9 @@ Vet Arica{% endblock %} {% block css %}
               </a>
 
               {% if tipo.activo %}
-              <form
-                action="{% url 'ocultar_tipo_consulta' tipo.id %}"
-                method="post"
-                onsubmit="return confirm('¿Seguro que quieres ocultar este servicio? Ya no se podrá agendar, pero las citas anteriores no se borran.');"
-              >
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-eliminar">
-                  <i class="bi bi-eye-slash"></i> Ocultar
-                </button>
-              </form>
+              <a href="#ocultar-{{ tipo.id }}" class="btn btn-sm btn-eliminar">
+                <i class="bi bi-eye-slash"></i> Ocultar
+              </a>
               {% else %}
               <form action="{% url 'ocultar_tipo_consulta' tipo.id %}" method="post">
                 {% csrf_token %}
@@ -74,6 +67,26 @@ Vet Arica{% endblock %} {% block css %}
         </tbody>
       </table>
     </div>
+
+    {% for tipo in tipos_consulta %}
+    {% if tipo.activo %}
+    <div class="modal-eliminar" id="ocultar-{{ tipo.id }}">
+      <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+      <div class="modal-eliminar-caja">
+        <span class="modal-eliminar-icono"><i class="bi bi-eye-slash"></i></span>
+        <h3>¿Ocultar {{ tipo.nombre }}?</h3>
+        <p>Ya no se podrá agendar, pero las citas anteriores no se borran.</p>
+        <div class="modal-eliminar-botones">
+          <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
+          <form action="{% url 'ocultar_tipo_consulta' tipo.id %}" method="post" class="mascota-eliminar-form">
+            {% csrf_token %}
+            <button type="submit" class="modal-eliminar-confirmar">Sí, ocultar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
   </main>
 </div>
 {% endblock %} {% block extra_js %}

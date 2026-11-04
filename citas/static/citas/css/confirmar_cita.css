@@ -7,48 +7,67 @@
   margin: 0;
   min-height: 100vh;
   overflow-x: hidden;
-  background: #f4f9f5;
+  background: #f3faf7;
   color: #1f2d2b;
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-.confirmar-mancha {
+.form-deco {
   position: fixed;
-  border-radius: 50%;
-  background: #e3efe5;
+  z-index: 0;
   pointer-events: none;
 }
 
-.confirmar-mancha-izq {
-  left: -160px;
-  top: 18%;
-  width: 520px;
-  height: 520px;
+.fondo-camino {
+  top: 9rem;
+  left: 4rem;
+  width: 190px;
+  transform: rotate(-110deg);
+  opacity: 0.8;
 }
 
-.confirmar-mancha-der {
-  right: -160px;
-  top: 30%;
-  width: 480px;
-  height: 480px;
+.fondo-huella {
+  width: 36px;
+  opacity: 0.85;
 }
 
-.confirmar-golden,
-.confirmar-gato {
-  position: fixed;
+.fondo-huella-1 {
+  top: 2.5rem;
+  left: 13rem;
+  transform: rotate(-20deg);
+}
+
+.fondo-huella-2 {
+  top: 20rem;
+  left: 3rem;
+  width: 34px;
+  transform: rotate(10deg);
+}
+
+.fondo-huella-3 {
+  bottom: 9rem;
+  right: 4rem;
+  transform: rotate(15deg);
+}
+
+.fondo-nube {
+  bottom: -10px;
+}
+
+.fondo-nube-izq {
+  left: -40px;
+  width: 460px;
+}
+
+.fondo-nube-der {
+  right: -40px;
+  width: 420px;
+}
+
+.fondo-perro {
   bottom: 0;
-  pointer-events: none;
-}
-
-.confirmar-golden {
-  left: 0;
-  width: 330px;
-}
-
-.confirmar-gato {
-  right: 0;
-  bottom: 10%;
-  width: 300px;
+  right: 3rem;
+  width: 190px;
 }
 
 .confirmar-contenido {
@@ -242,9 +261,15 @@
 }
 
 @media (max-width: 1100px) {
-  .confirmar-golden,
-  .confirmar-gato {
+  .fondo-perro,
+  .fondo-camino,
+  .fondo-huella {
     display: none;
+  }
+
+  .fondo-nube-izq,
+  .fondo-nube-der {
+    width: 220px;
   }
 }
 

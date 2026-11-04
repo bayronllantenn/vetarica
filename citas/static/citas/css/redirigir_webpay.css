@@ -6,42 +6,68 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #eef7f2;
+    background-color: #f3faf7;
     font-family: Arial, sans-serif;
     color: #2b3b38;
     overflow: hidden;
 }
 
-.nube {
+.form-deco {
     position: fixed;
-    width: 320px;
     z-index: 0;
+    pointer-events: none;
 }
 
-.nube-izquierda {
-    top: 30px;
-    left: 0;
+.fondo-camino {
+    top: 9rem;
+    left: 4rem;
+    width: 190px;
+    transform: rotate(-110deg);
+    opacity: 0.8;
 }
 
-.nube-derecha {
-    bottom: 30px;
-    right: 0;
+.fondo-huella {
+    width: 36px;
+    opacity: 0.85;
 }
 
-.mascota {
-    position: fixed;
-    bottom: 40px;
-    z-index: 0;
+.fondo-huella-1 {
+    top: 2.5rem;
+    left: 13rem;
+    transform: rotate(-20deg);
 }
 
-.mascota-perro {
-    width: 380px;
-    left: 3%;
+.fondo-huella-2 {
+    top: 20rem;
+    left: 3rem;
+    width: 34px;
+    transform: rotate(10deg);
 }
 
-.mascota-gato {
-    width: 320px;
-    right: 3%;
+.fondo-huella-3 {
+    bottom: 9rem;
+    right: 4rem;
+    transform: rotate(15deg);
+}
+
+.fondo-nube {
+    bottom: -10px;
+}
+
+.fondo-nube-izq {
+    left: -40px;
+    width: 460px;
+}
+
+.fondo-nube-der {
+    right: -40px;
+    width: 420px;
+}
+
+.fondo-perro {
+    bottom: 0;
+    right: 3rem;
+    width: 190px;
 }
 
 .tarjeta {
@@ -148,8 +174,15 @@ body {
     font-size: 16px;
 }
 
-@media (max-width: 1000px) {
-    .mascota {
+@media (max-width: 1100px) {
+    .fondo-perro,
+    .fondo-camino,
+    .fondo-huella {
         display: none;
+    }
+
+    .fondo-nube-izq,
+    .fondo-nube-der {
+        width: 220px;
     }
 }

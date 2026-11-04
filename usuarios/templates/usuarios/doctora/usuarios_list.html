@@ -62,19 +62,18 @@
                     <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-sm btn-vet-borde">
                       <i class="bi bi-pencil-square"></i> Editar
                     </a>
-                    <form method="post" action="{% url 'bloquear_usuario' usuario.id %}" class="m-0">
-                      {% csrf_token %}
-                      {% if usuario.is_active %}
-                        <button type="submit" class="btn btn-sm btn-eliminar"
-                                onclick="return confirm('¿Bloquear a {{ usuario.email|escapejs }}? No podrá iniciar sesión.')">
-                          <i class="bi bi-lock"></i> Bloquear
-                        </button>
-                      {% else %}
+                    {% if usuario.is_active %}
+                      <a href="#bloquear-{{ usuario.id }}" class="btn btn-sm btn-eliminar">
+                        <i class="bi bi-lock"></i> Bloquear
+                      </a>
+                    {% else %}
+                      <form method="post" action="{% url 'bloquear_usuario' usuario.id %}" class="m-0">
+                        {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-success">
                           <i class="bi bi-unlock"></i> Desbloquear
                         </button>
-                      {% endif %}
-                    </form>
+                      </form>
+                    {% endif %}
                   </div>
                 {% endif %}
               </td>
@@ -88,6 +87,26 @@
         </table>
       </div>
     </div>
+
+    {% for usuario in usuarios %}
+    {% if usuario.is_active and usuario != request.user %}
+    <div class="modal-eliminar" id="bloquear-{{ usuario.id }}">
+      <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+      <div class="modal-eliminar-caja">
+        <span class="modal-eliminar-icono"><i class="bi bi-lock"></i></span>
+        <h3>¿Bloquear a {{ usuario.email }}?</h3>
+        <p>No podrá iniciar sesión.</p>
+        <div class="modal-eliminar-botones">
+          <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
+          <form action="{% url 'bloquear_usuario' usuario.id %}" method="post" class="mascota-eliminar-form">
+            {% csrf_token %}
+            <button type="submit" class="modal-eliminar-confirmar">Sí, bloquear</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
   </main>
 </div>
 {% endblock %} {% block extra_js %}
