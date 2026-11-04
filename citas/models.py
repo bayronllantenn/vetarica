@@ -100,6 +100,8 @@ class SolicitudCita(models.Model):
 
     veces_reagendada = models.PositiveIntegerField(default=0)
 
+    recordatorio_enviado = models.BooleanField(default=False)
+
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

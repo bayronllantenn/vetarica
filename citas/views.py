@@ -26,10 +26,17 @@ def enviar_correo_confirmacion(solicitud):
         return
 
     fecha = timezone.localtime(solicitud.fecha_hora).strftime('%d/%m/%Y %H:%M')
-    asunto = 'Recordatorio de tu cita - Vet Arica'
+    # separa los miles con punto, ej: 25000 -> 25.000
+    monto = format(solicitud.monto_pagado, ',').replace(',', '.')
+    asunto = 'Comprobante de pago - Vet Arica'
     mensaje = (
-        f'Hola {solicitud.nombre}, te recordamos tu cita para {solicitud.nombre_mascota} '
-        f'el {fecha}. Te esperamos en Vet Arica.'
+        f'Hola {solicitud.nombre}, tu hora ha sido agendada con éxito.\n\n'
+        f'Mascota: {solicitud.nombre_mascota}\n'
+        f'Fecha y hora: {fecha}\n'
+        f'Servicio: {solicitud.tipo_consulta.nombre}\n'
+        f'Monto pagado: ${monto}\n\n'
+        f'Gracias por atenderte con nosotros.\n\n'
+        f'Atte. Vet Arica'
     )
     try:
         send_mail(asunto, mensaje, None, [solicitud.email])
@@ -551,6 +558,7 @@ def reagendar_cita(request, id):
         form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
         if form.is_valid():
             solicitud.fecha_hora = form.fecha_hora
+            solicitud.recordatorio_enviado = False
             if not es_personal:
                 solicitud.veces_reagendada = solicitud.veces_reagendada + 1
             solicitud.save()

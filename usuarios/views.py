@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from citas.forms import BloqueoHorarioForm, HORAS_ATENCION, rango_del_dia, MascotaForm, TipoConsultaForm
 from citas.models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita, TipoConsulta
+from citas.recordatorios import enviar_recordatorios
 from .forms import ConfiguracionForm, CrearUsuarioForm, EditarUsuarioForm, LoginForm, RegisterForm
 from .models import Persona
 
@@ -129,6 +130,8 @@ def inicio_doctora(request):
     if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
 
+    enviar_recordatorios()
+
     hoy = timezone.localdate()
 
     # citas de hoy sin las canceladas ordenadas por hora
@@ -215,6 +218,9 @@ def tipos_servicios(request):
 def agenda_doctora(request):
     if not es_personal_clinica(request.user) and not es_tecnico(request.user):
         return redirect('sin_acceso')
+
+    enviar_recordatorios()
+
     try:
         semanas = int(request.GET.get('semana', 0))
     except ValueError:
