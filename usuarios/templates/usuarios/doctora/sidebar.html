@@ -18,6 +18,15 @@
       <strong>VetArica</strong>
       <span>Portal {{ request.user.get_rol_display }} </span>
     </div>
+    <details class="sidebar-notificaciones">
+      <summary class="sidebar-campana" aria-label="Notificaciones">
+        <i class="bi bi-bell" aria-hidden="true"></i>
+      </summary>
+      <div class="sidebar-notificaciones-panel">
+        <strong>Notificaciones</strong>
+        <p>No tienes notificaciones por ahora.</p>
+      </div>
+    </details>
   </div>
 
   <nav class="sidebar-nav">
@@ -60,8 +69,15 @@
   {% endif %}
 </nav>
   <div class="sidebar-footer">
+    <div class="sidebar-usuario">
+      <span class="sidebar-inicial" aria-hidden="true">{{ request.user.first_name|first|upper }}</span>
+      <span class="sidebar-usuario-texto">
+        <strong>{{ request.user.first_name }} {{ request.user.last_name }}</strong>
+        <span>{{ request.user.email }}</span>
+      </span>
+    </div>
     <a href="{% url 'logout' %}" class="sidebar-link">
-      <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+      <i class="bi bi-box-arrow-right"></i> Cerrar sesion
     </a>
   </div>
 </aside>

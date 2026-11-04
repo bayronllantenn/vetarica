@@ -1,114 +1,163 @@
-{% extends 'inicio/base.html' %} {% load static %} {% block title %}Mi cuenta -
-Vet Arica{% endblock %} {% block css %}
+{% extends 'inicio/base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Vet Arica{% endblock %}
+
+{% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
-<link href="{% static 'usuarios/css/agenda.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/inicio_hoy.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
-{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
+{% endblock %}
+{% block topbar %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
-{% endblock %} {% block content %}
-<header class="bg-white border-bottom shadow-sm d-flex justify-content-end px-4 py-2">
-  <span class="d-inline-flex align-items-center gap-2 bg-light rounded-3 px-3 py-2 small fw-semibold text-capitalize">
-    <i class="bi bi-calendar-date-fill text-success"></i> {{ hoy|date:"j M, Y" }}
-  </span>
-</header>
-<div class="dash-shell fondo-huellas">
-  <main class="dash-content">
-    <section class="dash-hero">
-      <h1>Resumen General</h1>
-      <p class="dash-subtitle">Bienvenido de nuevo. Aquí tienes la actividad clínica de hoy.</p>
-    </section>
+{% endblock %}
 
-    <section class="stat-grid-eco">
-      <div class="stat-card-eco stat-card-eco-gris">
-        <div class="stat-card-eco-info">
-          <span class="stat-card-eco-label">Próxima cita</span>
-          {% if proxima_cita %}
-          <strong class="stat-card-eco-numero">{{ proxima_cita.fecha_hora|date:"d/m H:i" }}</strong>
-          <span class="d-block small text-muted mt-1">{{ proxima_cita.nombre_mascota }}, {{ proxima_cita.tipo_consulta.nombre }}</span>
+{% block content %}
+<div class="dash-shell fondo-huellas inicio-hoy">
+  <main class="ih-canvas">
+    <div class="ih-hoja">
+
+      <header class="ih-titulo">
+        <div>
+          <span class="ih-fecha">{{ hoy|date:"l j" }} de {{ hoy|date:"F" }}</span>
+          <h1>{{ saludo }}, {{ request.user.first_name }}</h1>
+          <p>
+            {% if citas_hoy_info %}
+              {% if citas_hoy_info|length == 1 %}
+                1 cita hoy.
+              {% else %}
+                {{ citas_hoy_info|length }} citas hoy.
+              {% endif %}
+              {% if siguiente_cita %}
+                La siguiente es {{ siguiente_cita.nombre_mascota }} a las {{ siguiente_cita.fecha_hora|date:"H:i" }}.
+              {% endif %}
+            {% else %}
+              No hay citas agendadas para hoy.
+            {% endif %}
+          </p>
+        </div>
+        <div class="ih-acciones">
+          <a href="{% url 'agenda_doctora' %}" class="ih-boton ih-boton-sec">Ver agenda</a>
+          <a href="{% url 'crear_cita_interna' %}" class="ih-boton">Nueva cita</a>
+        </div>
+      </header>
+
+      <div class="ih-fila">
+        <section class="ih-panel ih-citas">
+          <div class="ih-panel-cabeza">
+            <h2>Citas de hoy</h2>
+            <span class="ih-meta">Atención de 11:00 a 14:00 y de 17:00 a 21:00</span>
+          </div>
+
+          {% if citas_hoy_info %}
+          <ul class="ih-lista">
+            {% for item in citas_hoy_info %}
+            <li class="{% if item.es_siguiente %}ih-siguiente{% endif %} {% if item.ya_paso %}ih-pasada{% endif %}">
+              <a href="{% url 'ficha_medica_detalle' item.cita.id %}">
+                <span class="ih-hora">{{ item.cita.fecha_hora|date:"H:i" }}</span>
+                <span class="ih-paciente">
+                  <strong>{{ item.cita.nombre_mascota }}</strong>
+                  <span>{{ item.cita.tipo_consulta.nombre }} · {{ item.cita.nombre }} {{ item.cita.apellido }}</span>
+                </span>
+                {% if item.cita.estado_pago == 'Pagado' %}
+                <span class="ih-estado ih-estado-pagado">{{ item.cita.get_estado_pago_display }}</span>
+                {% elif item.cita.estado_pago == 'En clinica' %}
+                <span class="ih-estado ih-estado-clinica">{{ item.cita.get_estado_pago_display }}</span>
+                {% else %}
+                <span class="ih-estado">{{ item.cita.get_estado_pago_display }}</span>
+                {% endif %}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
           {% else %}
-          <span class="d-block text-dark">Sin citas próximas</span>
+          <p class="ih-vacio">Hoy no hay citas agendadas.</p>
           {% endif %}
-        </div>
-        <span class="stat-card-eco-icono">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12" />
-            <path d="M16 3v4" />
-            <path d="M8 3v4" />
-            <path d="M4 11h16" />
-            <path d="M7 14h.013" />
-            <path d="M10.01 14h.005" />
-            <path d="M13.01 14h.005" />
-            <path d="M16.015 14h.005" />
-            <path d="M13.015 17h.005" />
-            <path d="M7.01 17h.005" />
-            <path d="M10.01 17h.005" />
-          </svg>
-        </span>
-      </div>
+        </section>
 
-      {% if request.user.rol == 'veterinaria' %}
-      <div class="stat-card-eco stat-card-eco-verde">
-        <div class="stat-card-eco-info">
-          <span class="stat-card-eco-label">Ingresos del mes</span>
-          <strong class="stat-card-eco-numero">${{ ingresos_mes }}</strong>
-        </div>
-        <span class="stat-card-eco-icono">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M15 11v.01" />
-            <path d="M5.173 8.378a3 3 0 1 1 4.656 -1.377" />
-            <path d="M16 4v3.803a6.019 6.019 0 0 1 2.658 3.197h1.341a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-1.342c-.336 .95 -.907 1.8 -1.658 2.473v2.027a1.5 1.5 0 0 1 -3 0v-.583a6.04 6.04 0 0 1 -1 .083h-4a6.04 6.04 0 0 1 -1 -.083v.583a1.5 1.5 0 0 1 -3 0v-2l0 -.027a6 6 0 0 1 4 -10.473h2.5l4.5 -3" />
-          </svg>
-        </span>
-      </div>
-      {% endif %}
-    </section>
+        {% if mostrar_resumen %}
+        <aside class="ih-panel ih-resumen">
+          {% if not proxima_cita %}
+          <div class="ih-bloque">
+            <span class="ih-etiqueta">Próxima cita</span>
+            <span class="ih-sin-dato">No hay citas por venir</span>
+          </div>
+          {% endif %}
 
-    <div class="dash-mid-grid">
-      <div class="citas-hoy-card">
-        <h2 class="dash-section-title">Citas de hoy</h2>
-        {% if citas_hoy_info %}
-        <div class="cita-list">
-          {% for item in citas_hoy_info %}
-          <a href="{% url 'ficha_medica_detalle' item.cita.id %}" class="cita-item-enlace">
-            <article class="cita-item cita-item-{{ item.cita.estado|lower }} {% if item.es_siguiente %}cita-item-siguiente{% endif %} {% if item.ya_paso %}cita-item-pasada{% endif %}">
-              <div class="cita-fecha-texto">{{ item.cita.fecha_hora|date:"H:i" }}</div>
-              <div class="cita-info">
-                <h3>{{ item.cita.nombre_mascota }} <span class="cita-dueno">Dueño: {{ item.cita.nombre }} {{ item.cita.apellido }}</span></h3>
-                <p>{{ item.cita.tipo_consulta.nombre }}</p>
-              </div>
-              <span class="cita-estado-texto">{{ item.cita.estado_pago }}</span>
-            </article>
-          </a>
-          {% endfor %}
-        </div>
-        {% else %}
-        <p class="mascotas-subtitulo">No hay citas agendadas para hoy.</p>
+          {% if proxima_otro_dia %}
+          <div class="ih-bloque">
+            <span class="ih-etiqueta">Próxima cita</span>
+            <strong class="ih-cifra">{{ proxima_cita.fecha_hora|date:"d/m H:i" }}</strong>
+            <span class="ih-detalle">{{ proxima_cita.nombre_mascota }}, {{ proxima_cita.tipo_consulta.nombre }}</span>
+          </div>
+          {% endif %}
+
+          {% if request.user.rol == 'veterinaria' %}
+          <div class="ih-bloque">
+            <span class="ih-etiqueta">Ingresos de {{ hoy|date:"F" }}</span>
+            <strong class="ih-cifra">${{ ingresos_mes }}</strong>
+            <span class="ih-detalle">Citas pagadas por Webpay desde el día 1</span>
+          </div>
+
+          <div class="ih-bloque">
+            <span class="ih-etiqueta">Fichas por completar</span>
+            <strong class="ih-cifra">{{ fichas_pendientes }}</strong>
+            {% if fichas_pendientes %}
+            <a href="{% url 'pacientes' %}" class="ih-enlace">Ver pacientes</a>
+            {% else %}
+            <span class="ih-detalle">Todas las citas pasadas tienen ficha</span>
+            {% endif %}
+          </div>
+          {% endif %}
+        </aside>
         {% endif %}
       </div>
 
-      <div class="grafico-card">
-        <h2 class="dash-section-title">Atenciones por especie</h2>
-        <div class="grafico-lienzo">
-          <canvas id="especies-chart"></canvas>
-        </div>
-      </div>
-    </div>
+      <div class="ih-fila ih-fila-graficos">
+        <section class="ih-panel ih-meses">
+          <div class="ih-panel-cabeza">
+            <h2>Atenciones por mes</h2>
+            <span class="ih-meta">Citas pagadas en {{ hoy|date:"Y" }}</span>
+          </div>
+          <div class="ih-grafico">
+            <canvas id="grafico-meses"></canvas>
+          </div>
+        </section>
 
-    <div class="grafico-card grafico-card-ancho">
-      <h2 class="dash-section-title">Atenciones por mes</h2>
-      <div class="grafico-lienzo">
-        <canvas id="atenciones-chart"></canvas>
+        <section class="ih-panel ih-especie">
+          <div class="ih-panel-cabeza">
+            <h2>Atenciones por especie</h2>
+          </div>
+
+          {% if total_especies %}
+          <div class="ih-especies">
+            {% for especie in especies %}
+            <div class="ih-especie-fila {% if especie.es_mayor %}ih-especie-primera{% endif %}">
+              <span>{{ especie.nombre }}</span>
+              <strong>{{ especie.cantidad }}</strong>
+              <span class="ih-especie-barra" style="width: {{ especie.ancho }}%"></span>
+            </div>
+            {% endfor %}
+          </div>
+          <p class="ih-detalle ih-total">{{ total_especies }} atenciones pagadas en total</p>
+          {% else %}
+          <p class="ih-vacio">Todavía no hay atenciones pagadas.</p>
+          {% endif %}
+        </section>
       </div>
+
     </div>
   </main>
 </div>
-{% endblock %} {% block extra_js %}
+{% endblock %}
+
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 <script>
   const notyf = new Notyf({
     duration: 3000,
@@ -116,66 +165,76 @@ Vet Arica{% endblock %} {% block css %}
   });
 
   {% for message in messages %}
-  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+    {% if message.tags == 'success' %}
+    notyf.success("{{ message|escapejs }}");
+    {% else %}
+    notyf.error("{{ message|escapejs }}");
+    {% endif %}
   {% endfor %}
-</script>
-<script>
-  new Chart(document.getElementById("especies-chart"), {
-    type: "doughnut",
-    data: {
-      labels: ["Perros", "Gatos", "Otros"],
-      datasets: [
-        {
-          data: [{{ perros }}, {{ gatos }}, {{ otros }}],
-          backgroundColor: ["#0f8a7e", "#3d4e4a", "#cbd5d1"],
-        },
-      ],
-    },
-    options: {
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: { color: "#1f2d2b", usePointStyle: true, boxWidth: 8, boxHeight: 8 },
-        },
-      },
-    },
-  });
 
-  new Chart(document.getElementById("atenciones-chart"), {
-    type: "line",
+  const meses = [];
+  const cantidades = [];
+  {% for mes in meses_grafico %}
+  meses.push("{{ mes }}");
+  {% endfor %}
+  {% for cantidad in atenciones_por_mes %}
+  cantidades.push({{ cantidad }});
+  {% endfor %}
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  const grafico = document.getElementById("grafico-meses");
+  new Chart(grafico, {
+    type: "bar",
     data: {
-      labels: [{% for mes in meses_grafico %}"{{ mes }}",{% endfor %}],
+      labels: meses,
       datasets: [
         {
           label: "Atenciones",
-          data: [{% for cantidad in atenciones_por_mes %}{{ cantidad }},{% endfor %}],
-          borderColor: "#0f8a7e",
+          data: cantidades,
           backgroundColor: "#0f8a7e",
-          borderWidth: 2,
-          pointRadius: 3,
-          pointHoverRadius: 5,
-          tension: 0.3,
+          barPercentage: 0.62,
+          categoryPercentage: 1,
         },
       ],
     },
     options: {
       maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          displayColors: false,
+          backgroundColor: "#111111",
+        },
+      },
       scales: {
         y: {
           beginAtZero: true,
-          grid: { color: "#e6e8e7" },
-          ticks: { color: "#5b6b68", precision: 0 },
+          grace: 1,
+          border: {
+            display: false,
+          },
+          grid: {
+            color: "#e5ece9",
+          },
+          ticks: {
+            color: "#5f6368",
+            precision: 0,
+            maxTicksLimit: 5,
+          },
         },
         x: {
-          grid: { display: false },
-          ticks: { color: "#5b6b68" },
-        },
-      },
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: { color: "#1f2d2b", usePointStyle: true, boxWidth: 8, boxHeight: 8 },
+          border: {
+            color: "#5f6368",
+          },
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: "#5f6368",
+            autoSkip: false,
+          },
         },
       },
     },
