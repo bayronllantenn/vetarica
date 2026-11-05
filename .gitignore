@@ -16,3 +16,5 @@ media/
 Pipfile
 Pipfile.lock
 .env
+orden.jpg
+probar_ocr.py
