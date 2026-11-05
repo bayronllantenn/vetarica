@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from usuarios.models import Persona
 from usuarios.views import es_personal_clinica
-from .forms import CitaInternaForm, FichaMedicaForm, MascotaForm, ReagendarCitaForm, SolicitudCitaForm, obtener_horas_disponibles, rango_del_dia
+from .forms import CitaInternaForm, FichaMedicaForm, MascotaForm, ReagendarCitaForm, SolicitudCitaForm, cancelar_citas_vencidas, obtener_horas_disponibles, rango_del_dia
 from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .utils import get_webpay_transaction
 
@@ -26,10 +26,17 @@ def enviar_correo_confirmacion(solicitud):
         return
 
     fecha = timezone.localtime(solicitud.fecha_hora).strftime('%d/%m/%Y %H:%M')
-    asunto = 'Recordatorio de tu cita - Vet Arica'
+    # separa los miles con punto, ej: 25000 -> 25.000
+    monto = format(solicitud.monto_pagado, ',').replace(',', '.')
+    asunto = 'Comprobante de pago - Vet Arica'
     mensaje = (
-        f'Hola {solicitud.nombre}, te recordamos tu cita para {solicitud.nombre_mascota} '
-        f'el {fecha}. Te esperamos en Vet Arica.'
+        f'Hola {solicitud.nombre}, tu hora ha sido agendada con éxito.\n\n'
+        f'Mascota: {solicitud.nombre_mascota}\n'
+        f'Fecha y hora: {fecha}\n'
+        f'Servicio: {solicitud.tipo_consulta.nombre}\n'
+        f'Monto pagado: ${monto}\n\n'
+        f'Gracias por atenderte con nosotros.\n\n'
+        f'Atte. Vet Arica'
     )
     try:
         send_mail(asunto, mensaje, None, [solicitud.email])
@@ -191,7 +198,17 @@ def cancelar_solicitud(request, id):
     solicitud = get_object_or_404(SolicitudCita, id=id)
     if not puede_ver_solicitud(request, solicitud):
         raise Http404
-    solicitud.delete()
+
+    if request.method != 'POST':
+        return redirect('confirmar_cita', solicitud.id)
+
+    if solicitud.estado_pago == 'Pagado':
+        messages.error(request, 'Esta cita ya está pagada y no se puede cancelar aquí.')
+        return redirect('confirmar_cita', solicitud.id)
+
+    solicitud.estado = 'Cancelada'
+    solicitud.estado_pago = 'Rechazado'
+    solicitud.save()
     messages.info(request, 'Cancelaste la solicitud de cita.')
     return redirect('agendar')
 
@@ -206,6 +223,14 @@ def iniciar_pago_webpay(request, id):
     if solicitud.estado_pago == 'Pagado':
         messages.info(request, 'Esta cita ya se encuentra pagada.')
         return redirect('reserva_exitosa', solicitud.pk)
+
+    # primero se cancelan las solicitudes que pasaron los 15 minutos sin pagar
+    cancelar_citas_vencidas()
+    solicitud.refresh_from_db()
+
+    if solicitud.estado == 'Cancelada':
+        messages.error(request, 'El tiempo para pagar esta solicitud venció. Agenda nuevamente.')
+        return redirect('agendar')
 
     monto = solicitud.tipo_consulta.precio_base
 
@@ -256,6 +281,13 @@ def retorno_webpay(request):
     if not solicitud:
         messages.error(request, 'No se encontró la solicitud asociada al pago.')
         return redirect('reserva_fallida')
+
+    if solicitud.estado_pago == 'Pagado':
+        return redirect('reserva_exitosa', solicitud.pk)
+
+    if solicitud.estado == 'Cancelada':
+        messages.error(request, 'El tiempo para pagar venció y la hora se liberó. No se realizó ningún cobro.')
+        return redirect('reserva_fallida_id', solicitud.pk)
 
     try:
         tx = get_webpay_transaction()
@@ -551,6 +583,7 @@ def reagendar_cita(request, id):
         form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
         if form.is_valid():
             solicitud.fecha_hora = form.fecha_hora
+            solicitud.recordatorio_enviado = False
             if not es_personal:
                 solicitud.veces_reagendada = solicitud.veces_reagendada + 1
             solicitud.save()
