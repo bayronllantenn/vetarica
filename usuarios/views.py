@@ -143,6 +143,7 @@ def inicio_doctora(request):
     # marcamos cual cita ya paso y cual es la siguiente por venir para destacarla en la lista
     ahora = timezone.now()
     ya_eligio_la_siguiente = False
+    siguiente_cita = None
     citas_hoy_info = []
     for cita in citas_hoy:
         ya_paso = cita.fecha_hora < ahora
@@ -150,6 +151,7 @@ def inicio_doctora(request):
         if not ya_paso and not ya_eligio_la_siguiente:
             es_siguiente = True
             ya_eligio_la_siguiente = True
+            siguiente_cita = cita
         citas_hoy_info.append({
             'cita': cita,
             'ya_paso': ya_paso,
@@ -168,13 +170,58 @@ def inicio_doctora(request):
     # separa los miles con punto
     ingresos_mes = format(ingresos_mes, ',').replace(',', '.')
 
-    proxima_cita = SolicitudCita.objects.filter(fecha_hora__gte=ahora, estado_pago='Pagado').exclude(estado='Cancelada').order_by('fecha_hora').first()
+    hora = timezone.localtime(ahora).hour
+    if hora < 12:
+        saludo = 'Buenos días'
+    elif hora < 20:
+        saludo = 'Buenas tardes'
+    else:
+        saludo = 'Buenas noches'
+
+    proxima_cita = SolicitudCita.objects.filter(fecha_hora__gte=ahora, estado_pago__in=['Pagado', 'En clinica']).exclude(estado='Cancelada').order_by('fecha_hora').first()
+
+    proxima_otro_dia = False
+    if proxima_cita:
+        if timezone.localtime(proxima_cita.fecha_hora).date() != hoy:
+            proxima_otro_dia = True
+
+    mostrar_resumen = False
+    if request.user.rol == 'veterinaria':
+        mostrar_resumen = True
+    if proxima_cita is None:
+        mostrar_resumen = True
+    if proxima_otro_dia:
+        mostrar_resumen = True
+
+    fichas_pendientes = SolicitudCita.objects.filter(fecha_hora__lt=ahora, estado_pago__in=['Pagado', 'En clinica'], ficha_medica__isnull=True)
+    fichas_pendientes = fichas_pendientes.exclude(estado='Cancelada').exclude(estado='Ausente').count()
 
     citas_pagadas = SolicitudCita.objects.filter(estado_pago='Pagado').exclude(estado='Cancelada').exclude(estado='Ausente')
 
     perros = citas_pagadas.filter(especie_mascota='Canino').count()
     gatos = citas_pagadas.filter(especie_mascota='Felino').count()
     otros = citas_pagadas.count() - perros - gatos
+    total_especies = perros + gatos + otros
+
+    mayor = perros
+    if gatos > mayor:
+        mayor = gatos
+    if otros > mayor:
+        mayor = otros
+
+    nombres = ['Caninos', 'Felinos', 'Otros']
+    cantidades = [perros, gatos, otros]
+    especies = []
+    for i in range(3):
+        ancho = 0
+        if mayor > 0:
+            ancho = cantidades[i] * 100 // mayor
+        especies.append({
+            'nombre': nombres[i],
+            'cantidad': cantidades[i],
+            'ancho': ancho,
+            'es_mayor': cantidades[i] == mayor,
+        })
 
     meses_grafico = []
     atenciones_por_mes = []
@@ -193,10 +240,14 @@ def inicio_doctora(request):
         'citas_hoy_info': citas_hoy_info,
         'ingresos_mes': ingresos_mes,
         'hoy': hoy,
+        'saludo': saludo,
+        'siguiente_cita': siguiente_cita,
         'proxima_cita': proxima_cita,
-        'perros': perros,
-        'gatos': gatos,
-        'otros': otros,
+        'proxima_otro_dia': proxima_otro_dia,
+        'mostrar_resumen': mostrar_resumen,
+        'fichas_pendientes': fichas_pendientes,
+        'especies': especies,
+        'total_especies': total_especies,
         'meses_grafico': meses_grafico,
         'atenciones_por_mes': atenciones_por_mes,
     }

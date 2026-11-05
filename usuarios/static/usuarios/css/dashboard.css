@@ -31,7 +31,7 @@ html {
   margin: 0;
   padding: 30px;
   min-height: 100vh;
-  background-image: url("../../inicio/img/decoracion/Patron_de_huellas_y_huesos_menta.png");
+  background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url("../../inicio/img/decoracion/Patron_de_huellas_y_huesos_menta.png");
   background-size: cover;
   background-attachment: fixed;
 }
