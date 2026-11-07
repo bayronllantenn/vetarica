@@ -1,5 +1,6 @@
 import requests
 from decouple import config
+from .models import Insumo
 
 
 def leer_texto(archivo):
@@ -51,3 +52,13 @@ def separar_productos(texto):
                 break
 
     return productos
+
+
+def buscar_insumo(nombre):
+    insumos = Insumo.objects.all()
+
+    for insumo in insumos:
+        if insumo.nombre.upper() in nombre.upper():
+            return insumo
+
+    return None
