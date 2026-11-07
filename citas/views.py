@@ -302,7 +302,7 @@ def retorno_webpay(request):
         if response.get('status') == 'AUTHORIZED':
             solicitud.estado = 'Confirmada'
             solicitud.estado_pago = 'Pagado'
-            solicitud.monto_pagado = solicitud.tipo_consulta.precio_base
+            solicitud.monto_pagado = response.get('amount')
             solicitud.fecha_pago = timezone.now()
             solicitud.save()
             enviar_correo_confirmacion(solicitud)

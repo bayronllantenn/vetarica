@@ -7,12 +7,19 @@ Vet Arica{% endblock %} {% block css %}
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
-<div class="dash-shell fondo-huellas">
+<div class="dash-shell fondo-huellas agenda-pagina">
   <main class="dash-content dash-content-agenda">
     <section class="dash-hero agenda-dia-hero">
       <div>
         <h1>Agenda</h1>
         <p class="dash-subtitle">{{ subtitulo_semana }}, {{ total_citas }} citas agendadas</p>
+        <ul class="agenda-leyenda">
+          <li><span class="agenda-punto agenda-punto-confirmada"></span>Confirmada</li>
+          <li><span class="agenda-punto agenda-punto-pendiente"></span>Pendiente</li>
+          <li><span class="agenda-punto agenda-punto-finalizado"></span>Atendida</li>
+          <li><span class="agenda-punto agenda-punto-ausente"></span>No asistió</li>
+          <li><span class="agenda-punto agenda-punto-bloqueo"></span>Bloqueado</li>
+        </ul>
       </div>
       <div class="agenda-dia-controles">
         <a href="?semana={{ semana_anterior }}" class="agenda-nav-btn" aria-label="Semana anterior">
@@ -46,37 +53,55 @@ Vet Arica{% endblock %} {% block css %}
       <div class="agenda-semana-header">
         <div class="agenda-semana-hora-col"></div>
         {% for dia in dias_semana %}
-        <div class="agenda-semana-dia-col {% if dia.es_hoy %}agenda-semana-dia-col-hoy{% endif %}">
-          <span class="agenda-semana-dia-nombre">{{ dia.fecha|date:"l"|capfirst }}</span>
-          <span class="agenda-semana-dia-numero {% if dia.es_hoy %}agenda-semana-dia-numero-hoy{% endif %}">{{ dia.fecha|date:"j" }}</span>
+        <div class="agenda-semana-dia-col {% if dia.es_hoy %}agenda-dia-hoy{% endif %}">
+          <span class="agenda-semana-dia-nombre">{{ dia.fecha|date:"D" }}</span>
+          <span class="agenda-semana-dia-numero">{{ dia.fecha|date:"j" }}</span>
         </div>
         {% endfor %}
       </div>
 
       {% for fila in filas %}
-      <div class="agenda-semana-fila">
+      {% if fila.hora == '17:00' %}
+      <div class="agenda-pausa">
+        <span><i class="bi bi-cup-hot"></i> Cerrado de 14:00 a 17:00</span>
+      </div>
+      {% endif %}
+      <div class="agenda-semana-fila {% if fila.hora|slice:'3:' == '00' %}agenda-fila-en-punto{% endif %}">
         <div class="agenda-semana-hora">{{ fila.hora }}</div>
         {% for celda in fila.celdas %}
-        {% if celda.cita and user.rol != 'tecnico' %}
-        <a href="{% url 'ficha_medica_detalle' celda.cita.id %}" class="agenda-semana-celda agenda-semana-celda-ocupada agenda-semana-celda-enlace agenda-cita-{{ celda.cita.estado|lower }}" title="Abrir ficha clínica">
-          <strong>{{ fila.hora }} {{ celda.cita.nombre_mascota }}</strong>
-          <span>{{ celda.cita.tipo_consulta.nombre }}, {{ celda.cita.nombre }} {{ celda.cita.apellido }}</span>
-          {% if celda.cita.ficha_medica %}
-          <span class="agenda-ficha-estado"><i class="bi bi-check2"></i> Con ficha</span>
-          {% elif celda.cita.estado == 'Ausente' %}
-          <span class="agenda-ficha-estado"><i class="bi bi-person-x"></i> No asistió</span>
+        <div class="agenda-semana-celda">
+          {% if celda.cita and user.rol != 'tecnico' %}
+          <a href="{% url 'ficha_medica_detalle' celda.cita.id %}" class="agenda-cita agenda-cita-enlace agenda-cita-{{ celda.cita.estado|lower }}" title="Abrir ficha clínica">
+            <strong>
+              {{ fila.hora }} {{ celda.cita.nombre_mascota }}
+              {% if celda.cita.ficha_medica %}
+              <i class="bi bi-check2" title="Con ficha"></i>
+              {% elif celda.cita.estado == 'Ausente' %}
+              <i class="bi bi-person-x" title="No asistió"></i>
+              {% else %}
+              <i class="bi bi-plus-lg" title="Agregar ficha"></i>
+              {% endif %}
+            </strong>
+            <span>{{ celda.cita.tipo_consulta.nombre }}, {{ celda.cita.nombre }} {{ celda.cita.apellido }}</span>
+          </a>
+          {% elif celda.cita %}
+          <div class="agenda-cita agenda-cita-{{ celda.cita.estado|lower }}">
+            <strong>{{ fila.hora }} {{ celda.cita.nombre_mascota }}</strong>
+            <span>{{ celda.cita.tipo_consulta.nombre }}, {{ celda.cita.nombre }} {{ celda.cita.apellido }}</span>
+          </div>
+          {% elif celda.bloqueo.cita %}
+          <div class="agenda-cita agenda-cita-{{ celda.bloqueo.cita.estado|lower }} {% if fila.hora != '17:00' %}agenda-sigue{% endif %}"></div>
+          {% elif celda.bloqueo %}
+          {% if fila.hora == celda.bloqueo.hora_inicio %}
+          <div class="agenda-bloqueo">
+            <strong>Bloqueado</strong>
+            <span>{{ celda.bloqueo.motivo }}</span>
+          </div>
           {% else %}
-          <span class="agenda-ficha-estado"><i class="bi bi-plus-lg"></i> Agregar ficha</span>
+          <div class="agenda-bloqueo {% if fila.hora != '17:00' %}agenda-sigue{% endif %}"></div>
           {% endif %}
-        </a>
-        {% elif celda.cita %}
-        <div class="agenda-semana-celda agenda-semana-celda-ocupada agenda-cita-{{ celda.cita.estado|lower }}">
-          <strong>{{ fila.hora }} {{ celda.cita.nombre_mascota }}</strong>
-          <span>{{ celda.cita.tipo_consulta.nombre }}, {{ celda.cita.nombre }} {{ celda.cita.apellido }}</span>
+          {% endif %}
         </div>
-        {% else %}
-        <span class="agenda-semana-celda agenda-semana-celda-libre"></span>
-        {% endif %}
         {% endfor %}
       </div>
       {% endfor %}
