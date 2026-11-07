@@ -1,0 +1,23 @@
+.tabla-scroll {
+    overflow-x: auto;
+}
+
+.tabla.tabla-proveedores th,
+.tabla.tabla-proveedores td {
+    text-align: left;
+    vertical-align: middle;
+}
+
+.tabla-proveedores td:empty::before {
+    content: "-";
+}
+
+.tabla.tabla-proveedores .acciones-servicio {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.tabla-proveedores .estado {
+    display: inline-block;
+    margin: 0 0.25rem 0.25rem 0;
+}

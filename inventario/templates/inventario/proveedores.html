@@ -1,0 +1,98 @@
+{% extends 'inicio/base.html' %} {% load static %} {% block title %}Proveedores -
+Vet Arica{% endblock %} {% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/agenda.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="{% static 'inventario/css/proveedores.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %} {% block content %}
+<div class="dash-shell fondo-huellas">
+  <main class="dash-content">
+    <div class="grafico-card grafico-card-ancho">
+      <div class="tabla-titulo">
+        <h2 class="dash-section-title">Proveedores</h2>
+        <a href="{% url 'crear_proveedor' %}" class="btn btn-sm btn-vet-borde">
+          <i class="bi bi-plus-lg"></i> Agregar proveedor
+        </a>
+      </div>
+      <div class="tabla-scroll">
+        <table class="tabla tabla-proveedores">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>RUT</th>
+              <th>Contacto</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Insumos</th>
+              <th class="acciones-servicio">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for proveedor in proveedores %}
+            <tr>
+              <td>{{ proveedor.nombre }}</td>
+              <td>{{ proveedor.rut }}</td>
+              <td>{{ proveedor.contacto }}</td>
+              <td>{{ proveedor.telefono }}</td>
+              <td>{{ proveedor.email }}</td>
+              <td>
+                {% for insumo in proveedor.insumos.all %}
+                <span class="estado">{{ insumo.nombre }}</span>
+                {% empty %}
+                -
+                {% endfor %}
+              </td>
+              <td class="acciones-servicio">
+                <a href="{% url 'editar_proveedor' proveedor.id %}" class="btn btn-sm btn-vet-borde">
+                  <i class="bi bi-pencil-square"></i> Editar
+                </a>
+                <a href="#eliminar-{{ proveedor.id }}" class="btn btn-sm btn-eliminar">
+                  <i class="bi bi-trash"></i> Eliminar
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7">No hay proveedores registrados.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% for proveedor in proveedores %}
+    <div class="modal-eliminar" id="eliminar-{{ proveedor.id }}">
+      <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+      <div class="modal-eliminar-caja">
+        <span class="modal-eliminar-icono"><i class="bi bi-trash"></i></span>
+        <h3>¿Eliminar {{ proveedor.nombre }}?</h3>
+        <p>Los insumos no se borran, solo dejan de tener asociado este proveedor.</p>
+        <div class="modal-eliminar-botones">
+          <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
+          <form action="{% url 'eliminar_proveedor' proveedor.id %}" method="post" class="mascota-eliminar-form">
+            {% csrf_token %}
+            <button type="submit" class="modal-eliminar-confirmar">Sí, eliminar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}

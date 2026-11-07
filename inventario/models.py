@@ -27,6 +27,8 @@ DIAS_AVISO_VENCIMIENTO = 30
 
 class Proveedor(models.Model):
     nombre = models.CharField(max_length=100)
+    rut = models.CharField('RUT', max_length=12, unique=True, error_messages={'unique': 'Ya existe un proveedor con ese RUT.'})
+    contacto = models.CharField(max_length=100, blank=True)
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
 
