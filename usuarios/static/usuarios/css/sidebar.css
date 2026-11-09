@@ -307,3 +307,47 @@
     width: 220px;
   }
 }
+
+.sidebar-modo {
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+}
+
+body:has(.sidebar-doctora) .dash-shell.fondo-huellas {
+  background: #fff;
+}
+
+body:has(.sidebar-doctora) .fondo-huellas .dash-content {
+  box-shadow: none;
+}
+
+body:has(.sidebar-doctora) .dash-hero {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eef1f0;
+}
+
+body:has(.sidebar-doctora) .dash-hero h1 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #111;
+}
+
+body:has(.sidebar-doctora) .dash-hero .dash-subtitle {
+  font-size: 14px;
+  color: #6b7a77;
+}
+
+.modo-oscuro .dash-shell {
+  filter: invert(0.9) hue-rotate(180deg);
+}
+
+.modo-oscuro .dash-shell img,
+.modo-oscuro .dash-shell .btn-teal,
+.modo-oscuro .dash-shell .pac-btn-verde,
+.modo-oscuro .dash-shell .ih-boton:not(.ih-boton-sec) {
+  filter: invert(1) hue-rotate(180deg);
+}

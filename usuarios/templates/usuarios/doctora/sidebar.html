@@ -76,6 +76,9 @@
         <span>{{ request.user.email }}</span>
       </span>
     </div>
+    <button type="button" class="sidebar-link sidebar-modo" onclick="cambiarModo()">
+      <i class="bi bi-moon"></i> Modo oscuro
+    </button>
     <a href="{% url 'logout' %}" class="sidebar-link">
       <i class="bi bi-box-arrow-right"></i> Cerrar sesion
     </a>
@@ -83,6 +86,19 @@
 </aside>
 
 <script>
+  if (localStorage.getItem("modo") == "oscuro") {
+    document.documentElement.classList.add("modo-oscuro");
+  }
+
+  function cambiarModo() {
+    document.documentElement.classList.toggle("modo-oscuro");
+    if (document.documentElement.classList.contains("modo-oscuro")) {
+      localStorage.setItem("modo", "oscuro");
+    } else {
+      localStorage.setItem("modo", "claro");
+    }
+  }
+
   const sidebarToggle = document.getElementById("sidebarToggle");
   const sidebarEl = document.getElementById("sidebar");
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");
