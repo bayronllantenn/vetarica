@@ -1,69 +1,96 @@
-{% extends 'inicio/base.html' %} {% load static %} {% block title %}Proveedores -
-Vet Arica{% endblock %} {% block css %}
+{% extends 'inicio/base.html' %}
+{% load static %}
+{% block title %}Proveedores - Vet Arica{% endblock %}
+{% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
-<link href="{% static 'usuarios/css/agenda.css' %}" rel="stylesheet" />
-<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
 <link href="{% static 'inventario/css/proveedores.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
-<div class="dash-shell fondo-huellas">
-  <main class="dash-content">
-    <div class="grafico-card grafico-card-ancho">
-      <div class="tabla-titulo">
-        <h2 class="dash-section-title">Proveedores</h2>
-        <a href="{% url 'crear_proveedor' %}" class="btn btn-sm btn-vet-borde">
-          <i class="bi bi-plus-lg"></i> Agregar proveedor
-        </a>
+<div class="dash-shell fondo-huellas pac-pagina">
+  <main class="dash-content pac-contenido">
+    <section class="dash-hero pac-titulo">
+      <div>
+        <h1>Proveedores</h1>
+        <p class="dash-subtitle">{{ proveedores|length }} proveedores registrados</p>
       </div>
-      <div class="tabla-scroll">
-        <table class="tabla tabla-proveedores">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>RUT</th>
-              <th>Contacto</th>
-              <th>Teléfono</th>
-              <th>Correo</th>
-              <th>Insumos</th>
-              <th class="acciones-servicio">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for proveedor in proveedores %}
-            <tr>
-              <td>{{ proveedor.nombre }}</td>
-              <td>{{ proveedor.rut }}</td>
-              <td>{{ proveedor.contacto }}</td>
-              <td>{{ proveedor.telefono }}</td>
-              <td>{{ proveedor.email }}</td>
-              <td>
-                {% for insumo in proveedor.insumos.all %}
-                <span class="estado">{{ insumo.nombre }}</span>
-                {% empty %}
-                -
-                {% endfor %}
-              </td>
-              <td class="acciones-servicio">
-                <a href="{% url 'editar_proveedor' proveedor.id %}" class="btn btn-sm btn-vet-borde">
-                  <i class="bi bi-pencil-square"></i> Editar
-                </a>
-                <a href="#eliminar-{{ proveedor.id }}" class="btn btn-sm btn-eliminar">
-                  <i class="bi bi-trash"></i> Eliminar
-                </a>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="7">No hay proveedores registrados.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <a href="{% url 'crear_proveedor' %}" class="btn btn-teal pac-boton">
+        <i class="bi bi-plus-lg"></i> Nuevo proveedor
+      </a>
+    </section>
+
+    <form method="get" class="pac-buscador">
+      <div class="pac-campo">
+        <i class="bi bi-search"></i>
+        <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por nombre, RUT o contacto">
       </div>
-    </div>
+      <button type="submit" class="btn btn-teal pac-boton">Buscar</button>
+    </form>
+
+    <section class="pac-panel">
+      {% if proveedores %}
+      <table class="pac-tabla">
+        <thead>
+          <tr>
+            <th>Proveedor</th>
+            <th>Contacto</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Insumos</th>
+            <th class="pac-acciones">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for proveedor in proveedores %}
+          <tr>
+            <td>
+              <div class="pac-mascota">
+                <span class="pac-avatar prov-avatar">{{ proveedor.nombre|first|upper }}</span>
+                <div>
+                  <strong>{{ proveedor.nombre }}</strong>
+                  <span>{{ proveedor.rut }}</span>
+                </div>
+              </div>
+            </td>
+            <td data-label="Contacto">{{ proveedor.contacto }}</td>
+            <td data-label="Teléfono">{{ proveedor.telefono }}</td>
+            <td data-label="Correo">{{ proveedor.email }}</td>
+            <td data-label="Insumos">
+              {% for insumo in proveedor.insumos.all %}
+              <span class="pac-etiqueta prov-insumo">{{ insumo.nombre }}</span>
+              {% empty %}
+              <span class="pac-etiqueta">Sin insumos</span>
+              {% endfor %}
+            </td>
+            <td class="pac-acciones">
+              <a href="{% url 'editar_proveedor' proveedor.id %}" class="pac-btn">
+                <i class="bi bi-pencil-square"></i> Editar
+              </a>
+              <a href="#eliminar-{{ proveedor.id }}" class="pac-btn prov-btn-eliminar">
+                <i class="bi bi-trash"></i> Eliminar
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="pac-vacio">
+        <i class="bi bi-search"></i>
+        {% if buscar %}
+        <p>No encontramos proveedores con "{{ buscar }}".</p>
+        <span>Prueba con otro nombre o RUT.</span>
+        {% else %}
+        <p>Todavía no hay proveedores registrados.</p>
+        <span>Agrega el primero con "Nuevo proveedor".</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+
     {% for proveedor in proveedores %}
     <div class="modal-eliminar" id="eliminar-{{ proveedor.id }}">
       <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
@@ -90,7 +117,6 @@ Vet Arica{% endblock %} {% block css %}
     duration: 3000,
     position: { x: "center", y: "top" },
   });
-
   {% for message in messages %}
   notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
   {% endfor %}

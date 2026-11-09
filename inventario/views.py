@@ -2,21 +2,27 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
-from usuarios.views import es_personal_clinica
+from usuarios.views import es_veterinaria
 from .forms import ProveedorForm
 from .models import Proveedor
 
 @never_cache
 @login_required(login_url='sin_acceso')
 def proveedores(request):
-    if not es_personal_clinica(request.user):
+    if not es_veterinaria(request.user):
         return redirect('sin_acceso')
+    buscar = request.GET.get('buscar', '').strip()
     lista = Proveedor.objects.prefetch_related('insumos').order_by('nombre')
-    return render(request, 'inventario/proveedores.html', {'proveedores': lista})
+    if buscar:
+        por_nombre = lista.filter(nombre__icontains=buscar)
+        por_rut = lista.filter(rut__icontains=buscar)
+        por_contacto = lista.filter(contacto__icontains=buscar)
+        lista = por_nombre | por_rut | por_contacto
+    return render(request, 'inventario/proveedores.html', {'proveedores': lista, 'buscar': buscar})
 
 @login_required(login_url='sin_acceso')
 def crear_proveedor(request):
-    if not es_personal_clinica(request.user):
+    if not es_veterinaria(request.user):
         return redirect('sin_acceso')
     if request.method == 'POST':
         form = ProveedorForm(request.POST)
@@ -31,7 +37,7 @@ def crear_proveedor(request):
 
 @login_required(login_url='sin_acceso')
 def editar_proveedor(request, proveedor_id):
-    if not es_personal_clinica(request.user):
+    if not es_veterinaria(request.user):
         return redirect('sin_acceso')
     proveedor = get_object_or_404(Proveedor, id=proveedor_id)
     if request.method == 'POST':
@@ -46,7 +52,7 @@ def editar_proveedor(request, proveedor_id):
 
 @login_required(login_url='sin_acceso')
 def eliminar_proveedor(request, proveedor_id):
-    if not es_personal_clinica(request.user):
+    if not es_veterinaria(request.user):
         return redirect('sin_acceso')
     proveedor = get_object_or_404(Proveedor, id=proveedor_id)
     if request.method == 'POST':

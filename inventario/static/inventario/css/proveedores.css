@@ -1,23 +1,22 @@
-.tabla-scroll {
-    overflow-x: auto;
+.pac-tabla .prov-avatar {
+  background: #dcf3e8;
+  color: #0b5a52;
 }
 
-.tabla.tabla-proveedores th,
-.tabla.tabla-proveedores td {
-    text-align: left;
-    vertical-align: middle;
+.pac-tabla .prov-insumo {
+  display: inline-block;
+  margin: 2px 4px 2px 0;
 }
 
-.tabla-proveedores td:empty::before {
-    content: "-";
+.pac-tabla .pac-acciones {
+  text-align: center;
 }
 
-.tabla.tabla-proveedores .acciones-servicio {
-    text-align: right;
-    white-space: nowrap;
+.pac-tabla .pac-acciones .pac-btn:first-child {
+  margin-left: 0px;
 }
 
-.tabla-proveedores .estado {
-    display: inline-block;
-    margin: 0 0.25rem 0.25rem 0;
+.prov-btn-eliminar:hover {
+  border-color: #dc2626;
+  color: #dc2626;
 }

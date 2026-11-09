@@ -56,11 +56,11 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'tipos_servicios' %}active{% endif %}">
     <i class="bi bi-tags"></i> Tipos de servicios
   </a>
+  {% if request.user.rol == 'veterinaria' %}
   <a href="{% url 'proveedores' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
     <i class="bi bi-truck"></i> Proveedores
   </a>
-  {% if request.user.rol == 'veterinaria' %}
   <a href="{% url 'ingresos_doctora' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'ingresos_doctora' %}active{% endif %}">
     <i class="bi bi-cash-coin"></i> Ingresos

@@ -1,0 +1,281 @@
+.pac-pagina.fondo-huellas {
+  padding: 24px 20px;
+}
+
+.fondo-huellas .pac-contenido {
+  display: flex;
+  flex-direction: column;
+  max-width: 1640px;
+  min-height: calc(100vh - 48px);
+  padding: 32px 36px;
+  border-radius: 16px;
+}
+
+.pac-titulo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pac-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.pac-buscador {
+  display: flex;
+  gap: 10px;
+  max-width: 560px;
+  margin-bottom: 20px;
+}
+
+.pac-campo {
+  position: relative;
+  flex: 1;
+}
+
+.pac-campo i {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8a9794;
+}
+
+.pac-campo input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px 0 38px;
+  border: 1px solid #d5dedb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.pac-campo input:focus {
+  border-color: #0b7268;
+  box-shadow: 0 0 0 3px rgba(11, 114, 104, 0.12);
+}
+
+.pac-panel {
+  border: 1px solid #e6ebe9;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.pac-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pac-tabla th {
+  padding: 12px 20px;
+  border-bottom: 1px solid #e6ebe9;
+  background: #f7faf9;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  color: #6b7a77;
+}
+
+.pac-tabla td {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f3f2;
+  font-size: 14px;
+  color: #1f2d2b;
+  vertical-align: middle;
+}
+
+.pac-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pac-tabla tbody tr:hover {
+  background: #fbfcfc;
+}
+
+.pac-tabla td strong {
+  display: block;
+  font-weight: 600;
+}
+
+.pac-tabla td span {
+  font-size: 12px;
+  color: #6b7a77;
+}
+
+.pac-mascota {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pac-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eef1f0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #5b6b68;
+}
+
+.pac-tabla .pac-avatar {
+  font-size: 16px;
+}
+
+.pac-tabla .pac-avatar-canino {
+  background: #dcf3e8;
+  color: #0b5a52;
+}
+
+.pac-tabla .pac-avatar-felino {
+  background: #ece6f7;
+  color: #5b3f8f;
+}
+
+.pac-tabla .pac-etiqueta {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f0f3f2;
+  font-size: 12px;
+  color: #6b7a77;
+}
+
+.pac-tabla .pac-contador {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #f0f3f2;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2d2b;
+}
+
+.pac-acciones {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pac-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  padding: 7px 12px;
+  border: 1px solid #d5dedb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2d2b;
+  text-decoration: none;
+}
+
+.pac-btn:hover {
+  border-color: #0b7268;
+  color: #0b7268;
+}
+
+.pac-btn-verde {
+  border-color: #0b7268;
+  background: #0b7268;
+  color: #fff;
+}
+
+.pac-btn-verde:hover {
+  background: #095e56;
+  color: #fff;
+}
+
+.pac-vacio {
+  padding: 64px 16px;
+  text-align: center;
+  color: #6b7a77;
+}
+
+.pac-vacio i {
+  font-size: 28px;
+  color: #0b7268;
+}
+
+.pac-vacio p {
+  margin: 8px 0 2px;
+  font-weight: 600;
+  color: #1f2d2b;
+}
+
+.pac-vacio span {
+  font-size: 13px;
+}
+
+@media (max-width: 767px) {
+  .pac-pagina.fondo-huellas {
+    padding: 12px 12px 24px;
+  }
+
+  .fondo-huellas .pac-contenido {
+    min-height: 0;
+    padding: 20px 16px;
+  }
+
+  .pac-panel {
+    border: none;
+  }
+
+  .pac-tabla thead {
+    display: none;
+  }
+
+  .pac-tabla tr {
+    display: block;
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid #e6ebe9;
+    border-radius: 12px;
+  }
+
+  .pac-tabla td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border: none;
+  }
+
+  .pac-tabla td[data-label]::before {
+    content: attr(data-label);
+    font-size: 12px;
+    color: #6b7a77;
+  }
+
+  .pac-tabla .pac-dueno {
+    display: block;
+    padding-left: 52px;
+  }
+
+  .pac-acciones {
+    gap: 8px;
+    padding-top: 10px;
+  }
+
+  .pac-btn {
+    flex: 1;
+    justify-content: center;
+    margin-left: 0;
+  }
+}
