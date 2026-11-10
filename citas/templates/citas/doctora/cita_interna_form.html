@@ -36,7 +36,7 @@ Nueva cita - Vet Arica
       <input type="hidden" name="buscar" value="{{ buscar }}" />
 
       <div class="cita-seccion">
-        <h2 class="cita-seccion-titulo"><i class="bi bi-heart-pulse"></i> Paciente</h2>
+        <h2 class="cita-seccion-titulo">Paciente</h2>
         <label class="form-label">Buscar paciente registrado</label>
         <div class="cita-buscador">
           <input type="text" name="buscar" value="{{ buscar }}" form="form-buscar" class="form-control" placeholder="Nombre de la mascota, del dueño o RUT" />
@@ -55,7 +55,7 @@ Nueva cita - Vet Arica
           </div>
           {{ form.raza_mascota|as_crispy_field }}
 
-          <h2 class="cita-seccion-titulo cita-seccion-titulo-separado"><i class="bi bi-person"></i> Dueño</h2>
+          <h2 class="cita-seccion-titulo cita-seccion-titulo-separado">Dueño</h2>
           <div class="row gx-3">
             <div class="col-md-6">{{ form.nombre|as_crispy_field }}</div>
             <div class="col-md-6">{{ form.apellido|as_crispy_field }}</div>
@@ -63,19 +63,14 @@ Nueva cita - Vet Arica
             <div class="col-md-6">{{ form.email|as_crispy_field }}</div>
           </div>
         </div>
-      </div>
 
-      <div class="cita-seccion">
-        <h2 class="cita-seccion-titulo"><i class="bi bi-clock"></i> Horario</h2>
+        <h2 class="cita-seccion-titulo cita-seccion-titulo-separado">Horario</h2>
         <div class="row gx-3">
           <div class="col-md-4">{{ form.fecha|as_crispy_field }}</div>
           <div class="col-md-4">{{ form.hora_inicio|as_crispy_field }}</div>
           <div class="col-md-4">{{ form.hora_fin|as_crispy_field }}</div>
         </div>
         {{ form.tipo_consulta|as_crispy_field }}
-      </div>
-
-      <div class="cita-seccion">
         {{ form.observaciones|as_crispy_field }}
       </div>
 
