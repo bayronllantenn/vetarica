@@ -109,7 +109,7 @@ Vet Arica{% endblock %} {% block css %}
             </div>
             <p class="mascota-subinfo">
               <span>Sexo: {{ item.mascota.sexo }}</span>
-              <span>Edad: {{ item.mascota.edad_valor }} {{ item.mascota.edad_unidad }}</span>
+              <span>Nacimiento: {{ item.mascota.fecha_nacimiento|date:"d/m/Y"|default:"—" }}</span>
             </p>
 
             <div class="mascota-card-pills">

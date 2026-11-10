@@ -4,7 +4,7 @@ from django import forms
 from django.utils import timezone
 
 from usuarios.forms import validar_rut
-from .models import (ESPECIES_MASCOTA,SEXOS_MASCOTA, UNIDADES_EDAD_MASCOTA,BloqueoHorario,FichaMedica,Mascota,SolicitudCita,TipoConsulta,)
+from .models import (ESPECIES_MASCOTA,SEXOS_MASCOTA,BloqueoHorario,FichaMedica,Mascota,SolicitudCita,TipoConsulta,)
 
 DOMINIOS_CONOCIDOS = {
     'gmail': ['gmail.com'],
@@ -124,18 +124,15 @@ def revisar_horario(fecha, hora):
     return fecha_hora, None
 
 
-def validar_edad(valor, unidad):
-    if valor <= 0:
-        return 'La edad debe ser mayor a 0.'
+def validar_fecha_nacimiento(fecha):
+    hoy = timezone.localdate()
 
-    if unidad == 'años':
-        limite = 40
-    else:
-        limite = 480
-    if valor > limite:
-        return f'Esa edad no parece real estando en {unidad}.'
+    if fecha > hoy:
+        raise forms.ValidationError('La fecha de nacimiento no puede ser una fecha futura.')
+    if fecha < hoy - timedelta(days=40 * 365):
+        raise forms.ValidationError('Esa fecha de nacimiento no parece real.')
 
-    return None
+    return fecha
 
 
 def validar_nombre(valor, etiqueta, minimo=2, maximo=40):
@@ -178,13 +175,6 @@ class SolicitudCitaForm(forms.ModelForm):
         choices=[('', 'Sexo de tu mascota')] + SEXOS_MASCOTA,
         error_messages={'required': 'Elige el sexo de tu mascota.'},
     )
-    edad_unidad_mascota = forms.ChoiceField(
-        label='Unidad',
-        choices=UNIDADES_EDAD_MASCOTA,
-        required=False,
-        initial='años',
-    )
-
     class Meta:
         model = SolicitudCita
         fields = [
@@ -196,8 +186,7 @@ class SolicitudCitaForm(forms.ModelForm):
             'especie_mascota',
             'raza_mascota',
             'sexo_mascota',
-            'edad_valor_mascota',
-            'edad_unidad_mascota',
+            'fecha_nacimiento_mascota',
             'tipo_consulta',
             'observaciones',
         ]
@@ -211,11 +200,11 @@ class SolicitudCitaForm(forms.ModelForm):
                 'title': 'Ingresa 9 números, ej: 912345678',
             }),
             'raza_mascota': forms.TextInput(attrs={'placeholder': 'Raza (opcional)'}),
-            'edad_valor_mascota': forms.NumberInput(attrs={'placeholder': 'Edad', 'min': 1}),
+            'fecha_nacimiento_mascota': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'observaciones': forms.Textarea(attrs={'placeholder': 'Observaciones (opcional)', 'rows': 3}),
         }
         labels = {
-            'edad_valor_mascota': 'Edad',
+            'fecha_nacimiento_mascota': 'Fecha de nacimiento',
         }
 
     def clean_nombre(self):
@@ -267,6 +256,12 @@ class SolicitudCitaForm(forms.ModelForm):
     def clean_fecha(self):
         return validar_fecha_cita(self.cleaned_data['fecha'])
 
+    def clean_fecha_nacimiento_mascota(self):
+        fecha = self.cleaned_data.get('fecha_nacimiento_mascota')
+        if fecha:
+            return validar_fecha_nacimiento(fecha)
+        return fecha
+
     def clean_observaciones(self):
         observaciones = self.cleaned_data.get('observaciones')
         if not observaciones:
@@ -282,13 +277,6 @@ class SolicitudCitaForm(forms.ModelForm):
         cleaned_data = super().clean()
         fecha = cleaned_data.get('fecha')
         hora = cleaned_data.get('hora')
-        edad_valor = cleaned_data.get('edad_valor_mascota')
-        edad_unidad = cleaned_data.get('edad_unidad_mascota')
-
-        if edad_valor is not None:
-            error = validar_edad(edad_valor, edad_unidad)
-            if error:
-                self.add_error('edad_valor_mascota', error)
 
         if fecha and hora:
             fecha_hora, error = revisar_horario(fecha, hora)
@@ -340,8 +328,7 @@ class MascotaForm(forms.ModelForm):
             'sexo',
             'estado_reproductivo',
             'microchip',
-            'edad_valor',
-            'edad_unidad',
+            'fecha_nacimiento',
             'imagen',
             'nombre_dueno',
             'rut_dueno',
@@ -352,12 +339,12 @@ class MascotaForm(forms.ModelForm):
             'rut_dueno': forms.TextInput(attrs={'placeholder': 'RUT (ej: 12345678-9)', 'maxlength': '12'}),
             'raza': forms.TextInput(attrs={'placeholder': 'Raza (opcional)'}),
             'microchip': forms.TextInput(attrs={'placeholder': 'Número de microchip (opcional)', 'maxlength': '20'}),
-            'edad_valor': forms.NumberInput(attrs={'placeholder': 'Edad', 'min': 0, 'max': 480}),
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'imagen': forms.FileInput(attrs={'accept': 'image/*'}),
         }
         labels = {
             'estado_reproductivo': 'Entero / Castrado',
-            'edad_valor': 'Edad',
+            'fecha_nacimiento': 'Fecha de nacimiento',
             'imagen': 'Foto de la mascota (opcional)',
             'nombre_dueno': 'Nombre del dueño',
             'rut_dueno': 'RUT del dueño',
@@ -365,6 +352,9 @@ class MascotaForm(forms.ModelForm):
 
     def __init__(self, data=None, files=None, instance=None, sin_cuenta=False):
         super().__init__(data, files, instance=instance)
+        self.fields['fecha_nacimiento'].required = True
+        self.fields['fecha_nacimiento'].error_messages['required'] = 'Elige la fecha de nacimiento.'
+        self.fields['fecha_nacimiento'].widget.attrs['max'] = timezone.localdate().isoformat()
         if sin_cuenta:
             self.fields['nombre_dueno'].required = True
             self.fields['nombre_dueno'].error_messages['required'] = 'Escribe el nombre del dueño.'
@@ -398,17 +388,8 @@ class MascotaForm(forms.ModelForm):
             raise forms.ValidationError('La imagen no puede pesar más de 2 MB.')
         return imagen
 
-    def clean(self):
-        cleaned_data = super().clean()
-        valor = cleaned_data.get('edad_valor')
-        unidad = cleaned_data.get('edad_unidad')
-
-        if valor is not None:
-            error = validar_edad(valor, unidad)
-            if error:
-                self.add_error('edad_valor', error)
-
-        return cleaned_data
+    def clean_fecha_nacimiento(self):
+        return validar_fecha_nacimiento(self.cleaned_data['fecha_nacimiento'])
 
 
 class FichaMedicaForm(forms.ModelForm):

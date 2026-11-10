@@ -54,8 +54,8 @@
             <strong>{{ ficha.sexo|default:"—" }}</strong>
           </div>
           <div class="dato">
-            <span>Edad</span>
-            <strong>{{ ficha.mascota.edad|default:"—" }}</strong>
+            <span>Fecha de nacimiento</span>
+            <strong>{{ ficha.mascota.fecha_nacimiento|date:"d/m/Y"|default:"—" }}</strong>
           </div>
           <div class="dato">
             <span>Tipo de consulta</span>

@@ -119,19 +119,11 @@
             </div>
           </div>
 
-          <div class="row g-3">
-            <div class="col-md-6 campo">
-              <label class="campo-label" for="{{ form.edad_valor.id_for_label }}">
-                <i class="bi bi-calendar3"></i> Edad
-              </label>
-              {{ form.edad_valor|as_crispy_field }}
-            </div>
-            <div class="col-md-6 campo">
-              <label class="campo-label" for="{{ form.edad_unidad.id_for_label }}">
-                <i class="bi bi-clock"></i> Edad unidad
-              </label>
-              {{ form.edad_unidad|as_crispy_field }}
-            </div>
+          <div class="campo">
+            <label class="campo-label" for="{{ form.fecha_nacimiento.id_for_label }}">
+              <i class="bi bi-cake2"></i> Fecha de nacimiento
+            </label>
+            {{ form.fecha_nacimiento|as_crispy_field }}
           </div>
 
           <div class="campo">

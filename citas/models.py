@@ -22,10 +22,6 @@ ESTADOS_REPRODUCTIVOS = [
     ('Castrado', 'Castrado'),
 ]
 
-UNIDADES_EDAD_MASCOTA = [
-    ('años', 'Años'),
-    ('meses', 'Meses'),
-]
 
 
 class TipoConsulta(models.Model):
@@ -80,8 +76,7 @@ class SolicitudCita(models.Model):
     especie_mascota = models.CharField(max_length=20, choices=ESPECIES_MASCOTA, blank=True)
     raza_mascota = models.CharField(max_length=100, blank=True)
     sexo_mascota = models.CharField(max_length=20, choices=SEXOS_MASCOTA, blank=True)
-    edad_valor_mascota = models.PositiveIntegerField(null=True, blank=True)
-    edad_unidad_mascota = models.CharField(max_length=10, choices=UNIDADES_EDAD_MASCOTA, blank=True, default='años')
+    fecha_nacimiento_mascota = models.DateField(null=True, blank=True)
     mascota = models.ForeignKey(
         'Mascota',
         on_delete=models.SET_NULL,
@@ -124,7 +119,7 @@ class FichaMedica(models.Model):
     especie = models.CharField(max_length=50, default='No especifica')
     raza = models.CharField(max_length=100, blank=True)
     sexo = models.CharField(max_length=20, blank=True)
-    edad_mascota = models.PositiveIntegerField(null=True, blank=True)
+    fecha_nacimiento_mascota = models.DateField(null=True, blank=True)
     peso = models.DecimalField(max_digits=5, decimal_places=2, null=True)
     temperatura = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
     frecuencia_cardiaca = models.PositiveIntegerField(null=True, blank=True)
@@ -170,13 +165,7 @@ class Mascota(models.Model):
     sexo = models.CharField(max_length=20, choices=SEXOS_MASCOTA, blank=False)
     estado_reproductivo = models.CharField(max_length=10, choices=ESTADOS_REPRODUCTIVOS, blank=True)
     microchip = models.CharField(max_length=20, blank=True)
-    edad_valor = models.PositiveIntegerField()
-    edad_unidad = models.CharField(max_length=10, choices=UNIDADES_EDAD_MASCOTA, default='años')
+    fecha_nacimiento = models.DateField(null=True)
 
     def __str__(self):
         return f"{self.nombre}"
-
-    def edad(self):
-        if self.edad_valor is not None:
-            return f"{self.edad_valor} {self.edad_unidad}"
-        return ""

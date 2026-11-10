@@ -88,20 +88,11 @@
             </div>
           </div>
 
-          <div class="row g-3">
-            <div class="col-md-6 campo campo-lado">
-              <span class="campo-lado-icono"><i class="bi bi-calendar3"></i></span>
-              <div class="campo-lado-cuerpo">
-                <label class="campo-lado-label" for="{{ form.edad_valor.id_for_label }}">Edad</label>
-                {{ form.edad_valor|as_crispy_field }}
-              </div>
-            </div>
-            <div class="col-md-6 campo campo-lado">
-              <span class="campo-lado-icono"><i class="bi bi-cake2"></i></span>
-              <div class="campo-lado-cuerpo">
-                <label class="campo-lado-label" for="{{ form.edad_unidad.id_for_label }}">Edad unidad</label>
-                {{ form.edad_unidad|as_crispy_field }}
-              </div>
+          <div class="campo campo-lado">
+            <span class="campo-lado-icono"><i class="bi bi-cake2"></i></span>
+            <div class="campo-lado-cuerpo">
+              <label class="campo-lado-label" for="{{ form.fecha_nacimiento.id_for_label }}">Fecha de nacimiento</label>
+              {{ form.fecha_nacimiento|as_crispy_field }}
             </div>
           </div>
 

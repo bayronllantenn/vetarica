@@ -156,7 +156,7 @@ def agendar_view(request):
         campos_del_form = [
             'fecha', 'hora', 'nombre', 'apellido', 'email', 'telefono',
             'nombre_mascota', 'especie_mascota', 'raza_mascota', 'sexo_mascota',
-            'edad_valor_mascota', 'edad_unidad_mascota', 'tipo_consulta', 'observaciones',
+            'fecha_nacimiento_mascota', 'tipo_consulta', 'observaciones',
         ]
         if recargando:
             datos_previos = request.POST
@@ -179,8 +179,7 @@ def agendar_view(request):
             initial['especie_mascota'] = mascota_elegida.especie
             initial['raza_mascota'] = mascota_elegida.raza
             initial['sexo_mascota'] = mascota_elegida.sexo
-            initial['edad_valor_mascota'] = mascota_elegida.edad_valor
-            initial['edad_unidad_mascota'] = mascota_elegida.edad_unidad
+            initial['fecha_nacimiento_mascota'] = mascota_elegida.fecha_nacimiento
         form = SolicitudCitaForm(initial=initial)
         form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
 
@@ -487,7 +486,7 @@ def ficha_medica_detalle(request, cita_id):
             ficha_nueva.especie = solicitud.especie_mascota
             ficha_nueva.raza = solicitud.raza_mascota
             ficha_nueva.sexo = solicitud.sexo_mascota
-            ficha_nueva.edad_mascota = solicitud.edad_valor_mascota
+            ficha_nueva.fecha_nacimiento_mascota = solicitud.fecha_nacimiento_mascota
             ficha_nueva.save()
 
             solicitud.estado = 'Finalizado'
@@ -525,7 +524,7 @@ def ficha_sin_cita(request, mascota_id):
             ficha_nueva.especie = mascota.especie
             ficha_nueva.raza = mascota.raza
             ficha_nueva.sexo = mascota.sexo
-            ficha_nueva.edad_mascota = mascota.edad_valor
+            ficha_nueva.fecha_nacimiento_mascota = mascota.fecha_nacimiento
             ficha_nueva.save()
             messages.success(request, 'Ficha clínica guardada correctamente.')
             return redirect('pacientes')
@@ -637,6 +636,19 @@ def reagendar_cita(request, id):
     solicitud = get_object_or_404(SolicitudCita, id=id)
     es_personal = es_personal_clinica(request.user)
 
+    fecha_seleccionada = leer_fecha(leer_dato(request, 'fecha'))
+    if fecha_seleccionada is None:
+        fecha_seleccionada = timezone.localtime(solicitud.fecha_hora).date()
+
+    if request.method == 'POST':
+        hora_actual = timezone.localtime(solicitud.fecha_hora)
+        misma_fecha = hora_actual.date() == fecha_seleccionada
+        misma_hora = hora_actual.strftime('%H:%M') == request.POST.get('hora')
+        if misma_fecha and misma_hora:
+            if es_personal:
+                return redirect('agenda_doctora')
+            return redirect('historial_citas')
+
     if es_personal:
         puede = solicitud.estado == 'Confirmada' and solicitud.estado_pago == 'Pagado' and solicitud.fecha_hora > timezone.now()
     else:
@@ -647,10 +659,6 @@ def reagendar_cita(request, id):
         if es_personal:
             return redirect('agenda_doctora')
         return redirect('historial_citas')
-
-    fecha_seleccionada = leer_fecha(leer_dato(request, 'fecha'))
-    if fecha_seleccionada is None:
-        fecha_seleccionada = timezone.localtime(solicitud.fecha_hora).date()
 
     if request.method == 'POST':
         form = ReagendarCitaForm(request.POST)
@@ -726,8 +734,7 @@ def copiar_datos_de_mascota(solicitud, mascota):
     solicitud.especie_mascota = mascota.especie
     solicitud.raza_mascota = mascota.raza
     solicitud.sexo_mascota = mascota.sexo
-    solicitud.edad_valor_mascota = mascota.edad_valor
-    solicitud.edad_unidad_mascota = mascota.edad_unidad
+    solicitud.fecha_nacimiento_mascota = mascota.fecha_nacimiento
 
     if mascota.dueno:
         solicitud.cliente = mascota.dueno
