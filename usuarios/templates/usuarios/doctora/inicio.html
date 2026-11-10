@@ -47,36 +47,14 @@
       </header>
 
       <div class="ih-fila">
-        <section class="ih-panel ih-citas">
+        <section class="ih-panel ih-meses ih-caja">
           <div class="ih-panel-cabeza">
-            <h2>Citas de hoy</h2>
-            <span class="ih-meta">Atención de 11:00 a 14:00 y de 17:00 a 21:00</span>
+            <h2>Atenciones por mes</h2>
+            <span class="ih-meta">Citas pagadas en {{ hoy|date:"Y" }}</span>
           </div>
-
-          {% if citas_hoy_info %}
-          <ul class="ih-lista">
-            {% for item in citas_hoy_info %}
-            <li class="{% if item.es_siguiente %}ih-siguiente{% endif %} {% if item.ya_paso %}ih-pasada{% endif %}">
-              <a href="{% url 'ficha_medica_detalle' item.cita.id %}">
-                <span class="ih-hora">{{ item.cita.fecha_hora|date:"H:i" }}</span>
-                <span class="ih-paciente">
-                  <strong>{{ item.cita.nombre_mascota }}</strong>
-                  <span>{{ item.cita.tipo_consulta.nombre }} · {{ item.cita.nombre }} {{ item.cita.apellido }}</span>
-                </span>
-                {% if item.cita.estado_pago == 'Pagado' %}
-                <span class="ih-estado ih-estado-pagado">{{ item.cita.get_estado_pago_display }}</span>
-                {% elif item.cita.estado_pago == 'En clinica' %}
-                <span class="ih-estado ih-estado-clinica">{{ item.cita.get_estado_pago_display }}</span>
-                {% else %}
-                <span class="ih-estado">{{ item.cita.get_estado_pago_display }}</span>
-                {% endif %}
-              </a>
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="ih-vacio">Hoy no hay citas agendadas.</p>
-          {% endif %}
+          <div class="ih-grafico">
+            <canvas id="grafico-meses"></canvas>
+          </div>
         </section>
 
         {% if mostrar_resumen %}
@@ -118,17 +96,39 @@
       </div>
 
       <div class="ih-fila ih-fila-graficos">
-        <section class="ih-panel ih-meses">
+        <section class="ih-panel ih-citas ih-caja">
           <div class="ih-panel-cabeza">
-            <h2>Atenciones por mes</h2>
-            <span class="ih-meta">Citas pagadas en {{ hoy|date:"Y" }}</span>
+            <h2>Citas de hoy</h2>
+            <span class="ih-meta">Atención de 11:00 a 14:00 y de 17:00 a 21:00</span>
           </div>
-          <div class="ih-grafico">
-            <canvas id="grafico-meses"></canvas>
-          </div>
+
+          {% if citas_hoy_info %}
+          <ul class="ih-lista">
+            {% for item in citas_hoy_info %}
+            <li class="{% if item.es_siguiente %}ih-siguiente{% endif %} {% if item.ya_paso %}ih-pasada{% endif %}">
+              <a href="{% url 'ficha_medica_detalle' item.cita.id %}">
+                <span class="ih-hora">{{ item.cita.fecha_hora|date:"H:i" }}</span>
+                <span class="ih-paciente">
+                  <strong>{{ item.cita.nombre_mascota }}</strong>
+                  <span>{{ item.cita.tipo_consulta.nombre }} · {{ item.cita.nombre }} {{ item.cita.apellido }}</span>
+                </span>
+                {% if item.cita.estado_pago == 'Pagado' %}
+                <span class="ih-estado ih-estado-pagado">{{ item.cita.get_estado_pago_display }}</span>
+                {% elif item.cita.estado_pago == 'En clinica' %}
+                <span class="ih-estado ih-estado-clinica">{{ item.cita.get_estado_pago_display }}</span>
+                {% else %}
+                <span class="ih-estado">{{ item.cita.get_estado_pago_display }}</span>
+                {% endif %}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="ih-vacio">Hoy no hay citas agendadas.</p>
+          {% endif %}
         </section>
 
-        <section class="ih-panel ih-especie">
+        <section class="ih-panel ih-especie ih-caja ih-caja-lateral">
           <div class="ih-panel-cabeza">
             <h2>Atenciones por especie</h2>
           </div>

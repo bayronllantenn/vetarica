@@ -119,6 +119,17 @@
   grid-column: 1 / -1;
 }
 
+.ih-caja {
+  margin: 12px 0 12px 44px;
+  padding: 20px 24px;
+  border: 1px solid #e6ebe9;
+  box-shadow: 0 6px 20px rgba(18, 60, 51, 0.14);
+}
+
+.ih-caja-lateral {
+  margin: 12px 44px;
+}
+
 .ih-resumen,
 .ih-especie {
   grid-column: span 4;
@@ -258,8 +269,9 @@
 
 .ih-bloque {
   padding: 14px 20px;
-  background: #f4f8f7;
-  border-radius: 8px;
+  border: 1px solid #dbe4e1;
+  background: #edf3f1;
+  box-shadow: 0 6px 20px rgba(18, 60, 51, 0.14);
 }
 
 .ih-cifra {
@@ -323,10 +335,6 @@
     min-height: 0;
   }
 
-  .ih-citas {
-    max-height: 340px;
-  }
-
   .ih-lista {
     flex: 1;
     min-height: 0;
@@ -335,8 +343,7 @@
 
   .ih-grafico {
     flex: 1;
-    min-height: 160px;
-    height: auto;
+    min-height: 220px;
     position: relative;
   }
 }
@@ -368,6 +375,10 @@
 
   .ih-panel {
     padding: 20px 16px;
+  }
+
+  .ih-caja {
+    margin: 12px 16px;
   }
 
   .ih-acciones {
