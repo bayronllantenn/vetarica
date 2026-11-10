@@ -1,0 +1,35 @@
+.pac-tabla .serv-estado {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f0f3f2;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5b6b68;
+}
+
+.pac-tabla .serv-estado-web {
+  background: #dcf3e8;
+  color: #0b5a52;
+}
+
+.pac-tabla .serv-estado-oculto {
+  background: #fdeaea;
+  color: #9b1c1c;
+}
+
+.serv-oculto td {
+  opacity: 0.6;
+}
+
+.serv-oculto .pac-acciones {
+  opacity: 1;
+}
+
+.serv-btn-rojo:hover {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.serv-form {
+  display: inline;
+}

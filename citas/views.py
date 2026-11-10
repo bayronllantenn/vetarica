@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
@@ -334,6 +334,18 @@ def reserva_fallida(request, id=None):
     return render(request, 'citas/pago/reserva_fallida.html', {'solicitud': solicitud})
 
 
+def sumar_pagos(desde, hasta):
+    inicio = rango_del_dia(desde)[0]
+    fin = rango_del_dia(hasta)[1]
+    citas = SolicitudCita.objects.filter(estado_pago='Pagado', fecha_pago__range=(inicio, fin))
+
+    total = 0
+    for cita in citas:
+        if cita.monto_pagado:
+            total = total + cita.monto_pagado
+    return total
+
+
 @never_cache
 @login_required(login_url='sin_acceso')
 def ingresos_doctora(request):
@@ -360,7 +372,7 @@ def ingresos_doctora(request):
     total = 0
     cantidad = 0
     ingresos_por_mes = {}
-    ingresos_por_tipo = {}
+    lista_citas = []
     for cita in citas_pagadas:
         monto = 0
         if cita.monto_pagado:
@@ -368,17 +380,14 @@ def ingresos_doctora(request):
         total = total + monto
         cantidad = cantidad + 1
 
+        cita.monto_texto = format(monto, ',').replace(',', '.')
+        lista_citas.append(cita)
+
         mes = timezone.localtime(cita.fecha_pago).strftime('%m/%Y')
         if mes in ingresos_por_mes:
             ingresos_por_mes[mes] = ingresos_por_mes[mes] + monto
         else:
             ingresos_por_mes[mes] = monto
-
-        tipo = cita.tipo_consulta.nombre
-        if tipo in ingresos_por_tipo:
-            ingresos_por_tipo[tipo] = ingresos_por_tipo[tipo] + monto
-        else:
-            ingresos_por_tipo[tipo] = monto
 
     meses = []
     montos_por_mes = []
@@ -388,22 +397,50 @@ def ingresos_doctora(request):
     meses.reverse()
     montos_por_mes.reverse()
 
-    tipos = []
-    montos_por_tipo = []
-    for tipo in ingresos_por_tipo:
-        tipos.append(tipo)
-        montos_por_tipo.append(ingresos_por_tipo[tipo])
+    promedio = 0
+    if cantidad > 0:
+        promedio = total // cantidad
+
+    primer_dia_mes = hoy.replace(day=1)
+    ultimo_dia_mes_anterior = primer_dia_mes - timedelta(days=1)
+    primer_dia_mes_anterior = ultimo_dia_mes_anterior.replace(day=1)
+
+    inicio_trimestre = primer_dia_mes_anterior
+    for i in range(2):
+        inicio_trimestre = inicio_trimestre - timedelta(days=1)
+        inicio_trimestre = inicio_trimestre.replace(day=1)
+
+    total_mes = sumar_pagos(primer_dia_mes, hoy)
+    total_mes_anterior = sumar_pagos(primer_dia_mes_anterior, ultimo_dia_mes_anterior)
+
+    sin_ingresos_mes = False
+    if total_mes == 0:
+        sin_ingresos_mes = True
+
+    diferencia = None
+    bajo = False
+    if total_mes > 0:
+        if total_mes_anterior > 0:
+            diferencia = (total_mes - total_mes_anterior) * 100 // total_mes_anterior
+            if diferencia < 0:
+                bajo = True
 
     context = {
-        'citas_pagadas': citas_pagadas,
+        'citas_pagadas': lista_citas,
         'desde': desde,
         'hasta': hasta,
         'total': format(total, ',').replace(',', '.'),
         'cantidad': cantidad,
+        'promedio': format(promedio, ',').replace(',', '.'),
         'meses': meses,
         'montos_por_mes': montos_por_mes,
-        'tipos': tipos,
-        'montos_por_tipo': montos_por_tipo,
+        'mes_anterior': primer_dia_mes_anterior,
+        'fin_mes_anterior': ultimo_dia_mes_anterior,
+        'inicio_trimestre': inicio_trimestre,
+        'total_mes': format(total_mes, ',').replace(',', '.'),
+        'diferencia': diferencia,
+        'bajo': bajo,
+        'sin_ingresos_mes': sin_ingresos_mes,
     }
     return render(request, 'citas/doctora/ingresos.html', context)
 
