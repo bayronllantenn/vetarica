@@ -9,6 +9,7 @@ Bloqueos - Vet Arica
 {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/bloqueos.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %}
 
@@ -21,60 +22,87 @@ Bloqueos - Vet Arica
 {% endblock %}
 
 {% block content %}
-<div class="dash-shell fondo-huellas">
-  <main class="dash-content">
-    <section class="dash-hero">
-      <h1>Bloqueos de horario</h1>
-      <p class="dash-subtitle">Marca las horas en que la doctora no puede atender, para que nadie pueda agendar ahí.</p>
+<div class="dash-shell fondo-huellas bloqueos-pagina">
+  <main class="dash-content bloqueos-contenido">
+    <section class="dash-hero bloqueos-titulo">
+      <div>
+        <h1>Bloqueos de horario</h1>
+        <p class="dash-subtitle">Marca las horas en que la doctora no puede atender, para que nadie pueda agendar ahí.</p>
+      </div>
+      <a href="{% url 'agenda_doctora' %}" class="bloqueos-boton-sec"><i class="bi bi-calendar3"></i> Ver agenda</a>
     </section>
 
-    <div class="bloqueo-form-card">
-      <h2 class="dash-section-title">Nuevo bloqueo</h2>
-      <form method="post" novalidate>
-        {% csrf_token %}
-        <div class="row g-3">
-          <div class="col-md-4">{{ form.fecha|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.hora_inicio|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.hora_fin|as_crispy_field }}</div>
+    <div class="bloqueos-grilla">
+      <section class="bloqueos-form">
+        <h2>Nuevo bloqueo</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form.fecha|as_crispy_field }}
+          <div class="bloqueos-horas">
+            <div>{{ form.hora_inicio|as_crispy_field }}</div>
+            <div>{{ form.hora_fin|as_crispy_field }}</div>
+          </div>
+          {{ form.motivo|as_crispy_field }}
+          <button type="submit" class="btn btn-teal bloqueos-boton">Bloquear horario</button>
+        </form>
+
+        <div class="bloqueos-nota">
+          <i class="bi bi-info-circle"></i>
+          <p>Los horarios bloqueados no se pueden agendar desde la web. Las citas internas aparecen aquí solas, en verde.</p>
         </div>
-        {{ form.motivo|as_crispy_field }}
-        <button type="submit" class="btn btn-teal">Bloquear</button>
-      </form>
-    </div>
+      </section>
 
-    <h2 class="dash-section-title">Bloqueos próximos</h2>
+      <section class="bloqueos-lista">
+        <div class="bloqueos-lista-titulo">
+          <h2>Bloqueos próximos</h2>
+          <span>{{ bloqueos|length }}</span>
+        </div>
 
-    {% if bloqueos %}
-    <div class="cita-list">
-      {% for bloqueo in bloqueos %}
-      <article class="cita-item">
-        <div class="cita-fecha-texto">{{ bloqueo.fecha|date:"d M Y" }}</div>
+        {% if bloqueos %}
+        <div class="bloqueos-items">
+        {% for bloqueo in bloqueos %}
+        {% ifchanged %}<p class="bloqueos-mes">{{ bloqueo.fecha|date:"F Y" }}</p>{% endifchanged %}
+        <article class="bloqueo-item">
+          <div class="bloqueo-fecha">
+            <strong>{{ bloqueo.fecha|date:"j" }}</strong>
+            <span>{{ bloqueo.fecha|date:"D" }}</span>
+          </div>
 
-        <div class="cita-info">
-          <h3>{{ bloqueo.hora_inicio }} a {{ bloqueo.hora_fin }}</h3>
-          {% if bloqueo.motivo %}
-          <p>{{ bloqueo.motivo }}</p>
+          <div class="bloqueo-info">
+            <h3>{{ bloqueo.hora_inicio }} – {{ bloqueo.hora_fin }}</h3>
+            {% if bloqueo.motivo %}
+            <p>{{ bloqueo.motivo }}</p>
+            {% endif %}
+          </div>
+
+          {% if bloqueo.cita_id %}
+          <span class="bloqueo-etiqueta bloqueo-etiqueta-cita">Cita interna</span>
+          {% else %}
+          <span class="bloqueo-etiqueta">Bloqueo</span>
           {% endif %}
-        </div>
 
-        <div class="cita-meta">
           <form
             action="{% url 'eliminar_bloqueo' bloqueo.id %}"
             method="post"
             onsubmit="return confirm('¿Seguro que quieres eliminar este bloqueo?');"
           >
             {% csrf_token %}
-            <button type="submit" class="cita-cancelar btn-eliminar-bloqueo">Eliminar</button>
+            <button type="submit" class="bloqueo-eliminar" title="Eliminar bloqueo" aria-label="Eliminar bloqueo">
+              <i class="bi bi-trash3"></i>
+            </button>
           </form>
+        </article>
+        {% endfor %}
         </div>
-      </article>
-      {% endfor %}
+        {% else %}
+        <div class="bloqueos-vacio">
+          <i class="bi bi-calendar-check"></i>
+          <p>No hay bloqueos programados.</p>
+          <span>Los que agregues aparecerán aquí.</span>
+        </div>
+        {% endif %}
+      </section>
     </div>
-    {% else %}
-    <div class="cita-empty">
-      <p>No hay bloqueos programados.</p>
-    </div>
-    {% endif %}
   </main>
 </div>
 {% endblock %}

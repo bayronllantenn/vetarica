@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
@@ -30,6 +31,10 @@ MESES_ABREVIADOS = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
     'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
 ]
+
+# despues de 5 intentos el correo queda bloqueado 15 minutos
+MAXIMO_INTENTOS = 5
+MINUTOS_BLOQUEO = 15
 
 
 def redirigir_segun_rol(usuario):
@@ -62,13 +67,26 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirigir_segun_rol(request.user)
     if request.method == 'POST':
+        correo = request.POST.get('username', '').strip().lower()
+
+        clave_intentos = f'intentos_login_{correo}'
+        intentos = cache.get(clave_intentos, 0)
+
+        if intentos >= MAXIMO_INTENTOS:
+            messages.error(request, f'Demasiados intentos. Espera {MINUTOS_BLOQUEO} minutos.')
+            return render(request, 'usuarios/login_form.html', {'form': LoginForm()})
+
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
+            # si entra bien se borra el contador
+            cache.delete(clave_intentos)
             usuario = form.get_user()
             login(request, usuario)
             messages.success(request, f'Bienvenido, {usuario.first_name} {usuario.last_name}.')
             return redirigir_segun_rol(usuario)
-        correo = request.POST.get('username', '').strip()
+
+        cache.set(clave_intentos, intentos + 1, MINUTOS_BLOQUEO * 60)
+
         clave = request.POST.get('password', '')
         usuario_bloqueado = Persona.objects.filter(email__iexact=correo, is_active=False).first()
         if usuario_bloqueado and usuario_bloqueado.check_password(clave):
@@ -306,6 +324,14 @@ def agenda_doctora(request):
         clave = (hora_local.date(), hora_texto)
         citas_por_dia_hora[clave] = cita
 
+    bloqueos_semana = BloqueoHorario.objects.select_related('cita').filter(fecha__range=(primer_dia_semana, ultimo_dia_semana))
+
+    bloqueos_por_dia_hora = {}
+    for bloqueo in bloqueos_semana:
+        for hora in horas:
+            if hora >= bloqueo.hora_inicio and hora < bloqueo.hora_fin:
+                bloqueos_por_dia_hora[(bloqueo.fecha, hora)] = bloqueo
+
     dias_semana_info = []
     for dia in dias_semana:
         if dia == hoy:
@@ -323,6 +349,7 @@ def agenda_doctora(request):
         for dia in dias_semana:
             celdas.append({
                 'cita': citas_por_dia_hora.get((dia, hora)),
+                'bloqueo': bloqueos_por_dia_hora.get((dia, hora)),
             })
 
         filas.append({
