@@ -2,88 +2,107 @@
 Vet Arica{% endblock %} {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
-<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
 <link href="{% static 'citas/css/ingresos.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
-<div class="dash-shell fondo-huellas">
-  <main class="dash-content">
-    <section class="dash-hero">
-      <h1>Ingresos</h1>
-      <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas.</p>
+<div class="dash-shell fondo-huellas pac-pagina">
+  <main class="dash-content pac-contenido">
+    <section class="dash-hero pac-titulo">
+      <div>
+        <h1>Ingresos</h1>
+        <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas.</p>
+        <p class="ing-solo-pdf">Vet Arica · Reporte del {{ desde|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</p>
+      </div>
+
+      <form method="get" class="ing-filtro">
+        <div>
+          <label for="desde">Desde</label>
+          <input type="date" id="desde" name="desde" value="{{ desde|date:'Y-m-d' }}" />
+        </div>
+        <div>
+          <label for="hasta">Hasta</label>
+          <input type="date" id="hasta" name="hasta" value="{{ hasta|date:'Y-m-d' }}" />
+        </div>
+        <button type="submit" class="pac-btn"><i class="bi bi-funnel"></i> Filtrar</button>
+        <a href="{% url 'ingresos_doctora' %}" class="pac-btn">Este mes</a>
+        <a href="?desde={{ mes_anterior|date:'Y-m-d' }}&hasta={{ fin_mes_anterior|date:'Y-m-d' }}" class="pac-btn">Mes anterior</a>
+        <a href="?desde={{ inicio_trimestre|date:'Y-m-d' }}&hasta={{ fin_mes_anterior|date:'Y-m-d' }}" class="pac-btn">Trimestre</a>
+        <button type="button" class="pac-btn" onclick="window.print()"><i class="bi bi-download"></i> Descargar PDF</button>
+      </form>
     </section>
 
-    <form method="get" class="ingresos-filtro">
-      <div>
-        <label for="desde">Desde</label>
-        <input type="date" id="desde" name="desde" value="{{ desde|date:'Y-m-d' }}" class="form-control" />
+    <section class="ing-resumen">
+      <div class="ing-dato">
+        <span><i class="bi bi-cash-stack"></i> Ingresos del período</span>
+        <strong>${{ total }}</strong>
       </div>
-      <div>
-        <label for="hasta">Hasta</label>
-        <input type="date" id="hasta" name="hasta" value="{{ hasta|date:'Y-m-d' }}" class="form-control" />
+      <div class="ing-dato">
+        <span><i class="bi bi-calendar-check"></i> Citas pagadas</span>
+        <strong>{{ cantidad }}</strong>
       </div>
-      <button type="submit" class="btn btn-vet">Filtrar</button>
-      <a href="{% url 'ingresos_doctora' %}" class="btn btn-vet-borde">Este mes</a>
-    </form>
-
-    <section class="stat-grid-eco">
-      <div class="stat-card-eco stat-card-eco-verde">
-        <span class="stat-card-eco-label">Ingresos del {{ desde|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</span>
-        <strong class="stat-card-eco-numero">${{ total }}</strong>
+      <div class="ing-dato">
+        <span><i class="bi bi-receipt"></i> Ticket promedio</span>
+        <strong>${{ promedio }}</strong>
       </div>
-
-      <div class="stat-card-eco stat-card-eco-gris">
-        <span class="stat-card-eco-label">Citas pagadas en el período</span>
-        <strong class="stat-card-eco-numero">{{ cantidad }}</strong>
+      <div class="ing-dato">
+        <span><i class="bi bi-graph-up"></i> Este mes vs {{ mes_anterior|date:"F" }}</span>
+        <strong>${{ total_mes }}</strong>
+        {% if sin_ingresos_mes %}
+        <p class="ing-cambio">Aún no hay ingresos este mes</p>
+        {% elif diferencia is None %}
+        <p class="ing-cambio">Sin ingresos en {{ mes_anterior|date:"F" }} para comparar</p>
+        {% elif bajo %}
+        <p class="ing-cambio ing-cambio-baja"><i class="bi bi-arrow-down-right"></i> {{ diferencia }}% respecto a {{ mes_anterior|date:"F" }}</p>
+        {% else %}
+        <p class="ing-cambio ing-cambio-sube"><i class="bi bi-arrow-up-right"></i> +{{ diferencia }}% respecto a {{ mes_anterior|date:"F" }}</p>
+        {% endif %}
       </div>
     </section>
 
-    <div class="dash-mid-grid">
-      <div class="grafico-card">
-        <h2 class="dash-section-title">Ingresos por mes</h2>
-        <div class="grafico-lienzo">
-          <canvas id="grafico-meses"></canvas>
-        </div>
+    <section class="ing-grafico">
+      <h2>Ingresos por mes</h2>
+      <div class="ing-lienzo">
+        <canvas id="grafico-meses"></canvas>
       </div>
+    </section>
 
-      <div class="grafico-card">
-        <h2 class="dash-section-title">Ingresos por tipo de consulta</h2>
-        <div class="grafico-lienzo">
-          <canvas id="grafico-tipos"></canvas>
-        </div>
+    <h2 class="ing-subtitulo">Citas pagadas</h2>
+
+    <section class="pac-panel">
+      {% if citas_pagadas %}
+      <table class="pac-tabla">
+        <thead>
+          <tr>
+            <th>Fecha / Hora</th>
+            <th>Mascota / Dueño</th>
+            <th>Servicio</th>
+            <th>Contacto</th>
+            <th class="ing-derecha">Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cita in citas_pagadas %}
+          <tr>
+            <td><strong>{{ cita.fecha_pago|date:"d M Y" }}</strong><span>{{ cita.fecha_pago|date:"H:i" }}</span></td>
+            <td class="pac-dueno"><strong>{{ cita.nombre_mascota }}</strong><span>{{ cita.nombre }} {{ cita.apellido }}</span></td>
+            <td data-label="Servicio">{{ cita.tipo_consulta.nombre }}</td>
+            <td class="pac-dueno"><strong>{{ cita.telefono }}</strong><span>{{ cita.email }}</span></td>
+            <td data-label="Monto" class="ing-derecha"><strong>${{ cita.monto_texto }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="pac-vacio">
+        <p>No hay citas pagadas en este período.</p>
+        <span>Prueba con otro rango de fechas.</span>
       </div>
-    </div>
-
-    <h2 class="dash-section-title">Citas pagadas</h2>
-
-    {% if citas_pagadas %}
-    <div class="cita-list">
-      {% for cita in citas_pagadas %}
-      <article class="cita-item">
-        <div class="cita-fecha-texto">{{ cita.fecha_pago|date:"d M, H:i" }}</div>
-
-        <div class="cita-info">
-          <h3>{{ cita.tipo_consulta.nombre }}</h3>
-          <p><strong>Nombre dueño:</strong> {{ cita.nombre }} {{ cita.apellido }}</p>
-          <p><strong>Teléfono:</strong> {{ cita.telefono }}</p>
-          <p><strong>Correo:</strong> {{ cita.email }}</p>
-          <p><strong>Nombre mascota:</strong> {{ cita.nombre_mascota }}</p>
-        </div>
-
-        <div class="cita-meta">
-          <span class="cita-estado-label">${{ cita.monto_pagado }}</span>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-    {% else %}
-    <div class="cita-empty">
-      <p>No hay citas pagadas en este período.</p>
-    </div>
-    {% endif %}
+      {% endif %}
+    </section>
   </main>
 </div>
 {% endblock %} {% block extra_js %}
@@ -99,7 +118,10 @@ Vet Arica{% endblock %} {% block css %}
   {% endfor %}
 </script>
 <script>
-  new Chart(document.getElementById("grafico-meses"), {
+  Chart.defaults.font.family = '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  Chart.defaults.color = "#6b7a77";
+
+  const grafico = new Chart(document.getElementById("grafico-meses"), {
     type: "bar",
     data: {
       labels: [{% for mes in meses %}"{{ mes }}",{% endfor %}],
@@ -107,32 +129,30 @@ Vet Arica{% endblock %} {% block css %}
         {
           label: "Ingresos",
           data: [{% for monto in montos_por_mes %}{{ monto }},{% endfor %}],
-          backgroundColor: "#0f8a7e",
+          backgroundColor: "#0b7268",
+          borderRadius: 4,
+          maxBarThickness: 40,
         },
       ],
     },
     options: {
       maintainAspectRatio: false,
+      animation: false,
+      layout: { padding: { bottom: 8 } },
       plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { color: "#eef1f0" }, border: { display: false } },
+      },
     },
   });
 
-  new Chart(document.getElementById("grafico-tipos"), {
-    type: "doughnut",
-    data: {
-      labels: [{% for tipo in tipos %}"{{ tipo|escapejs }}",{% endfor %}],
-      datasets: [
-        {
-          data: [{% for monto in montos_por_tipo %}{{ monto }},{% endfor %}],
-          backgroundColor: ["#0f8a7e", "#3d4e4a", "#cbd5d1", "#64748b", "#94d2c8"],
-        },
-      ],
-    },
-    options: {
-      maintainAspectRatio: false,
-      plugins: { legend: { position: "bottom" } },
-    },
+  window.addEventListener("beforeprint", function () {
+    grafico.resize(1000, 240);
+  });
+
+  window.addEventListener("afterprint", function () {
+    grafico.resize();
   });
 </script>
 {% endblock %}
