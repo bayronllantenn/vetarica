@@ -2,71 +2,78 @@
 Vet Arica{% endblock %} {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
-<link href="{% static 'usuarios/css/agenda.css' %}" rel="stylesheet" />
-<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/servicios.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
-<div class="dash-shell fondo-huellas">
-  <main class="dash-content">
-    <div class="grafico-card grafico-card-ancho">
-      <div class="tabla-titulo">
-        <h2 class="dash-section-title">Tipos de servicios</h2>
-        <a href="{% url 'crear_tipo_consulta' %}" class="btn btn-sm btn-vet-borde">
-          <i class="bi bi-plus-lg"></i> Agregar servicio
-        </a>
+<div class="dash-shell fondo-huellas pac-pagina">
+  <main class="dash-content pac-contenido">
+    <section class="dash-hero pac-titulo">
+      <div>
+        <h1>Tipos de servicios</h1>
+        <p class="dash-subtitle">{{ tipos_consulta|length }} servicios registrados</p>
       </div>
-      <table class="tabla">
+      <a href="{% url 'crear_tipo_consulta' %}" class="btn btn-teal pac-boton">
+        <i class="bi bi-plus-lg"></i> Agregar servicio
+      </a>
+    </section>
+
+    <section class="pac-panel">
+      {% if tipos_consulta %}
+      <table class="pac-tabla">
         <thead>
           <tr>
-            <th>Tipo de servicio</th>
+            <th>Servicio</th>
             <th>Valor</th>
             <th>Disponible en</th>
-            <th class="acciones-servicio">Acciones</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {% for tipo in tipos_consulta %}
-          <tr>
-            <td>{{ tipo.nombre }}</td>
-            <td>${{ tipo.precio_base }}</td>
-            <td>
+          <tr {% if not tipo.activo %}class="serv-oculto"{% endif %}>
+            <td><strong>{{ tipo.nombre }}</strong></td>
+            <td data-label="Valor"><strong>${{ tipo.precio_base }}</strong></td>
+            <td data-label="Disponible en">
               {% if not tipo.activo %}
-              <span class="estado">Oculto</span>
+              <span class="serv-estado serv-estado-oculto">Oculto</span>
               {% elif tipo.visible_en_web %}
-              <span class="estado estado-activo">Web</span>
+              <span class="serv-estado serv-estado-web">Web</span>
               {% else %}
-              <span class="estado">Interno</span>
+              <span class="serv-estado">Interno</span>
               {% endif %}
             </td>
-            <td class="acciones-servicio">
-              <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="btn btn-sm btn-vet-borde">
+            <td class="pac-acciones">
+              <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="pac-btn">
                 <i class="bi bi-pencil-square"></i> Editar
               </a>
-
               {% if tipo.activo %}
-              <a href="#ocultar-{{ tipo.id }}" class="btn btn-sm btn-eliminar">
+              <a href="#ocultar-{{ tipo.id }}" class="pac-btn serv-btn-rojo">
                 <i class="bi bi-eye-slash"></i> Ocultar
               </a>
               {% else %}
-              <form action="{% url 'ocultar_tipo_consulta' tipo.id %}" method="post">
+              <form action="{% url 'ocultar_tipo_consulta' tipo.id %}" method="post" class="serv-form">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-vet">
+                <button type="submit" class="pac-btn pac-btn-verde">
                   <i class="bi bi-eye"></i> Mostrar
                 </button>
               </form>
               {% endif %}
             </td>
           </tr>
-          {% empty %}
-          <tr>
-            <td colspan="4">No hay servicios registrados.</td>
-          </tr>
           {% endfor %}
         </tbody>
       </table>
-    </div>
+      {% else %}
+      <div class="pac-vacio">
+        <i class="bi bi-tags"></i>
+        <p>Todavía no hay servicios registrados.</p>
+        <span>Agrega el primero con "Agregar servicio".</span>
+      </div>
+      {% endif %}
+    </section>
 
     {% for tipo in tipos_consulta %}
     {% if tipo.activo %}
