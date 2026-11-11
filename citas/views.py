@@ -13,6 +13,7 @@ from .forms import CitaInternaForm, FichaMedicaForm, MascotaForm, ReagendarCitaF
 from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .utils import get_webpay_transaction
 
+# FUNCIONES DE APOYO
 def puede_ver_solicitud(request, solicitud):
     if solicitud.cliente_id:
         if request.user.is_authenticated and request.user.id == solicitud.cliente_id:
@@ -39,14 +40,16 @@ def leer_fecha(texto):
     except ValueError:
         return None
 
+def separar_miles(numero):
+    return format(numero, ',').replace(',', '.')
 
+# CORREOS ----------------------------------------------------------------------------------------
 def enviar_correo_confirmacion(solicitud):
     if not solicitud.email:
         return
 
     fecha = timezone.localtime(solicitud.fecha_hora).strftime('%d/%m/%Y %H:%M')
-    # separa los miles con punto, ej: 25000 -> 25.000
-    monto = format(solicitud.monto_pagado, ',').replace(',', '.')
+    monto = separar_miles(solicitud.monto_pagado)
     asunto = 'Comprobante de pago - Vet Arica'
     mensaje = (
         f'Hola {solicitud.nombre}, tu hora ha sido agendada con éxito.\n\n'
@@ -62,7 +65,22 @@ def enviar_correo_confirmacion(solicitud):
     except Exception:
         pass
 
+def enviar_correo_reagendada(solicitud):
+    if not solicitud.email:
+        return
 
+    fecha = timezone.localtime(solicitud.fecha_hora).strftime('%d/%m/%Y %H:%M')
+    asunto = 'Tu cita fue reagendada - Vet Arica'
+    mensaje = (
+        f'Hola {solicitud.nombre}, tu cita para {solicitud.nombre_mascota} '
+        f'quedó para el {fecha}. Te esperamos en Vet Arica.'
+    )
+    try:
+        send_mail(asunto, mensaje, None, [solicitud.email])
+    except Exception:
+        pass
+
+# MASCOTAS ----------------------------------------------------------------------------------------
 @login_required(login_url='sin_acceso')
 def agregar_mascota(request):
     es_personal = es_personal_clinica(request.user)
@@ -103,7 +121,7 @@ def agregar_mascota(request):
     }
     return render(request, 'citas/agregar_mascota_form.html', context)
 
-
+# AGENDAR CITA ----------------------------------------------------------------------------------------
 def agendar_view(request):
     if request.user.is_authenticated:
         mascotas = Mascota.objects.filter(dueno=request.user)
@@ -217,8 +235,7 @@ def cancelar_solicitud(request, id):
     return redirect('agendar')
 
 
-# WEBPAY
-
+# WEBPAY ----------------------------------------------------------------------------------------
 def iniciar_pago_webpay(request, id):
     solicitud = get_object_or_404(SolicitudCita, id=id)
     if not puede_ver_solicitud(request, solicitud):
@@ -326,6 +343,7 @@ def reserva_exitosa(request, id):
 
 def reserva_fallida(request, id=None):
     solicitud = None
+    
     if id:
         solicitud = get_object_or_404(SolicitudCita, id=id)
         if not puede_ver_solicitud(request, solicitud):
@@ -333,117 +351,148 @@ def reserva_fallida(request, id=None):
     return render(request, 'citas/pago/reserva_fallida.html', {'solicitud': solicitud})
 
 
-def sumar_pagos(desde, hasta):
-    inicio = rango_del_dia(desde)[0]
-    fin = rango_del_dia(hasta)[1]
-    citas = SolicitudCita.objects.filter(estado_pago='Pagado', fecha_pago__range=(inicio, fin))
+# REAGENDAR CITA -----------------------------------------------------------------------------------------
+@never_cache
+@login_required(login_url='sin_acceso')
+def reagendar_cita(request, id):
+    solicitud = get_object_or_404(SolicitudCita, id=id)
+    es_personal = es_personal_clinica(request.user)
 
-    total = 0
-    for cita in citas:
-        if cita.monto_pagado:
-            total = total + cita.monto_pagado
-    return total
+    fecha_seleccionada = leer_fecha(leer_dato(request, 'fecha'))
+    if fecha_seleccionada is None:
+        fecha_seleccionada = timezone.localtime(solicitud.fecha_hora).date()
+
+    if request.method == 'POST':
+        hora_actual = timezone.localtime(solicitud.fecha_hora)
+        misma_fecha = hora_actual.date() == fecha_seleccionada
+        misma_hora = hora_actual.strftime('%H:%M') == request.POST.get('hora')
+        if misma_fecha and misma_hora:
+            if es_personal:
+                return redirect('agenda_doctora')
+            return redirect('historial_citas')
+
+    if es_personal:
+        puede = solicitud.estado == 'Confirmada' and solicitud.estado_pago == 'Pagado' and solicitud.fecha_hora > timezone.now()
+    else:
+        puede = solicitud.cliente_id == request.user.id and solicitud.puede_reagendarse()
+
+    if not puede:
+        messages.error(request, 'Esta cita ya no se puede reagendar.')
+        if es_personal:
+            return redirect('agenda_doctora')
+        return redirect('historial_citas')
+
+    if request.method == 'POST':
+        form = ReagendarCitaForm(request.POST)
+        form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
+        if form.is_valid():
+            solicitud.fecha_hora = form.fecha_hora
+            solicitud.recordatorio_enviado = False
+            if not es_personal:
+                solicitud.veces_reagendada = solicitud.veces_reagendada + 1
+            solicitud.save()
+            enviar_correo_reagendada(solicitud)
+            messages.success(request, 'La cita fue reagendada correctamente.')
+            if es_personal:
+                return redirect('agenda_doctora')
+            return redirect('historial_citas')
+    else:
+        form = ReagendarCitaForm(initial={'fecha': fecha_seleccionada})
+        form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
+
+    context = {
+        'form': form,
+        'solicitud': solicitud,
+        'fecha_seleccionada': fecha_seleccionada,
+        'es_personal': es_personal,
+    }
+    return render(request, 'citas/reagendar_cita.html', context)
+
+
+# CITA INTERNA E INASISTENCIA ----------------------------------------------------------------------------------------
+def copiar_datos_de_mascota(solicitud, mascota):
+    solicitud.mascota = mascota
+    solicitud.nombre_mascota = mascota.nombre
+    solicitud.especie_mascota = mascota.especie
+    solicitud.raza_mascota = mascota.raza
+    solicitud.sexo_mascota = mascota.sexo
+    solicitud.fecha_nacimiento_mascota = mascota.fecha_nacimiento
+
+    if mascota.dueno:
+        solicitud.cliente = mascota.dueno
+        solicitud.nombre = mascota.dueno.first_name
+        solicitud.apellido = mascota.dueno.last_name
+        solicitud.email = mascota.dueno.email
+        solicitud.telefono = mascota.dueno.telefono
+    else:
+        solicitud.nombre = mascota.nombre_dueno
 
 
 @never_cache
 @login_required(login_url='sin_acceso')
-def ingresos_doctora(request):
-    if request.user.rol != 'veterinaria':
+def crear_cita_interna(request):
+    if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
 
-    hoy = timezone.localdate()
-    desde = leer_fecha(request.GET.get('desde'))
-    hasta = leer_fecha(request.GET.get('hasta'))
-    if desde is None:
-        desde = hoy.replace(day=1)
-    if hasta is None:
-        hasta = hoy
-    if desde > hasta:
-        messages.error(request, 'La fecha "desde" no puede ser posterior a la fecha "hasta".')
-        desde = hoy.replace(day=1)
-        hasta = hoy
+    if request.method == 'POST':
+        buscar = request.POST.get('buscar', '').strip()
+        form = CitaInternaForm(request.POST)
+        if form.is_valid():
+            solicitud = form.save(commit=False)
+            mascota = form.cleaned_data['mascota']
+            if mascota:
+                copiar_datos_de_mascota(solicitud, mascota)
+            solicitud.estado = 'Confirmada'
+            solicitud.estado_pago = 'En clinica'
+            solicitud.save()
 
-    inicio = rango_del_dia(desde)[0]
-    fin = rango_del_dia(hasta)[1]
-    citas_pagadas = SolicitudCita.objects.select_related('tipo_consulta').filter(estado_pago='Pagado', fecha_pago__range=(inicio, fin))
-    citas_pagadas = citas_pagadas.order_by('-fecha_pago')
+            bloqueo = BloqueoHorario()
+            bloqueo.fecha = form.cleaned_data['fecha']
+            bloqueo.hora_inicio = form.cleaned_data['hora_inicio']
+            bloqueo.hora_fin = form.cleaned_data['hora_fin']
+            bloqueo.motivo = f'Cita interna: {solicitud.nombre_mascota}'
+            bloqueo.cita = solicitud
+            bloqueo.save()
 
-    total = 0
-    cantidad = 0
-    ingresos_por_mes = {}
-    lista_citas = []
-    for cita in citas_pagadas:
-        monto = 0
-        if cita.monto_pagado:
-            monto = cita.monto_pagado
-        total = total + monto
-        cantidad = cantidad + 1
+            messages.success(request, 'Cita agendada y horario bloqueado correctamente.')
+            return redirect('agenda_doctora')
+        messages.error(request, 'Revisa los campos marcados en rojo.')
+    else:
+        buscar = request.GET.get('buscar', '').strip()
+        form = CitaInternaForm()
 
-        cita.monto_texto = format(monto, ',').replace(',', '.')
-        lista_citas.append(cita)
+    if buscar:
+        form.fields['mascota'].queryset = buscar_mascotas(buscar)
+    else:
+        form.fields['mascota'].queryset = Mascota.objects.none()
 
-        mes = timezone.localtime(cita.fecha_pago).strftime('%m/%Y')
-        if mes in ingresos_por_mes:
-            ingresos_por_mes[mes] = ingresos_por_mes[mes] + monto
-        else:
-            ingresos_por_mes[mes] = monto
+    form.fields['fecha'].widget.attrs['min'] = timezone.localdate().isoformat()
+    return render(request, 'citas/doctora/cita_interna_form.html', {'form': form, 'buscar': buscar})
 
-    meses = []
-    montos_por_mes = []
-    for mes in ingresos_por_mes:
-        meses.append(mes)
-        montos_por_mes.append(ingresos_por_mes[mes])
-    meses.reverse()
-    montos_por_mes.reverse()
 
-    promedio = 0
-    if cantidad > 0:
-        promedio = total // cantidad
+@login_required(login_url='sin_acceso')
+def marcar_no_asistio(request, cita_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    if request.method != 'POST':
+        return redirect('ficha_medica_detalle', cita_id=cita_id)
 
-    primer_dia_mes = hoy.replace(day=1)
-    ultimo_dia_mes_anterior = primer_dia_mes - timedelta(days=1)
-    primer_dia_mes_anterior = ultimo_dia_mes_anterior.replace(day=1)
+    solicitud = get_object_or_404(SolicitudCita, id=cita_id)
+    ya_paso = solicitud.fecha_hora <= timezone.now()
+    esta_pagada = solicitud.estado_pago == 'Pagado' or solicitud.estado_pago == 'En clinica'
 
-    inicio_trimestre = primer_dia_mes_anterior
-    for i in range(2):
-        inicio_trimestre = inicio_trimestre - timedelta(days=1)
-        inicio_trimestre = inicio_trimestre.replace(day=1)
+    if solicitud.estado == 'Confirmada' and esta_pagada and ya_paso:
+        solicitud.estado = 'Ausente'
+        solicitud.save()
+        solicitud.bloqueos.all().delete()
+        messages.success(request, 'La cita quedó marcada como "No asistió".')
+    else:
+        messages.error(request, 'Esta cita no se puede marcar como "No asistió".')
 
-    total_mes = sumar_pagos(primer_dia_mes, hoy)
-    total_mes_anterior = sumar_pagos(primer_dia_mes_anterior, ultimo_dia_mes_anterior)
+    return redirect('agenda_doctora')
 
-    sin_ingresos_mes = False
-    if total_mes == 0:
-        sin_ingresos_mes = True
 
-    diferencia = None
-    bajo = False
-    if total_mes > 0:
-        if total_mes_anterior > 0:
-            diferencia = (total_mes - total_mes_anterior) * 100 // total_mes_anterior
-            if diferencia < 0:
-                bajo = True
-
-    context = {
-        'citas_pagadas': lista_citas,
-        'desde': desde,
-        'hasta': hasta,
-        'total': format(total, ',').replace(',', '.'),
-        'cantidad': cantidad,
-        'promedio': format(promedio, ',').replace(',', '.'),
-        'meses': meses,
-        'montos_por_mes': montos_por_mes,
-        'mes_anterior': primer_dia_mes_anterior,
-        'fin_mes_anterior': ultimo_dia_mes_anterior,
-        'inicio_trimestre': inicio_trimestre,
-        'total_mes': format(total_mes, ',').replace(',', '.'),
-        'diferencia': diferencia,
-        'bajo': bajo,
-        'sin_ingresos_mes': sin_ingresos_mes,
-    }
-    return render(request, 'citas/doctora/ingresos.html', context)
-
-# Ficha medica 
+# FICHA MEDICA ----------------------------------------------------------------------------------------
 @never_cache
 @login_required(login_url='sin_acceso')
 def ficha_medica_detalle(request, cita_id):
@@ -549,7 +598,7 @@ def fichas_paciente(request, mascota_id):
 def editar_ficha(request, ficha_id):
     if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
-    
+
     ficha = get_object_or_404(FichaMedica, id=ficha_id)
     if ficha.mascota_id:
         volver_url = reverse('fichas_paciente', args=[ficha.mascota_id])
@@ -592,106 +641,21 @@ def imprimir_ficha(request, ficha_id):
     context = {'ficha': ficha, 'antecedentes': antecedentes, 'es_personal': es_personal}
     return render(request, 'citas/imprimir_ficha.html', context)
 
-@login_required(login_url='sin_acceso')
-def marcar_no_asistio(request, cita_id):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-    if request.method != 'POST':
-        return redirect('ficha_medica_detalle', cita_id=cita_id)
-
-    solicitud = get_object_or_404(SolicitudCita, id=cita_id)
-    ya_paso = solicitud.fecha_hora <= timezone.now()
-    esta_pagada = solicitud.estado_pago == 'Pagado' or solicitud.estado_pago == 'En clinica'
-
-    if solicitud.estado == 'Confirmada' and esta_pagada and ya_paso:
-        solicitud.estado = 'Ausente'
-        solicitud.save()
-        solicitud.bloqueos.all().delete()
-        messages.success(request, 'La cita quedó marcada como "No asistió".')
-    else:
-        messages.error(request, 'Esta cita no se puede marcar como "No asistió".')
-
-    return redirect('agenda_doctora')
-
-
-def enviar_correo_reagendada(solicitud):
-    if not solicitud.email:
-        return
-
-    fecha = timezone.localtime(solicitud.fecha_hora).strftime('%d/%m/%Y %H:%M')
-    asunto = 'Tu cita fue reagendada - Vet Arica'
-    mensaje = (
-        f'Hola {solicitud.nombre}, tu cita para {solicitud.nombre_mascota} '
-        f'quedó para el {fecha}. Te esperamos en Vet Arica.'
-    )
-    try:
-        send_mail(asunto, mensaje, None, [solicitud.email])
-    except Exception:
-        pass
-
-
-@never_cache
-@login_required(login_url='sin_acceso')
-def reagendar_cita(request, id):
-    solicitud = get_object_or_404(SolicitudCita, id=id)
-    es_personal = es_personal_clinica(request.user)
-
-    fecha_seleccionada = leer_fecha(leer_dato(request, 'fecha'))
-    if fecha_seleccionada is None:
-        fecha_seleccionada = timezone.localtime(solicitud.fecha_hora).date()
-
-    if request.method == 'POST':
-        hora_actual = timezone.localtime(solicitud.fecha_hora)
-        misma_fecha = hora_actual.date() == fecha_seleccionada
-        misma_hora = hora_actual.strftime('%H:%M') == request.POST.get('hora')
-        if misma_fecha and misma_hora:
-            if es_personal:
-                return redirect('agenda_doctora')
-            return redirect('historial_citas')
-
-    if es_personal:
-        puede = solicitud.estado == 'Confirmada' and solicitud.estado_pago == 'Pagado' and solicitud.fecha_hora > timezone.now()
-    else:
-        puede = solicitud.cliente_id == request.user.id and solicitud.puede_reagendarse()
-
-    if not puede:
-        messages.error(request, 'Esta cita ya no se puede reagendar.')
-        if es_personal:
-            return redirect('agenda_doctora')
-        return redirect('historial_citas')
-
-    if request.method == 'POST':
-        form = ReagendarCitaForm(request.POST)
-        form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
-        if form.is_valid():
-            solicitud.fecha_hora = form.fecha_hora
-            solicitud.recordatorio_enviado = False
-            if not es_personal:
-                solicitud.veces_reagendada = solicitud.veces_reagendada + 1
-            solicitud.save()
-            enviar_correo_reagendada(solicitud)
-            messages.success(request, 'La cita fue reagendada correctamente.')
-            if es_personal:
-                return redirect('agenda_doctora')
-            return redirect('historial_citas')
-    else:
-        form = ReagendarCitaForm(initial={'fecha': fecha_seleccionada})
-        form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
-
-    context = {
-        'form': form,
-        'solicitud': solicitud,
-        'fecha_seleccionada': fecha_seleccionada,
-        'es_personal': es_personal,
-    }
-    return render(request, 'citas/reagendar_cita.html', context)
-
-
+# PACIENTES ----------------------------------------------------------------------------------------
 def citas_sin_ficha(mascota):
     citas = SolicitudCita.objects.filter(mascota=mascota, estado_pago__in=['Pagado', 'En clinica'], ficha_medica__isnull=True)
     citas = citas.exclude(estado='Cancelada').exclude(estado='Ausente')
     return citas.order_by('-fecha_hora')
 
+def buscar_mascotas(buscar):
+    mascotas = Mascota.objects.select_related('dueno').order_by('nombre')
+    por_mascota = mascotas.filter(nombre__icontains=buscar)
+    por_nombre = mascotas.filter(dueno__first_name__icontains=buscar)
+    por_apellido = mascotas.filter(dueno__last_name__icontains=buscar)
+    por_rut = mascotas.filter(dueno__rut__icontains=buscar)
+    por_nombre_sin_cuenta = mascotas.filter(nombre_dueno__icontains=buscar)
+    por_rut_sin_cuenta = mascotas.filter(rut_dueno__icontains=buscar)
+    return por_mascota | por_nombre | por_apellido | por_rut | por_nombre_sin_cuenta | por_rut_sin_cuenta
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -703,13 +667,7 @@ def pacientes(request):
     mascotas = Mascota.objects.order_by('dueno__first_name', 'nombre')
 
     if buscar:
-        por_mascota = mascotas.filter(nombre__icontains=buscar)
-        por_nombre = mascotas.filter(dueno__first_name__icontains=buscar)
-        por_apellido = mascotas.filter(dueno__last_name__icontains=buscar)
-        por_rut = mascotas.filter(dueno__rut__icontains=buscar)
-        por_nombre_sin_cuenta = mascotas.filter(nombre_dueno__icontains=buscar)
-        por_rut_sin_cuenta = mascotas.filter(rut_dueno__icontains=buscar)
-        mascotas = por_mascota | por_nombre | por_apellido | por_rut | por_nombre_sin_cuenta | por_rut_sin_cuenta
+        mascotas = buscar_mascotas(buscar).order_by('dueno__first_name', 'nombre')
 
     lista_pacientes = []
     for mascota in mascotas:
@@ -727,73 +685,109 @@ def pacientes(request):
     }
     return render(request, 'citas/doctora/pacientes.html', context)
 
+# INGRESOS ----------------------------------------------------------------------------------------
+def sumar_pagos(desde, hasta):
+    inicio = rango_del_dia(desde)[0]
+    fin = rango_del_dia(hasta)[1]
+    citas = SolicitudCita.objects.filter(estado_pago='Pagado', fecha_pago__range=(inicio, fin))
 
-def copiar_datos_de_mascota(solicitud, mascota):
-    solicitud.mascota = mascota
-    solicitud.nombre_mascota = mascota.nombre
-    solicitud.especie_mascota = mascota.especie
-    solicitud.raza_mascota = mascota.raza
-    solicitud.sexo_mascota = mascota.sexo
-    solicitud.fecha_nacimiento_mascota = mascota.fecha_nacimiento
-
-    if mascota.dueno:
-        solicitud.cliente = mascota.dueno
-        solicitud.nombre = mascota.dueno.first_name
-        solicitud.apellido = mascota.dueno.last_name
-        solicitud.email = mascota.dueno.email
-        solicitud.telefono = mascota.dueno.telefono
-    else:
-        solicitud.nombre = mascota.nombre_dueno
-
-
-def buscar_mascotas(buscar):
-    mascotas = Mascota.objects.select_related('dueno').order_by('nombre')
-    por_mascota = mascotas.filter(nombre__icontains=buscar)
-    por_nombre = mascotas.filter(dueno__first_name__icontains=buscar)
-    por_apellido = mascotas.filter(dueno__last_name__icontains=buscar)
-    por_rut = mascotas.filter(dueno__rut__icontains=buscar)
-    por_nombre_sin_cuenta = mascotas.filter(nombre_dueno__icontains=buscar)
-    por_rut_sin_cuenta = mascotas.filter(rut_dueno__icontains=buscar)
-    return por_mascota | por_nombre | por_apellido | por_rut | por_nombre_sin_cuenta | por_rut_sin_cuenta
-
+    total = 0
+    for cita in citas:
+        if cita.monto_pagado:
+            total = total + cita.monto_pagado
+    return total
 
 @never_cache
 @login_required(login_url='sin_acceso')
-def crear_cita_interna(request):
-    if not es_personal_clinica(request.user):
+def ingresos_doctora(request):
+    if request.user.rol != 'veterinaria':
         return redirect('sin_acceso')
 
-    if request.method == 'POST':
-        buscar = request.POST.get('buscar', '').strip()
-        form = CitaInternaForm(request.POST)
-        if form.is_valid():
-            solicitud = form.save(commit=False)
-            mascota = form.cleaned_data['mascota']
-            if mascota:
-                copiar_datos_de_mascota(solicitud, mascota)
-            solicitud.estado = 'Confirmada'
-            solicitud.estado_pago = 'En clinica'
-            solicitud.save()
+    hoy = timezone.localdate()
+    desde = leer_fecha(request.GET.get('desde'))
+    hasta = leer_fecha(request.GET.get('hasta'))
+    if desde is None:
+        desde = hoy.replace(day=1)
+    if hasta is None:
+        hasta = hoy
+    if desde > hasta:
+        messages.error(request, 'La fecha "desde" no puede ser posterior a la fecha "hasta".')
+        desde = hoy.replace(day=1)
+        hasta = hoy
 
-            bloqueo = BloqueoHorario()
-            bloqueo.fecha = form.cleaned_data['fecha']
-            bloqueo.hora_inicio = form.cleaned_data['hora_inicio']
-            bloqueo.hora_fin = form.cleaned_data['hora_fin']
-            bloqueo.motivo = f'Cita interna: {solicitud.nombre_mascota}'
-            bloqueo.cita = solicitud
-            bloqueo.save()
+    inicio = rango_del_dia(desde)[0]
+    fin = rango_del_dia(hasta)[1]
+    citas_pagadas = SolicitudCita.objects.select_related('tipo_consulta').filter(estado_pago='Pagado', fecha_pago__range=(inicio, fin))
+    citas_pagadas = citas_pagadas.order_by('-fecha_pago')
 
-            messages.success(request, 'Cita agendada y horario bloqueado correctamente.')
-            return redirect('agenda_doctora')
-        messages.error(request, 'Revisa los campos marcados en rojo.')
-    else:
-        buscar = request.GET.get('buscar', '').strip()
-        form = CitaInternaForm()
+    total = 0
+    cantidad = 0
+    ingresos_por_mes = {}
+    lista_citas = []
+    for cita in citas_pagadas:
+        monto = 0
+        if cita.monto_pagado:
+            monto = cita.monto_pagado
+        total = total + monto
+        cantidad = cantidad + 1
 
-    if buscar:
-        form.fields['mascota'].queryset = buscar_mascotas(buscar)
-    else:
-        form.fields['mascota'].queryset = Mascota.objects.none()
+        cita.monto_texto = separar_miles(monto)
+        lista_citas.append(cita)
 
-    form.fields['fecha'].widget.attrs['min'] = timezone.localdate().isoformat()
-    return render(request, 'citas/doctora/cita_interna_form.html', {'form': form, 'buscar': buscar})
+        mes = timezone.localtime(cita.fecha_pago).strftime('%m/%Y')
+        if mes in ingresos_por_mes:
+            ingresos_por_mes[mes] = ingresos_por_mes[mes] + monto
+        else:
+            ingresos_por_mes[mes] = monto
+
+    meses = []
+    montos_por_mes = []
+    for mes in ingresos_por_mes:
+        meses.append(mes)
+        montos_por_mes.append(ingresos_por_mes[mes])
+    meses.reverse()
+    montos_por_mes.reverse()
+
+    promedio = 0
+    if cantidad > 0:
+        promedio = total // cantidad
+
+    primer_dia_mes = hoy.replace(day=1)
+    ultimo_dia_mes_anterior = primer_dia_mes - timedelta(days=1)
+    primer_dia_mes_anterior = ultimo_dia_mes_anterior.replace(day=1)
+
+    inicio_trimestre = primer_dia_mes_anterior
+    for i in range(2):
+        inicio_trimestre = inicio_trimestre - timedelta(days=1)
+        inicio_trimestre = inicio_trimestre.replace(day=1)
+
+    total_mes = sumar_pagos(primer_dia_mes, hoy)
+    total_mes_anterior = sumar_pagos(primer_dia_mes_anterior, ultimo_dia_mes_anterior)
+
+    sin_ingresos_mes = total_mes == 0
+
+    diferencia = None
+    bajo = False
+    if total_mes > 0 and total_mes_anterior > 0:
+        diferencia = (total_mes - total_mes_anterior) * 100 // total_mes_anterior
+        if diferencia < 0:
+            bajo = True
+
+    context = {
+        'citas_pagadas': lista_citas,
+        'desde': desde,
+        'hasta': hasta,
+        'total': separar_miles(total),
+        'cantidad': cantidad,
+        'promedio': separar_miles(promedio),
+        'meses': meses,
+        'montos_por_mes': montos_por_mes,
+        'mes_anterior': primer_dia_mes_anterior,
+        'fin_mes_anterior': ultimo_dia_mes_anterior,
+        'inicio_trimestre': inicio_trimestre,
+        'total_mes': separar_miles(total_mes),
+        'diferencia': diferencia,
+        'bajo': bajo,
+        'sin_ingresos_mes': sin_ingresos_mes,
+    }
+    return render(request, 'citas/doctora/ingresos.html', context)
