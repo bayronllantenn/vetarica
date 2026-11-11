@@ -2,9 +2,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
-from usuarios.views import es_veterinaria
-from .forms import ProveedorForm
-from .models import Proveedor
+from usuarios.views import es_personal_clinica, es_veterinaria
+from .forms import MovimientoForm, ProveedorForm
+from .models import Proveedor, registrar_movimiento
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -59,3 +59,27 @@ def eliminar_proveedor(request, proveedor_id):
         proveedor.delete()
         messages.success(request, f'{proveedor.nombre} fue eliminado correctamente.')
     return redirect('proveedores')
+
+
+@login_required(login_url='sin_acceso')
+def nuevo_movimiento(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        form = MovimientoForm(request.POST)
+        if form.is_valid():
+            insumo = form.cleaned_data['insumo']
+            tipo = form.cleaned_data['tipo']
+            cantidad = form.cleaned_data['cantidad']
+            motivo = form.cleaned_data['motivo']
+
+            se_registro = registrar_movimiento(insumo, tipo, cantidad, motivo, None, request.user)
+            if se_registro:
+                messages.success(request, f'{tipo} de {cantidad} {insumo.nombre} registrada.')
+                return redirect('nuevo_movimiento')
+            messages.error(request, f'No hay stock suficiente. Quedan {insumo.stock_actual} de {insumo.nombre}.')
+    else:
+        form = MovimientoForm()
+
+    return render(request, 'inventario/movimiento_form.html', {'form': form})

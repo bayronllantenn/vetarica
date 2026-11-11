@@ -1,6 +1,6 @@
 from django import forms
 from usuarios.forms import validar_rut
-from .models import Insumo, Proveedor
+from .models import Insumo, Movimiento, Proveedor
 
 
 class ProveedorForm(forms.ModelForm):
@@ -31,3 +31,19 @@ class ProveedorForm(forms.ModelForm):
         if commit:
             proveedor.insumos.set(self.cleaned_data['insumos'])
         return proveedor
+
+
+class MovimientoForm(forms.ModelForm):
+    class Meta:
+        model = Movimiento
+        fields = ('insumo', 'tipo', 'cantidad', 'motivo')
+        labels = {'insumo': 'Insumo', 'tipo': 'Tipo de movimiento', 'cantidad': 'Cantidad', 'motivo': 'Motivo'}
+        widgets = {
+            'motivo': forms.TextInput(attrs={'placeholder': 'Ej: compra a proveedor, uso en consulta'}),
+        }
+
+    def clean_cantidad(self):
+        cantidad = self.cleaned_data['cantidad']
+        if cantidad == 0:
+            raise forms.ValidationError('La cantidad debe ser mayor a 0.')
+        return cantidad
