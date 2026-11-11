@@ -54,7 +54,7 @@ Vet Arica{% endblock %} {% block css %}
           <span><strong>N° de historia:</strong> {{ mascota.id|stringformat:"06d" }}</span>
           <span><strong>Especie:</strong> {{ mascota.especie }}</span>
           <span><strong>Sexo:</strong> {{ mascota.sexo }}</span>
-          <span><strong>Edad:</strong> {{ mascota.edad }}</span>
+          <span><strong>Fecha de nacimiento:</strong> {{ mascota.fecha_nacimiento|date:"d/m/Y"|default:"—" }}</span>
           {% if mascota.estado_reproductivo %}
           <span><strong>Entero / Castrado:</strong> {{ mascota.estado_reproductivo }}</span>
           {% endif %}

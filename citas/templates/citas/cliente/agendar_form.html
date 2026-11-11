@@ -133,17 +133,11 @@
                 </label>
                 {{ form.sexo_mascota|as_crispy_field }}
               </div>
-              <div class="col-md-4 campo">
-                <label class="campo-label" for="{{ form.edad_valor_mascota.id_for_label }}">
-                  <i class="bi bi-calendar3"></i> Edad
+              <div class="col-md-8 campo">
+                <label class="campo-label" for="{{ form.fecha_nacimiento_mascota.id_for_label }}">
+                  <i class="bi bi-cake2"></i> Fecha de nacimiento
                 </label>
-                {{ form.edad_valor_mascota|as_crispy_field }}
-              </div>
-              <div class="col-md-4 campo">
-                <label class="campo-label" for="{{ form.edad_unidad_mascota.id_for_label }}">
-                  <i class="bi bi-clock"></i> Unidad
-                </label>
-                {{ form.edad_unidad_mascota|as_crispy_field }}
+                {{ form.fecha_nacimiento_mascota|as_crispy_field }}
               </div>
             </div>
           </div>

@@ -20,7 +20,7 @@
     <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
     <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
     <div class="mascota-card-wrapper agendar-card-wrapper">
-      <form class="mascota-form-card" method="post" novalidate>
+      <form class="mascota-form-card" method="post" novalidate onsubmit="bloquearBoton(this)">
         {% csrf_token %}
 
         <div class="form-top-nav">
@@ -98,6 +98,12 @@
       function recargarFormulario(form) {
         form.method = "get";
         form.submit();
+      }
+
+      function bloquearBoton(form) {
+        const boton = form.querySelector('button[type="submit"]');
+        boton.disabled = true;
+        boton.textContent = "Guardando...";
       }
     </script>
   </body>

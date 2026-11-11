@@ -83,7 +83,7 @@
           </p>
           <p class="ficha-dato">
             <img src="{% static 'inicio/img/iconos/ficha_icono_edad.png' %}" alt="" class="ficha-dato-icono" />
-            <strong>Edad:</strong> {{ mascota.edad }}
+            <strong>Fecha de nacimiento:</strong> {{ mascota.fecha_nacimiento|date:"d/m/Y"|default:"—" }}
           </p>
         </div>
       </section>
