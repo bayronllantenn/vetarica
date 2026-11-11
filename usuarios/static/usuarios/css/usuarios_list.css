@@ -1,0 +1,37 @@
+.pac-tabla .usr-avatar {
+  background: #dcf3e8;
+  color: #0b5a52;
+}
+
+.pac-tabla .pac-acciones {
+  text-align: center;
+}
+
+.pac-tabla .pac-acciones .pac-btn:first-child {
+  margin-left: 0;
+}
+
+.pac-tabla .usr-activo {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.pac-tabla .usr-inactivo {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.pac-tabla .usr-bloqueado td,
+.pac-tabla .usr-bloqueado strong {
+  color: #a1a1aa;
+}
+
+.usr-form {
+  display: inline-block;
+  margin: 0;
+}
+
+.usr-btn-bloquear:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+}
