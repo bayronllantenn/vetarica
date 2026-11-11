@@ -1,0 +1,62 @@
+.mov-filtros {
+  max-width: 640px;
+}
+
+.mov-filtros .form-select {
+  flex: 1;
+  height: 42px;
+  border: 1px solid #d5dedb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1f2d2b;
+}
+
+.mov-filtros .form-select:focus {
+  border-color: #0b7268;
+  box-shadow: 0 0 0 3px rgba(11, 114, 104, 0.12);
+}
+
+.mov-form {
+  padding: 24px;
+}
+
+.mov-form .form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2d2b;
+}
+
+.mov-form .form-control,
+.mov-form .form-select {
+  height: 42px;
+  border: 1px solid #d5dedb;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.mov-form .form-control:focus,
+.mov-form .form-select:focus {
+  border-color: #0b7268;
+  box-shadow: 0 0 0 3px rgba(11, 114, 104, 0.12);
+}
+
+.mov-form-acciones {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+  .mov-form {
+    padding: 16px;
+    border: 1px solid #e6ebe9;
+    border-radius: 12px;
+  }
+
+  .mov-filtros {
+    flex-wrap: wrap;
+  }
+
+  .mov-filtros .form-select {
+    flex-basis: 100%;
+  }
+}

@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
 from usuarios.views import es_personal_clinica, es_veterinaria
 from .forms import MovimientoForm, ProveedorForm
-from .models import Proveedor, registrar_movimiento
+from .models import Insumo, Movimiento, Proveedor, registrar_movimiento
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -77,9 +77,27 @@ def nuevo_movimiento(request):
             se_registro = registrar_movimiento(insumo, tipo, cantidad, motivo, None, request.user)
             if se_registro:
                 messages.success(request, f'{tipo} de {cantidad} {insumo.nombre} registrada.')
-                return redirect('nuevo_movimiento')
+                return redirect('movimientos')
             messages.error(request, f'No hay stock suficiente. Quedan {insumo.stock_actual} de {insumo.nombre}.')
     else:
         form = MovimientoForm()
 
     return render(request, 'inventario/movimiento_form.html', {'form': form})
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def movimientos(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    insumo_id = request.GET.get('insumo', '')
+    tipo = request.GET.get('tipo', '')
+
+    lista = Movimiento.objects.select_related('insumo', 'registrado_por').order_by('-fecha')
+    if insumo_id.isdigit():
+        insumo_id = int(insumo_id)
+        lista = lista.filter(insumo_id=insumo_id)
+    if tipo == 'Entrada' or tipo == 'Salida':
+        lista = lista.filter(tipo=tipo)
+    context = {'movimientos': lista,'insumos': Insumo.objects.order_by('nombre'),'insumo_id': insumo_id,'tipo': tipo,}
+    return render(request, 'inventario/movimientos.html', context)

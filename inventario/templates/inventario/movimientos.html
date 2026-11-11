@@ -1,0 +1,105 @@
+{% extends 'inicio/base.html' %}
+{% load static %}
+{% block title %}Movimientos - Vet Arica{% endblock %}
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/servicios.css' %}" rel="stylesheet" />
+<link href="{% static 'inventario/css/movimientos.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %} {% block content %}
+<div class="dash-shell fondo-huellas pac-pagina">
+  <main class="dash-content pac-contenido">
+    <section class="dash-hero pac-titulo">
+      <div>
+        <h1>Movimientos</h1>
+        <p class="dash-subtitle">{{ movimientos|length }} movimientos registrados</p>
+      </div>
+      <a href="{% url 'nuevo_movimiento' %}" class="btn btn-teal pac-boton">
+        <i class="bi bi-plus-lg"></i> Registrar movimiento
+      </a>
+    </section>
+
+    <form method="get" class="pac-buscador mov-filtros">
+      <select name="insumo" class="form-select">
+        <option value="">Todos los insumos</option>
+        {% for insumo in insumos %}
+        <option value="{{ insumo.id }}" {% if insumo_id == insumo.id %}selected{% endif %}>{{ insumo.nombre }}</option>
+        {% endfor %}
+      </select>
+      <select name="tipo" class="form-select">
+        <option value="">Entradas y salidas</option>
+        <option value="Entrada" {% if tipo == 'Entrada' %}selected{% endif %}>Entradas</option>
+        <option value="Salida" {% if tipo == 'Salida' %}selected{% endif %}>Salidas</option>
+      </select>
+      <button type="submit" class="btn btn-teal pac-boton">Filtrar</button>
+    </form>
+
+    <section class="pac-panel">
+      {% if movimientos %}
+      <table class="pac-tabla">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Insumo</th>
+            <th>Tipo</th>
+            <th>Cantidad</th>
+            <th>Motivo</th>
+            <th>Registrado por</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for movimiento in movimientos %}
+          <tr>
+            <td data-label="Fecha">{{ movimiento.fecha|date:"d/m/Y H:i" }}</td>
+            <td data-label="Insumo"><strong>{{ movimiento.insumo.nombre }}</strong></td>
+            <td data-label="Tipo">
+              {% if movimiento.tipo == 'Entrada' %}
+              <span class="serv-estado serv-estado-web">Entrada</span>
+              {% else %}
+              <span class="serv-estado serv-estado-oculto">Salida</span>
+              {% endif %}
+            </td>
+            <td data-label="Cantidad">{{ movimiento.cantidad }} {{ movimiento.insumo.unidad }}</td>
+            <td data-label="Motivo">{{ movimiento.motivo|default:"-" }}</td>
+            <td data-label="Registrado por">
+              {% if movimiento.registrado_por %}
+              {{ movimiento.registrado_por.first_name }} {{ movimiento.registrado_por.last_name }}
+              {% else %}
+              -
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="pac-vacio">
+        <i class="bi bi-box-seam"></i>
+        {% if insumo_id or tipo %}
+        <p>No hay movimientos con ese filtro.</p>
+        <span>Prueba con otro insumo o tipo.</span>
+        {% else %}
+        <p>Todavía no hay movimientos registrados.</p>
+        <span>Registra el primero con "Registrar movimiento".</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}

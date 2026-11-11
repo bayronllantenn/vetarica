@@ -1,0 +1,21 @@
+.fic-volver {
+  align-self: flex-start;
+  margin: 0 0 16px;
+}
+
+.fic-avatar {
+  width: 48px;
+  height: 48px;
+  background: #dcf3e8;
+  font-size: 20px;
+  color: #0b5a52;
+  text-transform: uppercase;
+}
+
+.pac-tabla .pac-acciones {
+  text-align: center;
+}
+
+.pac-tabla .pac-acciones .pac-btn:first-child {
+  margin-left: 0;
+}
