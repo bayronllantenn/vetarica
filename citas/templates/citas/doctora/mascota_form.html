@@ -55,14 +55,13 @@ Nuevo paciente - Vet Arica
           <div class="col-md-4">{{ form.sexo|as_crispy_field }}</div>
         </div>
         <div class="row gx-3">
-          <div class="col-md-4">{{ form.edad_valor|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.edad_unidad|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.fecha_nacimiento|as_crispy_field }}</div>
           <div class="col-md-4">{{ form.raza|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.estado_reproductivo|as_crispy_field }}</div>
         </div>
         <div class="row gx-3">
-          <div class="col-md-4">{{ form.estado_reproductivo|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.microchip|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.imagen|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.microchip|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.imagen|as_crispy_field }}</div>
         </div>
       </div>
 
