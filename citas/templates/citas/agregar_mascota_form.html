@@ -35,11 +35,7 @@
 
 
         <div class="form-top-nav">
-          {% if user.rol == 'veterinaria' or user.rol == 'secretaria' %}
-          <a href="{% url 'pacientes' %}" class="btn-back-pill"><i class="bi bi-chevron-left"></i> Volver</a>
-          {% else %}
           <a href="{% url 'dashboard' %}" class="btn-back-pill"><i class="bi bi-chevron-left"></i> Volver</a>
-          {% endif %}
         </div>
 
         <div class="form-header">
@@ -67,36 +63,6 @@
         </div>
 
         <div class="crispy-fields-wrap campos-con-icono">
-          {% if user.rol == 'veterinaria' or user.rol == 'secretaria' %}
-          <div class="campo mb-3">
-            <label class="campo-label" for="dueno_id">
-              <i class="bi bi-person"></i> Dueño (opcional)
-            </label>
-            <select id="dueno_id" name="dueno_id" class="form-select">
-              <option value="">Sin cuenta</option>
-              {% for cliente in clientes %}
-              <option value="{{ cliente.id }}" {% if cliente.id == dueno_elegido.id %}selected{% endif %}>
-                {{ cliente.first_name }} {{ cliente.last_name }} ({{ cliente.rut }})
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="row g-3" id="datosSinCuenta">
-            <div class="col-md-6 campo">
-              <label class="campo-label" for="{{ form.nombre_dueno.id_for_label }}">
-                <i class="bi bi-person-vcard"></i> Nombre del dueño
-              </label>
-              {{ form.nombre_dueno|as_crispy_field }}
-            </div>
-            <div class="col-md-6 campo">
-              <label class="campo-label" for="{{ form.rut_dueno.id_for_label }}">
-                <i class="bi bi-credit-card-2-front"></i> RUT del dueño
-              </label>
-              {{ form.rut_dueno|as_crispy_field }}
-            </div>
-          </div>
-          {% endif %}
-
           <div class="campo">
             <label class="campo-label" for="{{ form.nombre.id_for_label }}">
               <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Nombre
@@ -165,11 +131,7 @@
           <button type="submit" class="btn-submit-mascota">
             Guardar mascota
           </button>
-          {% if user.rol == 'veterinaria' or user.rol == 'secretaria' %}
-          <a href="{% url 'pacientes' %}" class="btn-cancel-mascota">Cancelar</a>
-          {% else %}
           <a href="{% url 'dashboard' %}" class="btn-cancel-mascota">Cancelar</a>
-          {% endif %}
         </div>
       </form>
     </div>

@@ -101,7 +101,11 @@ def agregar_mascota(request):
         'clientes': clientes,
         'dueno_elegido': dueno,
     }
-    return render(request, 'citas/agregar_mascota_form.html', context)
+    if es_personal:
+        plantilla = 'citas/doctora/mascota_form.html'
+    else:
+        plantilla = 'citas/agregar_mascota_form.html'
+    return render(request, plantilla, context)
 
 
 def agendar_view(request):
@@ -219,7 +223,6 @@ def cancelar_solicitud(request, id):
 
 
 # WEBPAY
-
 def iniciar_pago_webpay(request, id):
     solicitud = get_object_or_404(SolicitudCita, id=id)
     if not puede_ver_solicitud(request, solicitud):

@@ -1,0 +1,93 @@
+{% extends 'inicio/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Nuevo paciente - Vet Arica
+{% endblock %}
+
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/cita_interna.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block topbar %}{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="dash-shell fondo-huellas">
+  <main class="dash-content">
+    <section class="dash-hero">
+      <h1>Nuevo paciente</h1>
+      <p class="dash-subtitle">Registra la mascota y su dueño. Si el dueño tiene cuenta, elígelo de la lista.</p>
+    </section>
+
+    <form method="post" enctype="multipart/form-data" novalidate class="cita-interna-form">
+      {% csrf_token %}
+
+      <div class="cita-seccion">
+        <h2 class="cita-seccion-titulo">Dueño</h2>
+        <label class="form-label" for="dueno_id">Dueño con cuenta (opcional)</label>
+        <select id="dueno_id" name="dueno_id" class="form-select mb-3">
+          <option value="">Sin cuenta</option>
+          {% for cliente in clientes %}
+          <option value="{{ cliente.id }}" {% if cliente.id == dueno_elegido.id %}selected{% endif %}>
+            {{ cliente.first_name }} {{ cliente.last_name }} ({{ cliente.rut }})
+          </option>
+          {% endfor %}
+        </select>
+        <div class="row gx-3">
+          <div class="col-md-6">{{ form.nombre_dueno|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.rut_dueno|as_crispy_field }}</div>
+        </div>
+
+        <h2 class="cita-seccion-titulo cita-seccion-titulo-separado">Mascota</h2>
+        <div class="row gx-3">
+          <div class="col-md-4">{{ form.nombre|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.especie|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.sexo|as_crispy_field }}</div>
+        </div>
+        <div class="row gx-3">
+          <div class="col-md-4">{{ form.edad_valor|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.edad_unidad|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.raza|as_crispy_field }}</div>
+        </div>
+        <div class="row gx-3">
+          <div class="col-md-4">{{ form.estado_reproductivo|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.microchip|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.imagen|as_crispy_field }}</div>
+        </div>
+      </div>
+
+      <div class="cita-acciones">
+        <a href="{% url 'pacientes' %}" class="btn btn-outline-secondary">Volver</a>
+        <button type="submit" class="btn btn-teal">Guardar paciente</button>
+      </div>
+    </form>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+  {% for error in form.non_field_errors %}
+  notyf.error("{{ error|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}
