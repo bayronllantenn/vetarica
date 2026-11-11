@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
+from inventario.models import CATEGORIAS_INSUMO, Insumo, registrar_movimiento
 from usuarios.models import Persona
 from usuarios.views import es_personal_clinica
 from .forms import CitaInternaForm, FichaMedicaForm, MascotaForm, ReagendarCitaForm, SolicitudCitaForm, cancelar_citas_vencidas, obtener_horas_disponibles, rango_del_dia
@@ -497,6 +498,57 @@ def marcar_no_asistio(request, cita_id):
 
 
 # FICHA MEDICA ----------------------------------------------------------------------------------------
+def insumos_por_categoria():
+    grupos = []
+    for categoria in CATEGORIAS_INSUMO:
+        nombre = categoria[0]
+        insumos = Insumo.objects.filter(categoria=nombre).order_by('nombre')
+        grupos.append({'categoria': nombre, 'insumos': insumos})
+    return grupos
+
+def leer_insumos_usados(request):
+    ids = request.POST.getlist('insumo_id')
+    cantidades = request.POST.getlist('insumo_cantidad')
+
+    usados = {}
+    for i in range(len(ids)):
+        if not ids[i].isdigit():
+            continue
+        insumo = Insumo.objects.filter(id=ids[i]).first()
+        cantidad = cantidades[i]
+        if insumo is None or not cantidad.isdigit() or int(cantidad) == 0:
+            return {}, 'Revisa los insumos: elige un insumo y una cantidad mayor a 0.'
+        if insumo in usados:
+            usados[insumo] = usados[insumo] + int(cantidad)
+        else:
+            usados[insumo] = int(cantidad)
+
+    for insumo in usados:
+        if usados[insumo] > insumo.stock_actual:
+            return {}, f'No hay stock suficiente de {insumo.nombre} (quedan {insumo.stock_actual}).'
+
+    return usados, None
+
+def valor_insumos_de_ficha(ficha):
+    lista = []
+    total = 0
+    if ficha is None:
+        return lista, separar_miles(total)
+
+    movimientos = ficha.movimientos_inventario.select_related('insumo').order_by('fecha')
+    for movimiento in movimientos:
+        precio = movimiento.insumo.precio_venta()
+        subtotal = movimiento.cantidad * precio
+        total = total + subtotal
+        lista.append({
+            'nombre': movimiento.insumo.nombre,
+            'cantidad': movimiento.cantidad,
+            'unidad': movimiento.insumo.unidad,
+            'precio': separar_miles(precio),
+            'subtotal': separar_miles(subtotal),
+        })
+    return lista, separar_miles(total)
+
 @never_cache
 @login_required(login_url='sin_acceso')
 def ficha_medica_detalle(request, cita_id):
@@ -532,7 +584,8 @@ def ficha_medica_detalle(request, cita_id):
 
     if request.method == 'POST':
         form = FichaMedicaForm(request.POST, instance=ficha)
-        if form.is_valid():
+        insumos_usados, error_insumos = leer_insumos_usados(request)
+        if form.is_valid() and error_insumos is None:
             ficha_nueva = form.save(commit=False)
             ficha_nueva.solicitud = solicitud
             ficha_nueva.mascota = solicitud.mascota
@@ -542,14 +595,23 @@ def ficha_medica_detalle(request, cita_id):
             ficha_nueva.fecha_nacimiento_mascota = solicitud.fecha_nacimiento_mascota
             ficha_nueva.save()
 
+            motivo = f'Usado en la ficha de {solicitud.nombre_mascota}'
+            for insumo in insumos_usados:
+                registrar_movimiento(insumo, 'Salida', insumos_usados[insumo], motivo=motivo, ficha=ficha_nueva, usuario=request.user)
+
             solicitud.estado = 'Finalizado'
             solicitud.save()
 
             messages.success(request, 'Ficha clínica guardada correctamente.')
             return redirect('agenda_doctora')
-        messages.error(request, 'Revisa los campos marcados en rojo.')
+        if error_insumos:
+            messages.error(request, error_insumos)
+        else:
+            messages.error(request, 'Revisa los campos marcados en rojo.')
     else:
         form = FichaMedicaForm(instance=ficha)
+
+    insumos_ya_usados, total_insumos = valor_insumos_de_ficha(ficha)
 
     context = {
         'solicitud': solicitud,
@@ -560,6 +622,9 @@ def ficha_medica_detalle(request, cita_id):
         'puede_reagendar': puede_reagendar,
         'puede_marcar_ausente': puede_marcar_ausente,
         'volver_url': reverse('agenda_doctora'),
+        'insumos_por_categoria': insumos_por_categoria(),
+        'insumos_ya_usados': insumos_ya_usados,
+        'total_insumos': total_insumos,
     }
     return render(request, 'citas/doctora/ficha_medica_form.html', context)
 
@@ -618,7 +683,8 @@ def editar_ficha(request, ficha_id):
         messages.error(request, 'Revisa los campos marcados en rojo.')
     else:
         form = FichaMedicaForm(instance=ficha)
-    context = {'solicitud': ficha.solicitud, 'mascota': ficha.mascota, 'ficha': ficha, 'form': form, 'volver_url': volver_url, 'puede_llenar_ficha': True}
+    insumos_ya_usados, total_insumos = valor_insumos_de_ficha(ficha)
+    context = {'solicitud': ficha.solicitud, 'mascota': ficha.mascota, 'ficha': ficha, 'form': form, 'volver_url': volver_url, 'puede_llenar_ficha': True, 'insumos_ya_usados': insumos_ya_usados, 'total_insumos': total_insumos}
     return render(request, 'citas/doctora/ficha_medica_form.html', context)
 
 @never_cache

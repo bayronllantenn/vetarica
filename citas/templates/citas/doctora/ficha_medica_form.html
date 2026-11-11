@@ -12,7 +12,7 @@ Vet Arica{% endblock %} {% block css %}
   <main class="dash-content">
     <a href="{{ volver_url }}" class="volver">
       <i class="bi bi-chevron-left"></i> Volver
-    </a>
+    </a>ss
 
     <div class="ficha-encabezado">
       <div>
@@ -130,6 +130,73 @@ Vet Arica{% endblock %} {% block css %}
         {{ form.diagnostico|as_crispy_field }}
         {{ form.tratamiento|as_crispy_field }}
 
+        <h2 class="mt-3">Insumos usados <span class="texto-suave fw-normal">(opcional)</span></h2>
+
+        {% if insumos_por_categoria %}
+        <div id="lista-insumos">
+          <div class="row g-2 align-items-center fila-insumo mb-2">
+            <div class="col-md-7">
+              <select name="insumo_id" class="form-select">
+                <option value="">Elige un insumo</option>
+                {% for grupo in insumos_por_categoria %}
+                {% if grupo.insumos %}
+                <optgroup label="{{ grupo.categoria }}">
+                  {% for insumo in grupo.insumos %}
+                  <option value="{{ insumo.id }}" {% if insumo.stock_actual == 0 %}disabled{% endif %}>
+                    {{ insumo.nombre }} (stock: {{ insumo.stock_actual }} {{ insumo.unidad }})
+                  </option>
+                  {% endfor %}
+                </optgroup>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <input type="number" name="insumo_cantidad" class="form-control" min="1" placeholder="Cantidad" />
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-outline-danger w-100" onclick="quitarInsumo(this)">
+                <i class="bi bi-trash"></i> Quitar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-sm btn-vet-borde" onclick="agregarInsumo()">
+          <i class="bi bi-plus-lg"></i> Agregar otro insumo
+        </button>
+        {% endif %}
+
+        <p class="mt-3 mb-1"><strong>Insumos registrados en esta atención</strong></p>
+        {% if insumos_ya_usados %}
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Insumo</th>
+              <th>Cantidad</th>
+              <th>Precio unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for usado in insumos_ya_usados %}
+            <tr>
+              <td>{{ usado.nombre }}</td>
+              <td>{{ usado.cantidad }} {{ usado.unidad }}</td>
+              <td>${{ usado.precio }}</td>
+              <td>${{ usado.subtotal }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+              <td colspan="3"><strong>Total insumos</strong></td>
+              <td><strong>${{ total_insumos }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        {% else %}
+        <p class="texto-suave">Todavía no se registran insumos.</p>
+        {% endif %}
+
         <h2 class="mt-3">Antecedentes</h2>
         <div class="row g-3">
           <div class="col-md-4">{{ form.vacunas|as_crispy_field }}</div>
@@ -163,5 +230,24 @@ Vet Arica{% endblock %} {% block css %}
   {% for message in messages %}
   notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
   {% endfor %}
+
+  function agregarInsumo() {
+    const lista = document.getElementById("lista-insumos");
+    const fila = lista.querySelector(".fila-insumo").cloneNode(true);
+    fila.querySelector("select").value = "";
+    fila.querySelector("input").value = "";
+    lista.appendChild(fila);
+  }
+
+  function quitarInsumo(boton) {
+    const lista = document.getElementById("lista-insumos");
+    const fila = boton.closest(".fila-insumo");
+    if (lista.querySelectorAll(".fila-insumo").length > 1) {
+      fila.remove();
+    } else {
+      fila.querySelector("select").value = "";
+      fila.querySelector("input").value = "";
+    }
+  }
 </script>
 {% endblock %}
