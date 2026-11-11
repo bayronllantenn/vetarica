@@ -4,86 +4,91 @@
 {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
-<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/fichas_paciente.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
-<div class="dash-shell fondo-huellas">
-  <main class="dash-content">
-    <a href="{% url 'pacientes' %}" class="volver volver-ancho">
+<div class="dash-shell fondo-huellas pac-pagina">
+  <main class="dash-content pac-contenido">
+    <a href="{% url 'pacientes' %}" class="pac-btn fic-volver">
       <i class="bi bi-chevron-left"></i> Volver
     </a>
-    <div class="usuarios-encabezado">
-      <div>
-        <h2>Fichas de {{ mascota.nombre }}</h2>
-        <p>
-          {{ mascota.especie }}
-          {% if mascota.dueno %}
-          {{ mascota.dueno.first_name }} {{ mascota.dueno.last_name }}
-          {% else %}
-          {{ mascota.nombre_dueno|default:"Sin cuenta" }}
-          {% endif %}
-          {{ fichas|length }} fichas
-        </p>
+    <section class="dash-hero pac-titulo">
+      <div class="pac-mascota">
+        <span class="pac-avatar fic-avatar">{{ mascota.nombre.0 }}</span>
+        <div>
+          <h1>Fichas de {{ mascota.nombre }}</h1>
+          <p class="dash-subtitle">
+            {{ mascota.especie }} ·
+            {% if mascota.dueno %}
+            {{ mascota.dueno.first_name }} {{ mascota.dueno.last_name }}
+            {% else %}
+            {{ mascota.nombre_dueno|default:"Sin cuenta" }}
+            {% endif %}
+            · {{ fichas|length }} fichas
+          </p>
+        </div>
       </div>
       {% if cita_sin_ficha %}
-      <a href="{% url 'ficha_medica_detalle' cita_sin_ficha.id %}" class="btn btn-vet">
+      <a href="{% url 'ficha_medica_detalle' cita_sin_ficha.id %}" class="btn btn-teal pac-boton">
         <i class="bi bi-plus-lg"></i> Agregar ficha
       </a>
       {% else %}
-      <a href="{% url 'ficha_sin_cita' mascota.id %}" class="btn btn-vet">
+      <a href="{% url 'ficha_sin_cita' mascota.id %}" class="btn btn-teal pac-boton">
         <i class="bi bi-plus-lg"></i> Agregar ficha
       </a>
       {% endif %}
-    </div>
-    <div class="tarjeta">
-      <div class="table-responsive">
-        <table class="table align-middle tabla-usuarios">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Consulta</th>
-              <th>Motivo</th>
-              <th>Diagnóstico</th>
-              <th>Peso</th>
-              <th class="text-end">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for ficha in fichas %}
-            <tr>
-              <td class="fw-semibold">{{ ficha.fecha_atencion|date:"d/m/Y H:i" }}</td>
-              <td class="texto-suave">
-                {% if ficha.solicitud %}
-                  {{ ficha.solicitud.tipo_consulta.nombre }}
-                {% else %}
-                  Sin cita
-                {% endif %}
-              </td>
-              <td>{{ ficha.motivo_consulta }}</td>
-              <td>{{ ficha.diagnostico }}</td>
-              <td class="texto-suave">{% if ficha.peso %}{{ ficha.peso }} kg{% else %}-{% endif %}</td>
-              <td class="text-end">
-                <div class="acciones">
-                  <a href="{% url 'editar_ficha' ficha.id %}" class="btn btn-sm btn-vet">
-                    <i class="bi bi-pencil"></i> Ver / editar
-                  </a>
-                  <a href="{% url 'imprimir_ficha' ficha.id %}" class="btn btn-sm btn-outline-dark">
-                    <i class="bi bi-printer"></i> Imprimir
-                  </a>
-                </div>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="6" class="sin-resultados">Esta mascota todavía no tiene fichas.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    </section>
+  
+    <section class="pac-panel">
+      {% if fichas %}
+      <table class="pac-tabla">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Consulta</th>
+            <th>Motivo</th>
+            <th>Diagnóstico</th>
+            <th>Peso</th>
+            <th class="pac-acciones">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ficha in fichas %}
+          <tr>
+            <td><strong>{{ ficha.fecha_atencion|date:"d/m/Y H:i" }}</strong></td>
+            <td data-label="Consulta">
+              {% if ficha.solicitud %}
+              <span class="pac-etiqueta">{{ ficha.solicitud.tipo_consulta.nombre }}</span>
+              {% else %}
+              <span class="pac-etiqueta">Sin cita</span>
+              {% endif %}
+            </td>
+            <td data-label="Motivo">{{ ficha.motivo_consulta }}</td>
+            <td data-label="Diagnóstico">{{ ficha.diagnostico }}</td>
+            <td data-label="Peso">{% if ficha.peso %}{{ ficha.peso }} kg{% else %}-{% endif %}</td>
+            <td class="pac-acciones">
+              <a href="{% url 'editar_ficha' ficha.id %}" class="pac-btn">
+                <i class="bi bi-pencil-square"></i> Ver / editar
+              </a>
+              <a href="{% url 'imprimir_ficha' ficha.id %}" class="pac-btn">
+                <i class="bi bi-printer"></i> Imprimir
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="pac-vacio">
+        <i class="bi bi-file-earmark-text"></i>
+        <p>Esta mascota todavía no tiene fichas.</p>
+        <span>Agrega la primera con "Agregar ficha".</span>
       </div>
-    </div>
+      {% endif %}
+    </section>
   </main>
 </div>
 {% endblock %} {% block extra_js %}
