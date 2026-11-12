@@ -18,9 +18,14 @@
         <h1>Movimientos</h1>
         <p class="dash-subtitle">{{ movimientos|length }} movimientos registrados</p>
       </div>
-      <a href="{% url 'nuevo_movimiento' %}" class="btn btn-teal pac-boton">
-        <i class="bi bi-plus-lg"></i> Registrar movimiento
-      </a>
+      <div class="d-flex gap-2">
+        <a href="{% url 'orden_compra' %}" class="btn btn-outline-secondary pac-boton">
+          <i class="bi bi-camera"></i> Cargar orden de compra
+        </a>
+        <a href="{% url 'nuevo_movimiento' %}" class="btn btn-teal pac-boton">
+          <i class="bi bi-plus-lg"></i> Registrar movimiento
+        </a>
+      </div>
     </section>
 
     <form method="get" class="pac-buscador mov-filtros">

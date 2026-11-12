@@ -1,0 +1,104 @@
+{% extends 'inicio/base.html' %}
+{% load static %}
+
+{% block title %}
+Orden de compra - Vet Arica
+{% endblock %}
+
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/cita_interna.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block topbar %}{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="dash-shell fondo-huellas">
+  <main class="dash-content">
+    <section class="dash-hero">
+      <h1>Cargar orden de compra</h1>
+      {% if filas %}
+      <p class="dash-subtitle">Revisa lo que se leyó, corrige lo necesario y registra las entradas.</p>
+      {% else %}
+      <p class="dash-subtitle">Sube una foto de la orden y el sistema leerá los productos, cantidades y precios.</p>
+      {% endif %}
+    </section>
+
+    {% if filas %}
+    <form method="post" class="cita-interna-form">
+      {% csrf_token %}
+      <div class="cita-seccion">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Leído en la orden</th>
+              <th>Insumo</th>
+              <th style="width: 120px">Cantidad</th>
+              <th style="width: 160px">Costo neto</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fila in filas %}
+            <tr>
+              <td><input type="text" name="nombre" value="{{ fila.nombre }}" class="form-control"></td>
+              <td>
+                <select name="insumo" class="form-select">
+                  <option value="">No registrar</option>
+                  <option value="nuevo">Crear insumo nuevo</option>
+                  {% for insumo in insumos %}
+                  <option value="{{ insumo.id }}" {% if fila.insumo.id == insumo.id %}selected{% endif %}>{{ insumo.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><input type="number" name="cantidad" min="0" value="{{ fila.cantidad }}" class="form-control"></td>
+              <td><input type="number" name="precio" min="0" value="{{ fila.precio }}" class="form-control"></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cita-acciones">
+        <a href="{% url 'orden_compra' %}" class="btn btn-outline-secondary">Subir otra foto</a>
+        <button type="submit" name="registrar" value="1" class="btn btn-teal">Registrar entradas</button>
+      </div>
+    </form>
+    {% else %}
+    <form method="post" enctype="multipart/form-data" class="cita-interna-form">
+      {% csrf_token %}
+      <div class="cita-seccion">
+        <label class="form-label" for="foto">Foto de la orden de compra</label>
+        <input type="file" id="foto" name="foto" accept="image/*" class="form-control" required>
+      </div>
+
+      <div class="cita-acciones">
+        <a href="{% url 'movimientos' %}" class="btn btn-outline-secondary">Volver</a>
+        <button type="submit" class="btn btn-teal">Leer orden</button>
+      </div>
+    </form>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}
