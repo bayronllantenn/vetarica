@@ -5,6 +5,7 @@ from django.views.decorators.cache import never_cache
 from usuarios.views import es_personal_clinica, es_veterinaria
 from .forms import MovimientoForm, ProveedorForm
 from .models import Insumo, Movimiento, Proveedor, registrar_movimiento
+from .ocr import buscar_insumo, leer_texto, separar_productos
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -59,6 +60,80 @@ def eliminar_proveedor(request, proveedor_id):
         proveedor.delete()
         messages.success(request, f'{proveedor.nombre} fue eliminado correctamente.')
     return redirect('proveedores')
+
+
+def leer_orden(foto):
+    filas = []
+    try:
+        texto = leer_texto(foto)
+    except Exception:
+        return filas
+    if texto is None:
+        return filas
+
+    for producto in separar_productos(texto):
+        filas.append({'nombre': producto['nombre'], 'cantidad': producto['cantidad'], 'precio': producto['precio'], 'insumo': buscar_insumo(producto['nombre'])})
+    return filas
+
+
+def elegir_insumo(insumo_id, nombre):
+    if insumo_id.isdigit():
+        return Insumo.objects.filter(id=insumo_id).first()
+    if insumo_id == 'nuevo' and nombre != '':
+        insumo = Insumo.objects.filter(nombre__iexact=nombre).first()
+        if insumo is None:
+            insumo = Insumo(nombre=nombre, categoria='Otro')
+        return insumo
+    return None
+
+
+def registrar_orden(request):
+    nombres = request.POST.getlist('nombre')
+    insumos = request.POST.getlist('insumo')
+    cantidades = request.POST.getlist('cantidad')
+    precios = request.POST.getlist('precio')
+
+    registradas = 0
+    for i in range(len(insumos)):
+        insumo = elegir_insumo(insumos[i], nombres[i].strip())
+        if insumo is None or not cantidades[i].isdigit() or int(cantidades[i]) == 0:
+            continue
+
+        if precios[i].isdigit():
+            insumo.costo = int(precios[i])
+        registrar_movimiento(insumo, 'Entrada', int(cantidades[i]), 'Orden de compra', None, request.user)
+        registradas = registradas + 1
+
+    if registradas == 0:
+        messages.error(request, 'No se registró ninguna entrada. Elige el insumo de cada producto.')
+        return redirect('orden_compra')
+    messages.success(request, f'Se registraron {registradas} entradas desde la orden de compra.')
+    return redirect('movimientos')
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def orden_compra(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST' and 'registrar' in request.POST:
+        return registrar_orden(request)
+
+    filas = []
+    if request.method == 'POST':
+        foto = request.FILES.get('foto')
+        if foto is None:
+            messages.error(request, 'Sube la foto de la orden de compra.')
+            return redirect('orden_compra')
+
+        filas = leer_orden(foto)
+        if len(filas) == 0:
+            messages.error(request, 'No se pudieron leer productos en la imagen. Intenta con una foto más clara.')
+            return redirect('orden_compra')
+
+    context = {'filas': filas, 'insumos': Insumo.objects.order_by('nombre')}
+    return render(request, 'inventario/orden_compra.html', context)
 
 
 @login_required(login_url='sin_acceso')
