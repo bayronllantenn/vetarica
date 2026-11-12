@@ -81,48 +81,49 @@ def enviar_correo_reagendada(solicitud):
         pass
 
 # MASCOTAS ----------------------------------------------------------------------------------------
+def elegir_dueno(request, es_personal):
+    if not es_personal:
+        return request.user
+    dueno_id = request.POST.get('dueno_id', '')
+    if dueno_id.isdigit():
+        return Persona.objects.filter(id=dueno_id, rol='cliente').first()
+    return None
+
+
 @login_required(login_url='sin_acceso')
 def agregar_mascota(request):
     es_personal = es_personal_clinica(request.user)
 
-    clientes = []
-    dueno = request.user
     if es_personal:
         clientes = Persona.objects.filter(rol='cliente', is_active=True).order_by('first_name', 'last_name')
-        dueno = None
+        plantilla = 'citas/doctora/mascota_form.html'
+        pagina_siguiente = 'pacientes'
+    else:
+        clientes = []
+        plantilla = 'citas/agregar_mascota_form.html'
+        pagina_siguiente = 'dashboard'
+
+    dueno = elegir_dueno(request, es_personal)
 
     if request.method == 'POST':
-        if es_personal:
-            dueno = None
-            dueno_id = request.POST.get('dueno_id', '')
-            if dueno_id.isdigit():
-                dueno = Persona.objects.filter(id=dueno_id, rol='cliente').first()
+        sin_cuenta = False
+        if dueno is None:  
+            sin_cuenta = True
 
-        form = MascotaForm(request.POST, request.FILES, sin_cuenta=dueno is None)
-
+        form = MascotaForm(request.POST, request.FILES, sin_cuenta=sin_cuenta)
         if form.is_valid():
             mascota = form.save(commit=False)
             mascota.dueno = dueno
-            if dueno is not None:
+            if dueno is not None: 
                 mascota.nombre_dueno = ''
                 mascota.rut_dueno = ''
             mascota.save()
             messages.success(request, 'Mascota agregada correctamente.')
-            if es_personal:
-                return redirect('pacientes')
-            return redirect('dashboard')
+            return redirect(pagina_siguiente)
     else:
         form = MascotaForm()
 
-    context = {
-        'form': form,
-        'clientes': clientes,
-        'dueno_elegido': dueno,
-    }
-    if es_personal:
-        plantilla = 'citas/doctora/mascota_form.html'
-    else:
-        plantilla = 'citas/agregar_mascota_form.html'
+    context = {'form': form, 'clientes': clientes, 'dueno_elegido': dueno}
     return render(request, plantilla, context)
 
 # AGENDAR CITA ----------------------------------------------------------------------------------------
