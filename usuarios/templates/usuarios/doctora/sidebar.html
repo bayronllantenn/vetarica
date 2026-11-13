@@ -56,6 +56,10 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'tipos_servicios' %}active{% endif %}">
     <i class="bi bi-tags"></i> Tipos de servicios
   </a>
+  <a href="{% url 'inventario' %}"
+     class="sidebar-link {% if request.resolver_match.url_name == 'inventario' %}active{% endif %}">
+    <i class="bi bi-boxes"></i> Inventario
+  </a>
   <a href="{% url 'movimientos' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'movimientos' or request.resolver_match.url_name == 'nuevo_movimiento' %}active{% endif %}">
     <i class="bi bi-box-seam"></i> Movimientos
