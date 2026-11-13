@@ -348,6 +348,45 @@ body:has(.sidebar-doctora) .dash-hero .dash-subtitle {
 .modo-oscuro .dash-shell img,
 .modo-oscuro .dash-shell .btn-teal,
 .modo-oscuro .dash-shell .pac-btn-verde,
-.modo-oscuro .dash-shell .ih-boton:not(.ih-boton-sec) {
+.modo-oscuro .dash-shell .ih-boton:not(.ih-boton-sec),
+.modo-oscuro .dash-shell .btn-vet {
   filter: invert(1) hue-rotate(180deg);
+}
+
+body:has(.sidebar-doctora) :is(.btn-teal, .btn-vet, .btn-vet-borde, .btn-outline-secondary, .btn-outline-danger, .ih-boton, .bloqueos-boton-sec) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: auto;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+body:has(.sidebar-doctora) :is(.btn-teal, .btn-vet, .ih-boton:not(.ih-boton-sec)) {
+  border: 1px solid #0b7268;
+  background: #0b7268;
+  color: #fff;
+}
+
+body:has(.sidebar-doctora) :is(.btn-teal, .btn-vet, .ih-boton:not(.ih-boton-sec)):hover {
+  border-color: #095e56;
+  background: #095e56;
+  color: #fff;
+}
+
+body:has(.sidebar-doctora) :is(.btn-vet-borde, .btn-outline-secondary, .ih-boton-sec, .bloqueos-boton-sec) {
+  border: 1px solid #d5dedb;
+  background: #fff;
+  color: #1f2d2b;
+}
+
+body:has(.sidebar-doctora) :is(.btn-vet-borde, .btn-outline-secondary, .ih-boton-sec, .bloqueos-boton-sec):hover {
+  border-color: #0b7268;
+  background: #fff;
+  color: #0b7268;
 }

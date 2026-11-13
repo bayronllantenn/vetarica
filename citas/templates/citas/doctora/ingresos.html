@@ -31,7 +31,7 @@ Vet Arica{% endblock %} {% block css %}
         <a href="{% url 'ingresos_doctora' %}" class="pac-btn">Este mes</a>
         <a href="?desde={{ mes_anterior|date:'Y-m-d' }}&hasta={{ fin_mes_anterior|date:'Y-m-d' }}" class="pac-btn">Mes anterior</a>
         <a href="?desde={{ inicio_trimestre|date:'Y-m-d' }}&hasta={{ fin_mes_anterior|date:'Y-m-d' }}" class="pac-btn">Trimestre</a>
-        <button type="button" class="pac-btn" onclick="window.print()"><i class="bi bi-download"></i> Descargar PDF</button>
+        <button type="button" class="pac-btn pac-btn-verde" onclick="window.print()"><i class="bi bi-download"></i> Descargar PDF</button>
       </form>
     </section>
 
