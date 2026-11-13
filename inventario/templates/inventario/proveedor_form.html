@@ -1,78 +1,88 @@
+{% extends 'inicio/base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% if proveedor %}Editar{% else %}Agregar{% endif %} proveedor - Vet Arica</title>
-    <link rel="icon" href="{% static 'inicio/img/marca/favicon.png' %}" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
-      rel="stylesheet"
-    />
-    <link href="{% static 'citas/css/agendar.css' %}" rel="stylesheet" />
-    <link href="{% static 'usuarios/css/crear_tipo_consulta.css' %}" rel="stylesheet" />
-    <link href="{% static 'inventario/css/proveedor_form.css' %}" rel="stylesheet" />
-  </head>
-  <body>
-    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="form-deco fondo-camino" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-1" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-2" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-3" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
-    <img src="{% static 'inicio/img/ilustraciones/perro.png' %}" alt="" class="form-deco fondo-perro" />
 
-    <form class="form" method="post" novalidate>
-      {% csrf_token %}
-      <a href="{% url 'proveedores' %}" class="boton-volver">
-        <i class="bi bi-chevron-left"></i> Volver
-      </a>
-      <img src="{% static 'inicio/img/marca/logo2.png' %}" alt="Vet Arica" class="logo"/>
+{% block title %}
+{% if proveedor %}Editar{% else %}Agregar{% endif %} proveedor - Vet Arica
+{% endblock %}
+
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/cita_interna.css' %}" rel="stylesheet" />
+<link href="{% static 'inventario/css/proveedor_form.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block topbar %}{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="dash-shell fondo-huellas">
+  <main class="dash-content">
+    <section class="dash-hero">
       {% if proveedor %}
-      <p class="form-title">Editar proveedor</p>
-      <p class="form-subtitle">Modifica los datos de {{ proveedor.nombre }}.</p>
+      <h1>Editar proveedor</h1>
+      <p class="dash-subtitle">Modifica los datos de {{ proveedor.nombre }}.</p>
       {% else %}
-      <p class="form-title">Agregar proveedor</p>
-      <p class="form-subtitle">Ingresa los datos del nuevo proveedor.</p>
+      <h1>Agregar proveedor</h1>
+      <p class="dash-subtitle">Ingresa los datos del nuevo proveedor.</p>
       {% endif %}
-      {{ form.nombre|as_crispy_field }}
-      {{ form.rut|as_crispy_field }}
-      {{ form.contacto|as_crispy_field }}
-      {{ form.telefono|as_crispy_field }}
-      {{ form.email|as_crispy_field }}
-      {% if form.insumos.field.queryset.exists %}
-      <div class="lista-insumos">
-        {{ form.insumos|as_crispy_field }}
+    </section>
+
+    <form method="post" novalidate class="cita-interna-form">
+      {% csrf_token %}
+
+      <div class="cita-seccion">
+        <div class="row gx-3">
+          <div class="col-md-8">{{ form.nombre|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.rut|as_crispy_field }}</div>
+        </div>
+        <div class="row gx-3">
+          <div class="col-md-4">{{ form.contacto|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.telefono|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.email|as_crispy_field }}</div>
+        </div>
+        {% if form.insumos.field.queryset.exists %}
+        <p class="form-label">Insumos que entrega</p>
+        <div class="lista-insumos">
+          {{ form.insumos }}
+        </div>
+        {{ form.insumos.errors }}
+        {% else %}
+        <p class="sin-insumos">AÃºn no hay insumos registrados para asociar.</p>
+        {% endif %}
       </div>
-      {% else %}
-      <p class="sin-insumos">Aún no hay insumos registrados para asociar.</p>
-      {% endif %}
-      <button type="submit" class="submit">
-        {% if proveedor %}Guardar cambios{% else %}Agregar proveedor{% endif %}
-      </button>
+
+      <div class="cita-acciones">
+        <a href="{% url 'proveedores' %}" class="btn btn-outline-secondary">Volver</a>
+        <button type="submit" class="btn btn-teal">
+          {% if proveedor %}Guardar cambios{% else %}Agregar proveedor{% endif %}
+        </button>
+      </div>
     </form>
-    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-    <script>
-      const notyf = new Notyf({
-        duration: 3000,
-        position: { x: "center", y: "top" },
-      });
-      {% for message in messages %}
-        notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
-      {% endfor %}
-      {% for error in form.non_field_errors %}
-        notyf.error("{{ error|escapejs }}");
-      {% endfor %}
-    </script>
-  </body>
-</html>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "center", y: "top" },
+  });
+
+  {% for message in messages %}
+  notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");
+  {% endfor %}
+  {% for error in form.non_field_errors %}
+  notyf.error("{{ error|escapejs }}");
+  {% endfor %}
+</script>
+{% endblock %}
