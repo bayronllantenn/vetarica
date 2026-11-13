@@ -1,19 +1,10 @@
-body {
-    overflow-y: auto;
-}
-
-.form {
-    max-width: 600px;
-    margin: 1rem auto;
-}
-
-.form .form-text,
-.form .form-text li {
+.cita-seccion .form-text,
+.cita-seccion .form-text li {
     font-size: 0.78rem;
     color: #6b7f74;
 }
 
-.form .form-text ul {
+.cita-seccion .form-text ul {
     margin: 0.35rem 0 0;
     padding-left: 1.1rem;
 }
