@@ -1,7 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
+from citas.views import separar_miles
 from usuarios.views import es_personal_clinica, es_veterinaria
 from .forms import MovimientoForm, ProveedorForm
 from .models import Insumo, Movimiento, Proveedor, registrar_movimiento
@@ -176,3 +178,26 @@ def movimientos(request):
         lista = lista.filter(tipo=tipo)
     context = {'movimientos': lista,'insumos': Insumo.objects.order_by('nombre'),'insumo_id': insumo_id,'tipo': tipo,}
     return render(request, 'inventario/movimientos.html', context)
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def inventario(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    paginador = Paginator(Insumo.objects.order_by('categoria', 'nombre'), 8)
+    page_obj = paginador.get_page(request.GET.get('page'))
+
+    lista = []
+    for insumo in page_obj:
+        neto = None
+        beneficio = None
+        total = None
+        if insumo.costo > 0:
+            ganancia = insumo.costo * insumo.ganancia // 100
+            neto = separar_miles(insumo.costo)
+            beneficio = separar_miles(ganancia)
+            total = separar_miles(insumo.costo + ganancia)
+        lista.append({'insumo': insumo, 'neto': neto, 'beneficio': beneficio, 'total': total})
+
+    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj})

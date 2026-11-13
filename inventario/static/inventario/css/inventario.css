@@ -1,0 +1,63 @@
+.pac-tabla .inv-monto {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pac-tabla td.inv-beneficio {
+  font-weight: 600;
+  color: #0b7268;
+}
+
+.pac-tabla .inv-etiqueta {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f0f3f2;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5b6b68;
+}
+
+.pac-tabla .inv-etiqueta-bajo {
+  margin-left: 6px;
+  background: #fdeaea;
+  color: #9b1c1c;
+}
+
+.inv-paginacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  background: #f7faf8;
+  border-top: 1px solid #e3efe5;
+  font-size: 13px;
+  color: #5b6b68;
+}
+
+.inv-paginacion-botones {
+  display: flex;
+  gap: 6px;
+}
+
+.inv-paginacion-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #e3efe5;
+  color: #123c33;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.inv-paginacion-btn:hover {
+  background: #d3e6d7;
+  color: #123c33;
+}
+
+@media (max-width: 767px) {
+  .pac-tabla .inv-monto {
+    text-align: left;
+  }
+}
