@@ -43,6 +43,7 @@ Orden de compra - Vet Arica
               <th>Insumo</th>
               <th style="width: 120px">Cantidad</th>
               <th style="width: 160px">Costo neto</th>
+              <th style="width: 170px">Vencimiento</th>
             </tr>
           </thead>
           <tbody>
@@ -60,6 +61,7 @@ Orden de compra - Vet Arica
               </td>
               <td><input type="number" name="cantidad" min="0" value="{{ fila.cantidad }}" class="form-control"></td>
               <td><input type="number" name="precio" min="0" value="{{ fila.precio }}" class="form-control"></td>
+              <td><input type="date" name="vencimiento" class="form-control"></td>
             </tr>
             {% endfor %}
           </tbody>

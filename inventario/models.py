@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 
 CATEGORIAS_INSUMO = [
     ('Medicamento', 'Medicamento'),
@@ -73,8 +74,25 @@ class Insumo(models.Model):
         return ''
 
 
+class OrdenCompra(models.Model):
+    codigo = models.CharField(max_length=10, unique=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    registrado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='ordenes_compra')
+
+    def __str__(self):
+        return self.codigo
+
+# generar id aleatoria para las ordenes de compra colegas
+def crear_orden_compra(usuario):
+    codigo = 'OC-' + get_random_string(6, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+    while OrdenCompra.objects.filter(codigo=codigo).exists():
+        codigo = 'OC-' + get_random_string(6, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+    return OrdenCompra.objects.create(codigo=codigo, registrado_por=usuario)
+
+
 class Movimiento(models.Model):
     insumo = models.ForeignKey(Insumo, on_delete=models.PROTECT, related_name='movimientos')
+    orden = models.ForeignKey(OrdenCompra, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos')
     tipo = models.CharField(max_length=10, choices=TIPOS_MOVIMIENTO)
     cantidad = models.PositiveIntegerField()
     motivo = models.CharField(max_length=200, blank=True)
@@ -102,7 +120,7 @@ class Venta(models.Model):
         return self.cantidad * self.precio_unitario
 
 
-def registrar_movimiento(insumo, tipo, cantidad, motivo='', ficha=None, usuario=None):
+def registrar_movimiento(insumo, tipo, cantidad, motivo='', ficha=None, usuario=None, orden=None):
     if tipo == 'Salida' and cantidad > insumo.stock_actual:
         return False
 
@@ -112,5 +130,5 @@ def registrar_movimiento(insumo, tipo, cantidad, motivo='', ficha=None, usuario=
         insumo.stock_actual = insumo.stock_actual - cantidad
     insumo.save()
 
-    Movimiento.objects.create(insumo=insumo, tipo=tipo, cantidad=cantidad, motivo=motivo, ficha=ficha, registrado_por=usuario)    
+    Movimiento.objects.create(insumo=insumo, tipo=tipo, cantidad=cantidad, motivo=motivo, ficha=ficha, registrado_por=usuario, orden=orden)
     return True

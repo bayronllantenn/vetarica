@@ -16,7 +16,7 @@
     <section class="dash-hero pac-titulo">
       <div>
         <h1>Movimientos</h1>
-        <p class="dash-subtitle">{{ movimientos|length }} movimientos registrados</p>
+        <p class="dash-subtitle">{{ filas|length }} registros</p>
       </div>
       <div class="d-flex gap-2">
         <a href="{% url 'orden_compra' %}" class="btn btn-outline-secondary pac-boton">
@@ -44,7 +44,7 @@
     </form>
 
     <section class="pac-panel">
-      {% if movimientos %}
+      {% if filas %}
       <table class="pac-tabla">
         <thead>
           <tr>
@@ -57,10 +57,18 @@
           </tr>
         </thead>
         <tbody>
-          {% for movimiento in movimientos %}
+          {% for fila in filas %}
+          {% with movimiento=fila.movimiento %}
           <tr>
             <td data-label="Fecha">{{ movimiento.fecha|date:"d/m/Y H:i" }}</td>
+            {% if fila.orden %}
+            <td data-label="Insumo">
+              <strong>Orden {{ fila.orden.codigo }}</strong>
+              <a href="{% url 'detalle_orden' fila.orden.codigo %}" class="pac-btn ms-2">Ver productos</a>
+            </td>
+            {% else %}
             <td data-label="Insumo"><strong>{{ movimiento.insumo.nombre }}</strong></td>
+            {% endif %}
             <td data-label="Tipo">
               {% if movimiento.tipo == 'Entrada' %}
               <span class="serv-estado serv-estado-web">Entrada</span>
@@ -68,8 +76,12 @@
               <span class="serv-estado serv-estado-oculto">Salida</span>
               {% endif %}
             </td>
+            {% if fila.orden %}
+            <td data-label="Cantidad">{{ fila.orden.movimientos.count }} productos</td>
+            {% else %}
             <td data-label="Cantidad">{{ movimiento.cantidad }} {{ movimiento.insumo.unidad }}</td>
-            <td data-label="Motivo">{{ movimiento.motivo|default:"-" }}</td>
+            {% endif %}
+            <td data-label="Motivo">{{ movimiento.motivo|default:"-" }}{% if movimiento.orden and not fila.orden %} ({{ movimiento.orden.codigo }}){% endif %}</td>
             <td data-label="Registrado por">
               {% if movimiento.registrado_por %}
               {{ movimiento.registrado_por.first_name }} {{ movimiento.registrado_por.last_name }}
@@ -78,6 +90,7 @@
               {% endif %}
             </td>
           </tr>
+          {% endwith %}
           {% endfor %}
         </tbody>
       </table>

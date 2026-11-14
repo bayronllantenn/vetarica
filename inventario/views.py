@@ -1,3 +1,4 @@
+from datetime import date
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -6,7 +7,7 @@ from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
 from usuarios.views import es_personal_clinica, es_veterinaria
 from .forms import MovimientoForm, ProveedorForm
-from .models import Insumo, Movimiento, Proveedor, registrar_movimiento
+from .models import Insumo, Movimiento, OrdenCompra, Proveedor, crear_orden_compra, registrar_movimiento
 from .ocr import buscar_insumo, leer_texto, separar_productos
 
 @never_cache
@@ -89,12 +90,23 @@ def elegir_insumo(insumo_id, nombre):
     return None
 
 
+def guardar_vencimiento(insumo, texto):
+    try:
+        fecha = date.fromisoformat(texto)
+    except ValueError:
+        return
+    if insumo.fecha_vencimiento is None or fecha < insumo.fecha_vencimiento:
+        insumo.fecha_vencimiento = fecha
+
+
 def registrar_orden(request):
     nombres = request.POST.getlist('nombre')
     insumos = request.POST.getlist('insumo')
     cantidades = request.POST.getlist('cantidad')
     precios = request.POST.getlist('precio')
+    vencimientos = request.POST.getlist('vencimiento')
 
+    orden = crear_orden_compra(request.user)
     registradas = 0
     for i in range(len(insumos)):
         insumo = elegir_insumo(insumos[i], nombres[i].strip())
@@ -103,13 +115,15 @@ def registrar_orden(request):
 
         if precios[i].isdigit():
             insumo.costo = int(precios[i])
-        registrar_movimiento(insumo, 'Entrada', int(cantidades[i]), 'Orden de compra', None, request.user)
+        guardar_vencimiento(insumo, vencimientos[i])
+        registrar_movimiento(insumo, 'Entrada', int(cantidades[i]), 'Orden de compra', None, request.user, orden)
         registradas = registradas + 1
 
     if registradas == 0:
+        orden.delete()
         messages.error(request, 'No se registró ninguna entrada. Elige el insumo de cada producto.')
         return redirect('orden_compra')
-    messages.success(request, f'Se registraron {registradas} entradas desde la orden de compra.')
+    messages.success(request, f'Orden {orden.codigo} registrada con {registradas} productos.')
     return redirect('movimientos')
 
 
@@ -170,14 +184,34 @@ def movimientos(request):
     insumo_id = request.GET.get('insumo', '')
     tipo = request.GET.get('tipo', '')
 
-    lista = Movimiento.objects.select_related('insumo', 'registrado_por').order_by('-fecha')
+    lista = Movimiento.objects.select_related('insumo', 'registrado_por', 'orden').order_by('-fecha')
     if insumo_id.isdigit():
         insumo_id = int(insumo_id)
         lista = lista.filter(insumo_id=insumo_id)
     if tipo == 'Entrada' or tipo == 'Salida':
         lista = lista.filter(tipo=tipo)
-    context = {'movimientos': lista,'insumos': Insumo.objects.order_by('nombre'),'insumo_id': insumo_id,'tipo': tipo,}
+
+    filas = []
+    ordenes_vistas = []
+    for movimiento in lista:
+        if movimiento.orden is None or insumo_id != '':
+            filas.append({'movimiento': movimiento, 'orden': None})
+        elif movimiento.orden_id not in ordenes_vistas:
+            ordenes_vistas.append(movimiento.orden_id)
+            filas.append({'movimiento': movimiento, 'orden': movimiento.orden})
+
+    context = {'filas': filas, 'insumos': Insumo.objects.order_by('nombre'), 'insumo_id': insumo_id, 'tipo': tipo}
     return render(request, 'inventario/movimientos.html', context)
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def detalle_orden(request, codigo):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    orden = get_object_or_404(OrdenCompra, codigo=codigo)
+    lista = orden.movimientos.select_related('insumo').order_by('insumo__nombre')
+    return render(request, 'inventario/detalle_orden.html', {'orden': orden, 'movimientos': lista})
 
 @never_cache
 @login_required(login_url='sin_acceso')
