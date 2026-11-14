@@ -1,222 +1,249 @@
-{% extends 'inicio/base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Ficha clínica -
+{% extends 'inicio/base.html' %} {% load static %} {% load crispy_forms_tags %} {% load crispy_forms_field %} {% block title %}Ficha clínica -
 Vet Arica{% endblock %} {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
-<link href="{% static 'usuarios/css/panel_doctora.css' %}" rel="stylesheet" />
-<link href="{% static 'citas/css/ficha_medica.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/ficha_clinica.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
-<div class="dash-shell fondo-huellas">
-  <main class="dash-content">
-    <a href="{{ volver_url }}" class="volver">
+<div class="dash-shell fondo-huellas pac-pagina">
+  <main class="dash-content pac-contenido">
+    <a href="{{ volver_url }}" class="pac-btn fic-volver">
       <i class="bi bi-chevron-left"></i> Volver
-    </a>ss
+    </a>
 
-    <div class="ficha-encabezado">
-      <div>
-        <h1>{% if ficha %}Editar ficha clínica{% else %}Ficha clínica{% endif %}</h1>
-        {% if ficha %}
-        <p class="ficha-resumen">
-          <span><strong>Atención registrada:</strong> {{ ficha.fecha_atencion|date:"d/m/Y H:i" }}</span>
-        </p>
-        {% endif %}
-        {% if solicitud %}
-        <p class="ficha-resumen">
-          <span><strong>Paciente:</strong> {{ solicitud.nombre_mascota }}</span>
-          <span><strong>Consulta:</strong> {{ solicitud.tipo_consulta.nombre }}</span>
-          <span><strong>Fecha:</strong> {{ solicitud.fecha_hora|date:"d/m/Y H:i" }}</span>
-        </p>
-        <p class="ficha-resumen">
-          <span><strong>Dueño:</strong> {{ solicitud.nombre }} {{ solicitud.apellido }}</span>
-          <span><strong>Teléfono:</strong> {{ solicitud.telefono }}</span>
-        </p>
-        {% else %}
-        <p class="ficha-resumen">
-          <span><strong>Paciente:</strong> {{ mascota.nombre }}</span>
-          <span><strong>Consulta:</strong> Sin cita</span>
-        </p>
-        <p class="ficha-resumen">
-          {% if mascota.dueno %}
-          <span><strong>Dueño:</strong> {{ mascota.dueno.first_name }} {{ mascota.dueno.last_name }}</span>
-          <span><strong>Teléfono:</strong> {{ mascota.dueno.telefono }}</span>
-          {% else %}
-          <span><strong>Dueño:</strong> {{ mascota.nombre_dueno|default:"Sin cuenta" }}</span>
-          {% if mascota.rut_dueno %}
-          <span><strong>RUT:</strong> {{ mascota.rut_dueno }}</span>
-          {% endif %}
-          {% endif %}
-        </p>
-        {% endif %}
-        {% if mascota %}
-        <p class="ficha-resumen">
-          <span><strong>N° de historia:</strong> {{ mascota.id|stringformat:"06d" }}</span>
-          <span><strong>Especie:</strong> {{ mascota.especie }}</span>
-          <span><strong>Sexo:</strong> {{ mascota.sexo }}</span>
-          <span><strong>Fecha de nacimiento:</strong> {{ mascota.fecha_nacimiento|date:"d/m/Y"|default:"—" }}</span>
-          {% if mascota.estado_reproductivo %}
-          <span><strong>Entero / Castrado:</strong> {{ mascota.estado_reproductivo }}</span>
-          {% endif %}
-          {% if mascota.microchip %}
-          <span><strong>Microchip:</strong> {{ mascota.microchip }}</span>
-          {% endif %}
-        </p>
-        {% endif %}
-        {% if solicitud %}
-        <p class="ficha-resumen">
-          <span><strong>Estado:</strong> {{ solicitud.get_estado_display }}</span>
-        </p>
-        {% endif %}
-      </div>
-      {% if puede_reagendar or puede_marcar_ausente %}
-      <div class="acciones">
-        {% if puede_reagendar %}
-        <a href="{% url 'reagendar_cita' solicitud.id %}" class="btn btn-sm btn-vet-borde">
-          <i class="bi bi-calendar2-week"></i> Reagendar
-        </a>
-        {% endif %}
-        {% if puede_marcar_ausente %}
-        <form method="post" action="{% url 'marcar_no_asistio' solicitud.id %}" class="m-0">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Marcar esta cita como No asistió?')">
-            <i class="bi bi-person-x"></i> No asistió
-          </button>
-        </form>
-        {% endif %}
-      </div>
-      {% endif %}
-    </div>
-
-    {% if not puede_llenar_ficha %}
-    <div class="tarjeta ficha-seccion">
-      <p class="mb-0 texto-suave">
-        {% if solicitud.estado == 'Cancelada' %}
-        Esta cita fue cancelada, no se puede registrar ficha.
-        {% elif solicitud.estado == 'Ausente' %}
-        El paciente no asistió a esta cita, no se puede registrar ficha.
-        {% elif solicitud.estado_pago != 'Pagado' and solicitud.estado_pago != 'En clinica' %}
-        Esta cita no está pagada, no se puede registrar ficha.
-        {% else %}
-        La ficha se podrá registrar el día de la cita.
-        {% endif %}
-      </p>
-    </div>
-    {% else %}
-    <div class="tarjeta ficha-seccion">
-      <form method="post" novalidate>
-        {% csrf_token %}
-        {% if form.non_field_errors %}
-        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <h2>Atención</h2>
-        <p><strong>Atendido por:</strong> María Isabel Mundaca Burlando</p>
-        <div class="row g-3">
-          <div class="col-md-6">{{ form.peso|as_crispy_field }}</div>
-        </div>
-
-        <h2 class="mt-3">Constantes fisiológicas <span class="texto-suave fw-normal">(opcional)</span></h2>
-        <div class="row g-3">
-          <div class="col-md-4">{{ form.temperatura|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.frecuencia_cardiaca|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.frecuencia_respiratoria|as_crispy_field }}</div>
-          <div class="col-md-6">{{ form.deshidratacion|as_crispy_field }}</div>
-          <div class="col-md-6">{{ form.tiempo_llenado_capilar|as_crispy_field }}</div>
-        </div>
-
-        <h2 class="mt-3">Consulta</h2>
-        {{ form.motivo_consulta|as_crispy_field }}
-        {{ form.diagnostico|as_crispy_field }}
-        {{ form.tratamiento|as_crispy_field }}
-
-        <h2 class="mt-3">Insumos usados <span class="texto-suave fw-normal">(opcional)</span></h2>
-
-        {% if insumos_por_categoria %}
-        <div id="lista-insumos">
-          <div class="row g-2 align-items-center fila-insumo mb-2">
-            <div class="col-md-7">
-              <select name="insumo_id" class="form-select">
-                <option value="">Elige un insumo</option>
-                {% for grupo in insumos_por_categoria %}
-                {% if grupo.insumos %}
-                <optgroup label="{{ grupo.categoria }}">
-                  {% for insumo in grupo.insumos %}
-                  <option value="{{ insumo.id }}" {% if insumo.stock_actual == 0 %}disabled{% endif %}>
-                    {{ insumo.nombre }} (stock: {{ insumo.stock_actual }} {{ insumo.unidad }})
-                  </option>
-                  {% endfor %}
-                </optgroup>
-                {% endif %}
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-3">
-              <input type="number" name="insumo_cantidad" class="form-control" min="1" placeholder="Cantidad" />
-            </div>
-            <div class="col-md-2">
-              <button type="button" class="btn btn-outline-danger w-100" onclick="quitarInsumo(this)">
-                <i class="bi bi-trash"></i> Quitar
-              </button>
-            </div>
+    <section class="pac-panel fic-contenedor">
+      <aside class="fic-lateral">
+        {% firstof mascota.nombre solicitud.nombre_mascota as nombre %}
+        {% firstof mascota.dueno.rut mascota.rut_dueno as rut %}
+        {% firstof solicitud.telefono mascota.dueno.telefono as telefono %}
+        <div class="fic-paciente">
+          <span class="pac-avatar fic-avatar">{{ nombre.0 }}</span>
+          <div>
+            <strong>{{ nombre }}</strong>
+            {% if mascota %}<span>{{ mascota.especie }} {{ mascota.sexo }} {{ mascota.estado_reproductivo }}</span>{% endif %}
           </div>
         </div>
 
-        <button type="button" class="btn btn-sm btn-vet-borde" onclick="agregarInsumo()">
-          <i class="bi bi-plus-lg"></i> Agregar otro insumo
-        </button>
+        <dl class="fic-datos">
+          <dt>Dueño</dt>
+          <dd>
+            {% if solicitud %}{{ solicitud.nombre }} {{ solicitud.apellido }}
+            {% elif mascota.dueno %}{{ mascota.dueno.first_name }} {{ mascota.dueno.last_name }}
+            {% else %}{% firstof mascota.nombre_dueno "Sin cuenta" %}{% endif %}
+          </dd>
+          {% if rut %}<dt>RUT</dt><dd>{{ rut }}</dd>{% endif %}
+          {% if telefono %}<dt>Teléfono</dt><dd>{{ telefono }}</dd>{% endif %}
+          {% if mascota %}
+          <dt>Nacimiento</dt><dd>{% if mascota.fecha_nacimiento %}{{ mascota.fecha_nacimiento|date:"d/m/Y" }}{% else %}Sin registro{% endif %}</dd>
+          {% if mascota.microchip %}<dt>Microchip</dt><dd>{{ mascota.microchip }}</dd>{% endif %}
+          {% endif %}
+          <dt>Consulta</dt><dd>{{ solicitud.tipo_consulta.nombre|default:"Sin cita" }}</dd>
+          {% if solicitud %}
+          <dt>Fecha cita</dt><dd>{{ solicitud.fecha_hora|date:"d/m/Y H:i" }}</dd>
+          <dt>Estado</dt><dd>{{ solicitud.get_estado_display }}</dd>
+          {% endif %}
+          {% if ficha %}<dt>Registrada</dt><dd>{{ ficha.fecha_atencion|date:"d/m/Y · H:i" }}</dd>{% endif %}
+        </dl>
+
+        <div class="fic-medico">
+          <span class="fic-medico-inicial">MM</span>
+          <div>
+            <span>Atendido por</span>
+            <strong>María Isabel Mundaca Burlando</strong>
+          </div>
+        </div>
+
+        {% if puede_reagendar or puede_marcar_ausente %}
+        <div class="fic-acciones">
+          {% if puede_reagendar %}
+          <a href="{% url 'reagendar_cita' solicitud.id %}" class="pac-btn">
+            <i class="bi bi-calendar2-week"></i> Reagendar
+          </a>
+          {% endif %}
+          {% if puede_marcar_ausente %}
+          <form method="post" action="{% url 'marcar_no_asistio' solicitud.id %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="pac-btn fic-btn-rojo" onclick="return confirm('¿Marcar esta cita como No asistió?')">
+              <i class="bi bi-person-x"></i> No asistió
+            </button>
+          </form>
+          {% endif %}
+        </div>
         {% endif %}
 
-        <p class="mt-3 mb-1"><strong>Insumos registrados en esta atención</strong></p>
-        {% if insumos_ya_usados %}
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Insumo</th>
-              <th>Cantidad</th>
-              <th>Precio unitario</th>
-              <th>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for usado in insumos_ya_usados %}
-            <tr>
-              <td>{{ usado.nombre }}</td>
-              <td>{{ usado.cantidad }} {{ usado.unidad }}</td>
-              <td>${{ usado.precio }}</td>
-              <td>${{ usado.subtotal }}</td>
-            </tr>
-            {% endfor %}
-            <tr>
-              <td colspan="3"><strong>Total insumos</strong></td>
-              <td><strong>${{ total_insumos }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
+        {% if puede_llenar_ficha %}
+        <nav class="fic-indice">
+          <span>En esta ficha</span>
+          <a href="#atencion">1. Atención</a>
+          <a href="#constantes">2. Constantes fisiológicas</a>
+          <a href="#consulta">3. Consulta</a>
+          <a href="#insumos">4. Insumos usados</a>
+          <a href="#antecedentes">5. Antecedentes</a>
+          <a href="#cierre">6. Cierre</a>
+        </nav>
+        {% endif %}
+      </aside>
+
+      <div class="fic-principal">
+        {% if not puede_llenar_ficha %}
+        <div class="pac-vacio">
+          <i class="bi bi-lock"></i>
+          <p>
+            {% if solicitud.estado == 'Cancelada' %}
+            Esta cita fue cancelada, no se puede registrar ficha.
+            {% elif solicitud.estado == 'Ausente' %}
+            El paciente no asistió a esta cita, no se puede registrar ficha.
+            {% elif solicitud.estado_pago != 'Pagado' and solicitud.estado_pago != 'En clinica' %}
+            Esta cita no está pagada, no se puede registrar ficha.
+            {% else %}
+            La ficha se podrá registrar el día de la cita.
+            {% endif %}
+          </p>
+        </div>
         {% else %}
-        <p class="texto-suave">Todavía no se registran insumos.</p>
+        <form method="post" novalidate class="fic-form">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger m-4 mb-0">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="fic-seccion" id="atencion">
+            <h2>1. Atención</h2>
+            <div class="row g-3">
+              <div class="col-md-6">{% crispy_addon form.peso append="kg" %}</div>
+              <div class="col-md-6">
+                <label class="form-label">Médico veterinario</label>
+                <input type="text" class="form-control fic-solo-lectura" value="María Isabel Mundaca Burlando" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="fic-seccion" id="constantes">
+            <h2>2. Constantes fisiológicas <span class="fic-opcional">Opcional</span></h2>
+            <div class="row g-3">
+              <div class="col-md-3">{% crispy_addon form.temperatura append="°C" %}</div>
+              <div class="col-md-3">{% crispy_addon form.frecuencia_cardiaca append="lpm" %}</div>
+              <div class="col-md-3">{% crispy_addon form.frecuencia_respiratoria append="rpm" %}</div>
+              <div class="col-md-3">{% crispy_addon form.deshidratacion append="%" %}</div>
+              <div class="col-md-3">{% crispy_addon form.tiempo_llenado_capilar append="seg" %}</div>
+            </div>
+          </div>
+
+          <div class="fic-seccion" id="consulta">
+            <h2>3. Consulta</h2>
+            {{ form.motivo_consulta|as_crispy_field }}
+            {{ form.diagnostico|as_crispy_field }}
+            {{ form.tratamiento|as_crispy_field }}
+          </div>
+
+          <div class="fic-seccion" id="insumos">
+            <div class="fic-seccion-titulo">
+              <h2>4. Insumos usados <span class="fic-opcional">Opcional</span></h2>
+              {% if insumos_por_categoria %}
+              <button type="button" class="pac-btn" onclick="agregarInsumo()">
+                <i class="bi bi-plus-lg"></i> Agregar insumo
+              </button>
+              {% endif %}
+            </div>
+
+            {% if insumos_por_categoria %}
+            <div id="lista-insumos">
+              <div class="row g-2 align-items-center fila-insumo mb-2">
+                <div class="col-md-7">
+                  <select name="insumo_id" class="form-select">
+                    <option value="">Elige un insumo</option>
+                    {% for grupo in insumos_por_categoria %}
+                    {% if grupo.insumos %}
+                    <optgroup label="{{ grupo.categoria }}">
+                      {% for insumo in grupo.insumos %}
+                      <option value="{{ insumo.id }}" {% if insumo.stock_actual == 0 %}disabled{% endif %}>
+                        {{ insumo.nombre }} (stock: {{ insumo.stock_actual }} {{ insumo.unidad }})
+                      </option>
+                      {% endfor %}
+                    </optgroup>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <input type="number" name="insumo_cantidad" class="form-control" min="1" placeholder="Cantidad" />
+                </div>
+                <div class="col-md-2">
+                  <button type="button" class="pac-btn fic-btn-rojo w-100 justify-content-center" onclick="quitarInsumo(this)">
+                    <i class="bi bi-trash"></i> Quitar
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if insumos_ya_usados %}
+            <p class="fic-subtitulo">Insumos registrados en esta atención</p>
+            <div class="fic-tabla-borde">
+              <table class="pac-tabla">
+                <thead>
+                  <tr>
+                    <th>Insumo</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for usado in insumos_ya_usados %}
+                  <tr>
+                    <td><strong>{{ usado.nombre }}</strong></td>
+                    <td data-label="Cantidad">{{ usado.cantidad }} {{ usado.unidad }}</td>
+                    <td data-label="Precio unitario">${{ usado.precio }}</td>
+                    <td data-label="Subtotal">${{ usado.subtotal }}</td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="fic-total">
+                    <td colspan="3"><strong>Total insumos</strong></td>
+                    <td><strong>${{ total_insumos }}</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <div class="fic-insumos-vacio">
+              <i class="bi bi-box-seam"></i>
+              <p>Todavía no se registran insumos</p>
+              <span>Registra los medicamentos o materiales utilizados en esta atención.</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="fic-seccion" id="antecedentes">
+            <h2>5. Antecedentes</h2>
+            <div class="row g-3">
+              <div class="col-md-4">{{ form.vacunas|as_crispy_field }}</div>
+              <div class="col-md-4">{{ form.alergias|as_crispy_field }}</div>
+              <div class="col-md-4">{{ form.cirugias_previas|as_crispy_field }}</div>
+            </div>
+          </div>
+
+          <div class="fic-seccion" id="cierre">
+            <h2>6. Cierre</h2>
+            {{ form.observaciones|as_crispy_field }}
+            <div class="row g-3">
+              <div class="col-md-5">{{ form.proxima_atencion|as_crispy_field }}</div>
+            </div>
+          </div>
+
+          <div class="fic-pie">
+            <a href="{{ volver_url }}" class="pac-btn">Cancelar</a>
+            <button type="submit" class="btn btn-teal pac-boton">
+              {% if ficha %}Guardar cambios{% else %}Guardar ficha{% endif %}
+            </button>
+          </div>
+        </form>
         {% endif %}
-
-        <h2 class="mt-3">Antecedentes</h2>
-        <div class="row g-3">
-          <div class="col-md-4">{{ form.vacunas|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.alergias|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.cirugias_previas|as_crispy_field }}</div>
-        </div>
-
-        <h2 class="mt-3">Cierre</h2>
-        {{ form.observaciones|as_crispy_field }}
-        <div class="row g-3">
-          <div class="col-md-6">{{ form.proxima_atencion|as_crispy_field }}</div>
-        </div>
-
-        <div class="formulario-botones">
-          <a href="{{ volver_url }}" class="btn btn-vet-borde">Cancelar</a>
-          <button type="submit" class="btn btn-vet">Guardar ficha</button>
-        </div>
-      </form>
-    </div>
-    {% endif %}
+      </div>
+    </section>
   </main>
 </div>
 {% endblock %} {% block extra_js %}

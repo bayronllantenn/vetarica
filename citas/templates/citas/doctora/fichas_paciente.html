@@ -66,9 +66,9 @@
               <span class="pac-etiqueta">Sin cita</span>
               {% endif %}
             </td>
-            <td data-label="Motivo">{{ ficha.motivo_consulta }}</td>
-            <td data-label="Diagnóstico">{{ ficha.diagnostico }}</td>
-            <td data-label="Peso">{% if ficha.peso %}{{ ficha.peso }} kg{% else %}-{% endif %}</td>
+            <td data-label="Motivo" class="fic-corto" title="{{ ficha.motivo_consulta }}">{{ ficha.motivo_consulta }}</td>
+            <td data-label="Diagnóstico" class="fic-corto" title="{{ ficha.diagnostico }}">{{ ficha.diagnostico }}</td>
+            <td data-label="Peso">{% if ficha.peso %}{{ ficha.peso }} kg{% else %} {% endif %}</td>
             <td class="pac-acciones">
               <a href="{% url 'editar_ficha' ficha.id %}" class="pac-btn">
                 <i class="bi bi-pencil-square"></i> Ver / editar

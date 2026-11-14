@@ -127,6 +127,8 @@ body {
   padding: 8px 10px;
   border: 1px solid #e4e4e7;
   border-radius: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .dato span,
