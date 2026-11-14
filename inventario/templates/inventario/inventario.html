@@ -22,6 +22,17 @@
       </a>
     </section>
 
+    <form method="get" class="pac-buscador">
+      <div class="pac-campo">
+        <i class="bi bi-search"></i>
+        <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar insumo">
+      </div>
+      <button type="submit" class="btn btn-teal pac-boton">Buscar</button>
+      {% if buscar %}
+      <a href="{% url 'inventario' %}" class="btn btn-outline-secondary pac-boton">Limpiar</a>
+      {% endif %}
+    </form>
+
     <section class="pac-panel">
       {% if lista %}
       <table class="pac-tabla">
@@ -51,9 +62,14 @@
             <td data-label="Beneficio" class="inv-monto inv-beneficio">{% if fila.insumo.ganancia and fila.beneficio %}{{ fila.insumo.ganancia }}% = ${{ fila.beneficio }}{% elif fila.insumo.ganancia %}{{ fila.insumo.ganancia }}%{% else %}-{% endif %}</td>
             <td data-label="Total" class="inv-monto"><strong>{% if fila.total %}${{ fila.total }}{% else %}-{% endif %}</strong></td>
             <td data-label="Acciones">
-              <a href="{% url 'movimientos' %}?insumo={{ fila.insumo.id }}" class="pac-btn">
-                <i class="bi bi-clock-history"></i> Movimientos
-              </a>
+              <div class="inv-acciones">
+                <a href="#beneficio-{{ fila.insumo.id }}" class="pac-btn pac-btn-verde">
+                  <i class="bi bi-pencil-square"></i> Editar
+                </a>
+                <a href="{% url 'movimientos' %}?insumo={{ fila.insumo.id }}" class="pac-btn">
+                  <i class="bi bi-clock-history"></i> Movimientos
+                </a>
+              </div>
             </td>
           </tr>
           {% endfor %}
@@ -65,12 +81,12 @@
         <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
         <div class="inv-paginacion-botones">
           {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}" class="inv-paginacion-btn">
+          <a href="?page={{ page_obj.previous_page_number }}{% if buscar %}&buscar={{ buscar|urlencode }}{% endif %}" class="inv-paginacion-btn">
             <i class="bi bi-chevron-left"></i> Anterior
           </a>
           {% endif %}
           {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}" class="inv-paginacion-btn">
+          <a href="?page={{ page_obj.next_page_number }}{% if buscar %}&buscar={{ buscar|urlencode }}{% endif %}" class="inv-paginacion-btn">
             Siguiente <i class="bi bi-chevron-right"></i>
           </a>
           {% endif %}
@@ -80,11 +96,41 @@
       {% else %}
       <div class="pac-vacio">
         <i class="bi bi-box-seam"></i>
+        {% if buscar %}
+        <p>No hay insumos que coincidan con "{{ buscar }}".</p>
+        <span>Prueba con otra palabra o aprieta "Limpiar".</span>
+        {% else %}
         <p>Todavía no hay insumos registrados.</p>
         <span>Los insumos aparecen aquí cuando se registran en el sistema.</span>
+        {% endif %}
       </div>
       {% endif %}
     </section>
+
+    {% for fila in lista %}
+    <div class="modal-eliminar" id="beneficio-{{ fila.insumo.id }}">
+      <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+      <div class="modal-eliminar-caja">
+        <span class="modal-eliminar-icono inv-modal-icono"><i class="bi bi-percent"></i></span>
+        <h3>Beneficio de {{ fila.insumo.nombre }}</h3>
+        <p>Valor neto: {% if fila.neto %}${{ fila.neto }}{% else %}sin costo{% endif %}. Escribe el % de ganancia.</p>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="insumo_id" value="{{ fila.insumo.id }}" />
+          <input type="hidden" name="page" value="{{ page_obj.number }}" />
+          <input type="hidden" name="buscar" value="{{ buscar }}" />
+          <div class="inv-modal-campo">
+            <input type="number" name="ganancia" min="0" value="{{ fila.insumo.ganancia }}" class="form-control" required />
+            <span>%</span>
+          </div>
+          <div class="modal-eliminar-botones">
+            <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
+            <button type="submit" class="modal-eliminar-confirmar inv-modal-guardar">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
   </main>
 </div>
 {% endblock %} {% block extra_js %}

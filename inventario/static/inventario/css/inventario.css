@@ -1,5 +1,14 @@
+.pac-tabla th,
+.pac-tabla td {
+  text-align: center;
+}
+
+.pac-tabla th:first-child,
+.pac-tabla td:first-child {
+  text-align: left;
+}
+
 .pac-tabla .inv-monto {
-  text-align: right;
   white-space: nowrap;
 }
 
@@ -56,8 +65,57 @@
   color: #123c33;
 }
 
+.inv-acciones {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.inv-modal-icono {
+  background: #dcf3e8;
+  color: #0b7268;
+}
+
+.inv-modal-campo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.inv-modal-campo .form-control {
+  width: 120px;
+  height: 42px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 1px solid #d5dedb;
+  border-radius: 8px;
+}
+
+.inv-modal-campo .form-control:focus {
+  border-color: #0b7268;
+  box-shadow: 0 0 0 3px rgba(11, 114, 104, 0.12);
+}
+
+.inv-modal-campo span {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #5b6b68;
+}
+
+.inv-modal-guardar {
+  background: #0b7268;
+}
+
 @media (max-width: 767px) {
-  .pac-tabla .inv-monto {
+  .pac-tabla td {
     text-align: left;
+  }
+
+  .inv-acciones {
+    justify-content: flex-start;
   }
 }
