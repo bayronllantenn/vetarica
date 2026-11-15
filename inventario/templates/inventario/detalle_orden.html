@@ -1,0 +1,44 @@
+{% extends 'inicio/base.html' %}
+{% load static %}
+{% block title %}Orden {{ orden.codigo }} - Vet Arica{% endblock %}
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
+{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %} {% block content %}
+<div class="dash-shell fondo-huellas pac-pagina">
+  <main class="dash-content pac-contenido">
+    <section class="dash-hero pac-titulo">
+      <div>
+        <h1>Orden {{ orden.codigo }}</h1>
+        <p class="dash-subtitle">
+          {{ orden.fecha|date:"d/m/Y H:i" }}
+          {% if orden.registrado_por %} · {{ orden.registrado_por.first_name }} {{ orden.registrado_por.last_name }}{% endif %}
+        </p>
+      </div>
+      <a href="{% url 'movimientos' %}" class="btn btn-outline-secondary pac-boton">Volver</a>
+    </section>
+
+    <section class="pac-panel">
+      <table class="pac-tabla">
+        <thead>
+          <tr>
+            <th>Insumo</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for movimiento in movimientos %}
+          <tr>
+            <td data-label="Insumo"><strong>{{ movimiento.insumo.nombre }}</strong></td>
+            <td data-label="Cantidad">{{ movimiento.cantidad }} {{ movimiento.insumo.unidad }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+{% endblock %}

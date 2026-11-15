@@ -18,8 +18,25 @@ def leer_texto(archivo):
     return datos['ParsedResults'][0]['ParsedText']
 
 
+UNIDADES = ['CAJA', 'CAJAS', 'UN', 'UND', 'UNID', 'UNIDAD', 'UNIDADES', 'BOLSA', 'BOLSAS', 'FRASCO', 'FRASCOS', 'ML', 'KG']
+
+
+def es_codigo(texto):
+    if ' ' in texto or '-' not in texto:
+        return False
+    for letra in texto:
+        if letra.isdigit():
+            return True
+    return False
+
+
+def solo_numero(texto):
+    return texto.replace('$', '').replace('.', '').replace(',', '').replace(' ', '')
+
+
 def separar_productos(texto):
     productos = []
+    anterior = ''
 
     for linea in texto.split('\n'):
         celdas = []
@@ -29,27 +46,53 @@ def separar_productos(texto):
                 celdas.append(celda)
 
         precios = []
+        cantidad = ''
+        textos = []
         for celda in celdas:
             if celda.startswith('$'):
-                precios.append(celda)
+                precios.append(solo_numero(celda))
+            elif celda.isdigit():
+                if cantidad == '':
+                    cantidad = celda
+            elif es_codigo(celda) or celda.upper() in UNIDADES:
+                continue
+            else:
+                textos.append(celda)
+        nombre = ' '.join(textos)
+
+        partes = nombre.split(' ', 1)
+        if len(partes) == 2 and es_codigo(partes[0]):
+            nombre = partes[1]
+
+        partes = nombre.split(' ', 1)
+        if len(partes) == 2 and partes[0].isdigit():
+            nombre = partes[1]
+            if cantidad == '':
+                cantidad = partes[0]
 
         if len(precios) < 2:
+            mayusculas = nombre.upper()
+            if mayusculas.startswith('LOT') or 'DESCRIP' in mayusculas or 'NETO' in mayusculas:
+                anterior = ''
+            else:
+                anterior = nombre
             continue
 
-        for i in range(len(celdas)):
-            partes = celdas[i].split(' ', 1)
+        codigo_solo = es_codigo(celdas[0])
+        if codigo_solo or nombre == '' or nombre.startswith('(') or nombre.upper().startswith('CAJA'):
+            nombre = (anterior + ' ' + nombre).strip()
+        anterior = ''
 
-            if len(partes) == 2 and partes[0].isdigit():
-                cantidad = partes[0]
-                nombre = partes[1]
+        precio = precios[0]
+        total = precios[-1]
+        if not precio.isdigit() or int(precio) == 0:
+            continue
+        if cantidad == '' and total.isdigit():
+            cantidad = str(int(total) // int(precio))
+        if cantidad == '' or nombre == '':
+            continue
 
-                if i + 1 < len(celdas) and celdas[i + 1].isdigit():
-                    cantidad = celdas[i + 1]
-
-                precio = precios[0].replace('$', '').replace('.', '')
-
-                productos.append({'cantidad': int(cantidad), 'nombre': nombre, 'precio': int(precio)})
-                break
+        productos.append({'cantidad': int(cantidad), 'nombre': nombre, 'precio': int(precio)})
 
     return productos
 
