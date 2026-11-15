@@ -12,6 +12,13 @@
   text-transform: uppercase;
 }
 
+.pac-tabla .fic-corto {
+  max-width: 40ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .pac-tabla .pac-acciones {
   text-align: center;
 }

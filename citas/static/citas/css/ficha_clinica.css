@@ -1,0 +1,327 @@
+.fic-volver {
+  align-self: flex-start;
+  margin: 0 0 16px;
+}
+
+.fic-contenedor {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  overflow: visible;
+}
+
+.fic-lateral {
+  padding: 20px;
+  border-right: 1px solid #e6ebe9;
+  background: #f7faf9;
+}
+
+.fic-paciente {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fic-avatar {
+  width: 52px;
+  height: 52px;
+  background: #dcf3e8;
+  font-size: 22px;
+  color: #0b5a52;
+  text-transform: uppercase;
+}
+
+.fic-paciente strong {
+  display: block;
+  font-size: 18px;
+  color: #1f2d2b;
+}
+
+.fic-paciente span {
+  font-size: 12px;
+  color: #6b7a77;
+}
+
+.fic-historia {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #dcf3e8;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0b5a52;
+}
+
+.fic-datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid #e6ebe9;
+  font-size: 13px;
+}
+
+.fic-datos dt {
+  font-weight: 400;
+  color: #6b7a77;
+}
+
+.fic-datos dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+  color: #1f2d2b;
+}
+
+.fic-medico {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e6ebe9;
+}
+
+.fic-medico-inicial {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #e6ebe9;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f2d2b;
+}
+
+.fic-medico div span {
+  display: block;
+  font-size: 11px;
+  color: #6b7a77;
+}
+
+.fic-medico strong {
+  display: block;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #1f2d2b;
+}
+
+.fic-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.fic-acciones .pac-btn {
+  margin-left: 0;
+}
+
+.fic-btn-rojo:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.fic-indice {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e6ebe9;
+}
+
+.fic-indice span {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7a77;
+}
+
+.fic-indice a {
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1f2d2b;
+  text-decoration: none;
+}
+
+.fic-indice a:hover {
+  background: #e6ebe9;
+  color: #0b7268;
+}
+
+.fic-principal {
+  min-width: 0;
+}
+
+.fic-seccion {
+  padding: 24px;
+  border-bottom: 1px solid #f0f3f2;
+  scroll-margin-top: 20px;
+}
+
+.fic-seccion h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2d2b;
+}
+
+.fic-seccion-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.fic-seccion-titulo h2 {
+  margin-bottom: 0;
+}
+
+.fic-seccion-titulo .pac-btn {
+  margin-left: 0;
+}
+
+.fic-opcional {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f0f3f2;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a77;
+}
+
+.fic-form .form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2d2b;
+}
+
+.fic-form .form-control,
+.fic-form .form-select,
+.fic-form .input-group-text {
+  border: 1px solid #d5dedb;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.fic-form .input-group-text {
+  background: #fff;
+  color: #6b7a77;
+}
+
+.fic-form .input-group > .form-control {
+  border-right: none;
+}
+
+.fic-form .input-group > .input-group-text {
+  border-left: none;
+}
+
+.fic-form .form-control:focus,
+.fic-form .form-select:focus {
+  border-color: #0b7268;
+  box-shadow: 0 0 0 3px rgba(11, 114, 104, 0.12);
+}
+
+.fic-form .fic-solo-lectura {
+  background: #f0f3f2;
+  color: #6b7a77;
+}
+
+.fic-form .pac-btn {
+  margin-left: 0;
+}
+
+.fic-subtitulo {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2d2b;
+}
+
+.fic-tabla-borde {
+  border: 1px solid #e6ebe9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.fic-total td {
+  background: #f7faf9;
+}
+
+.fic-insumos-vacio {
+  margin-top: 8px;
+  padding: 28px 16px;
+  border: 1px dashed #d5dedb;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.fic-insumos-vacio i {
+  font-size: 22px;
+  color: #0b7268;
+}
+
+.fic-insumos-vacio p {
+  margin: 6px 0 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2d2b;
+}
+
+.fic-insumos-vacio span {
+  font-size: 12px;
+  color: #6b7a77;
+}
+
+.fic-pie {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 18px 24px;
+}
+
+.fic-pie .pac-btn {
+  margin-left: 0;
+}
+
+@media (max-width: 991px) {
+  .fic-contenedor {
+    grid-template-columns: 1fr;
+  }
+
+  .fic-lateral {
+    border-right: none;
+    border-bottom: 1px solid #e6ebe9;
+  }
+
+  .fic-indice {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .fic-contenedor {
+    border: 1px solid #e6ebe9;
+    border-radius: 12px;
+  }
+
+  .fic-seccion {
+    padding: 16px;
+  }
+
+}
