@@ -299,6 +299,18 @@
   margin-left: 0;
 }
 
+.fic-aviso {
+  margin-right: auto;
+  font-size: 13px;
+  color: #6b7a77;
+}
+
+.fic-form .form-control:disabled,
+.fic-form .form-select:disabled {
+  background: #f7faf9;
+  color: #1f2d2b;
+}
+
 @media (max-width: 991px) {
   .fic-contenedor {
     grid-template-columns: 1fr;
