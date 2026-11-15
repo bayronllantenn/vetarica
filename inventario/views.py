@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils.http import urlencode
 from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
 from usuarios.views import es_personal_clinica, es_veterinaria
@@ -151,6 +153,7 @@ def registrar_orden(request):
             orden.delete()
 
     if registradas == 0:
+        orden.delete()
         messages.error(request, 'No se registró ninguna entrada. Elige el insumo de cada producto.')
         return redirect('orden_compra')
     messages.success(request, f'Orden {orden.codigo} registrada con {registradas} productos.')
@@ -266,7 +269,28 @@ def inventario(request):
     if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
 
-    paginador = Paginator(Insumo.objects.order_by('categoria', 'nombre'), 8)
+    if request.method == 'POST':
+        insumo = get_object_or_404(Insumo, id=request.POST.get('insumo_id', '0'))
+        ganancia = request.POST.get('ganancia', '').strip()
+        if ganancia.isdigit():
+            insumo.ganancia = int(ganancia)
+            insumo.save()
+            messages.success(request, f'Beneficio de {insumo.nombre} actualizado a {insumo.ganancia}%.')
+        else:
+            messages.error(request, 'El beneficio debe ser un número entero, por ejemplo 30.')
+
+        pagina = request.POST.get('page', '1')
+        if not pagina.isdigit():
+            pagina = '1'
+        datos = urlencode({'page': pagina, 'buscar': request.POST.get('buscar', '')})
+        return redirect(reverse('inventario') + '?' + datos + '#cerrar')
+
+    buscar = request.GET.get('buscar', '').strip()
+    insumos = Insumo.objects.order_by('categoria', 'nombre')
+    if buscar:
+        insumos = insumos.filter(nombre__icontains=buscar)
+
+    paginador = Paginator(insumos, 8)
     page_obj = paginador.get_page(request.GET.get('page'))
 
     lista = []
@@ -281,4 +305,4 @@ def inventario(request):
             total = separar_miles(insumo.costo + ganancia)
         lista.append({'insumo': insumo, 'neto': neto, 'beneficio': beneficio, 'total': total})
 
-    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj})
+    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar})
