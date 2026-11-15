@@ -71,7 +71,11 @@
             <td data-label="Peso">{% if ficha.peso %}{{ ficha.peso }} kg{% else %} {% endif %}</td>
             <td class="pac-acciones">
               <a href="{% url 'editar_ficha' ficha.id %}" class="pac-btn">
-                <i class="bi bi-pencil-square"></i> Ver / editar
+                {% if ficha.editable %}
+                <i class="bi bi-pencil-square"></i> Editar
+                {% else %}
+                <i class="bi bi-eye"></i> Ver
+                {% endif %}
               </a>
               <a href="{% url 'imprimir_ficha' ficha.id %}" class="pac-btn">
                 <i class="bi bi-printer"></i> Imprimir

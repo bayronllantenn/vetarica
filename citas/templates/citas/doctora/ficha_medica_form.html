@@ -235,10 +235,15 @@ Vet Arica{% endblock %} {% block css %}
           </div>
 
           <div class="fic-pie">
+            {% if solo_ver %}
+            <span class="fic-aviso"><i class="bi bi-lock"></i> Esta ficha es de un día anterior, solo se puede ver.</span>
+            <a href="{{ volver_url }}" class="pac-btn">Volver</a>
+            {% else %}
             <a href="{{ volver_url }}" class="pac-btn">Cancelar</a>
             <button type="submit" class="btn btn-teal pac-boton">
               {% if ficha %}Guardar cambios{% else %}Guardar ficha{% endif %}
             </button>
+            {% endif %}
           </div>
         </form>
         {% endif %}

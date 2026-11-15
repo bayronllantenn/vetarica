@@ -653,14 +653,19 @@ def ficha_sin_cita(request, mascota_id):
     context = {'mascota': mascota, 'form': form, 'volver_url': reverse('pacientes'), 'puede_llenar_ficha': True}
     return render(request, 'citas/doctora/ficha_medica_form.html', context)
 
+def ficha_es_de_hoy(ficha):
+    return timezone.localtime(ficha.fecha_atencion).date() == timezone.localdate()
+
 @never_cache
 @login_required(login_url='sin_acceso')
 def fichas_paciente(request, mascota_id):
     if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
     mascota = get_object_or_404(Mascota, id=mascota_id)
-    fichas = FichaMedica.objects.filter(mascota=mascota).select_related('solicitud__tipo_consulta')
-    context = {'mascota': mascota, 'fichas': fichas.order_by('-fecha_atencion'), 'cita_sin_ficha': citas_sin_ficha(mascota).first()}
+    fichas = FichaMedica.objects.filter(mascota=mascota).select_related('solicitud__tipo_consulta').order_by('-fecha_atencion')
+    for ficha in fichas:
+        ficha.editable = ficha_es_de_hoy(ficha)
+    context = {'mascota': mascota, 'fichas': fichas, 'cita_sin_ficha': citas_sin_ficha(mascota).first()}
     return render(request, 'citas/doctora/fichas_paciente.html', context)
 
 @never_cache
@@ -675,6 +680,11 @@ def editar_ficha(request, ficha_id):
     else:
         volver_url = reverse('pacientes')
 
+    editable = ficha_es_de_hoy(ficha)
+    if request.method == 'POST' and not editable:
+        messages.error(request, 'Esta ficha es de un día anterior y ya no se puede editar.')
+        return redirect(volver_url)
+
     if request.method == 'POST':
         form = FichaMedicaForm(request.POST, instance=ficha)
         if form.is_valid():
@@ -682,10 +692,13 @@ def editar_ficha(request, ficha_id):
             messages.success(request, 'Ficha clínica actualizada correctamente.')
             return redirect(volver_url)
         messages.error(request, 'Revisa los campos marcados en rojo.')
-    else:
+    else: 
         form = FichaMedicaForm(instance=ficha)
+        if not editable:
+            for campo in form.fields.values():
+                campo.disabled = True
     insumos_ya_usados, total_insumos = valor_insumos_de_ficha(ficha)
-    context = {'solicitud': ficha.solicitud, 'mascota': ficha.mascota, 'ficha': ficha, 'form': form, 'volver_url': volver_url, 'puede_llenar_ficha': True, 'insumos_ya_usados': insumos_ya_usados, 'total_insumos': total_insumos}
+    context = {'solicitud': ficha.solicitud, 'mascota': ficha.mascota, 'ficha': ficha, 'form': form, 'volver_url': volver_url, 'puede_llenar_ficha': True, 'solo_ver': not editable, 'insumos_ya_usados': insumos_ya_usados, 'total_insumos': total_insumos}
     return render(request, 'citas/doctora/ficha_medica_form.html', context)
 
 @never_cache
