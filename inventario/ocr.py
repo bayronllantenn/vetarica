@@ -1,21 +1,38 @@
+import io
+
 import requests
 from decouple import config
-from .models import Insumo
+from PIL import Image
+from .models import Insumo, Proveedor
+
+
+def achicar_imagen(contenido):
+    imagen = Image.open(io.BytesIO(contenido)).convert('RGB')
+    imagen.thumbnail((2000, 2000))
+    salida = io.BytesIO()
+    imagen.save(salida, 'JPEG', quality=80)
+    return salida.getvalue()
 
 
 def leer_texto(archivo):
+    nombre = archivo.name
+    contenido = archivo.read()
+    if len(contenido) > 1000000:
+        contenido = achicar_imagen(contenido)
+        nombre = 'orden.jpg'
+
     respuesta = requests.post(
         'https://api.ocr.space/parse/image',
-        data={'apikey': config('OCR_SPACE_KEY'), 'language': 'spa', 'OCREngine': '2', 'scale': 'true', 'isTable': 'true'},
-        files={'file': (archivo.name, archivo.read())},
+        data={'apikey': config('OCR_SPACE_KEY'), 'language': 'spa', 'OCREngine': '2', 'scale': 'true', 'isTable': 'true', 'isOverlayRequired': 'true'},
+        files={'file': (nombre, contenido)},
         timeout=30,
     )
     datos = respuesta.json()
 
-    if datos['IsErroredOnProcessing']:
+    if 'ParsedResults' not in datos or datos['IsErroredOnProcessing']:
         return None
 
-    return datos['ParsedResults'][0]['ParsedText']
+    return datos['ParsedResults'][0]
 
 
 UNIDADES = ['CAJA', 'CAJAS', 'UN', 'UND', 'UNID', 'UNIDAD', 'UNIDADES', 'BOLSA', 'BOLSAS', 'FRASCO', 'FRASCOS', 'ML', 'KG']
@@ -124,6 +141,42 @@ def separar_productos(texto):
         productos.append({'cantidad': int(cantidad), 'nombre': nombre, 'precio': int(precio), 'por_caja': unidades_por_caja(nombre), 'codigo': codigo})
 
     return productos
+
+def buscar_dato(lineas, etiqueta):
+    dato = ''
+    for i in range(len(lineas)):
+        if lineas[i].upper().startswith(etiqueta):
+            dato = lineas[i].split(':', 1)[-1].strip()
+            if dato == '' and i + 1 < len(lineas):
+                dato = lineas[i + 1]
+    return dato
+
+
+def leer_proveedor(lineas_ocr):
+    izquierda = None
+    lineas = []
+    for linea in lineas_ocr:
+        texto = linea['LineText'].strip()
+        posicion = linea['Words'][0]['Left']
+        if izquierda is None and 'PROVEEDOR' in texto.upper():
+            izquierda = posicion - 30
+        if izquierda is not None and posicion >= izquierda:
+            lineas.append(texto)
+
+    return {
+        'nombre': buscar_dato(lineas, 'RAZ'),
+        'rut': buscar_dato(lineas, 'RUT'),
+        'contacto': buscar_dato(lineas, 'CONTACTO'),
+        'telefono': buscar_dato(lineas, 'TEL'),
+    }
+
+
+def buscar_proveedor(datos):
+    rut = datos['rut'].replace('.', '').replace('-', '')
+    proveedor = Proveedor.objects.filter(rut=rut).first()
+    if proveedor is None and datos['nombre'] != '':
+        proveedor = Proveedor.objects.filter(nombre__iexact=datos['nombre']).first()
+    return proveedor
 
 
 def buscar_insumo(nombre, codigo=''):

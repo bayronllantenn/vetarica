@@ -14,7 +14,7 @@
       <div>
         <h1>Orden {{ orden.codigo }}</h1>
         <p class="dash-subtitle">
-          {% if orden.numero_documento %}Doc. N° {{ orden.numero_documento }} · {% endif %}{{ orden.fecha|date:"d/m/Y H:i" }}
+          {% if orden.proveedor %}{{ orden.proveedor.nombre }} · {% endif %}{% if orden.numero_documento %}Doc. N° {{ orden.numero_documento }} · {% endif %}{{ orden.fecha|date:"d/m/Y H:i" }}
           {% if orden.registrado_por %} · {{ orden.registrado_por.first_name }} {{ orden.registrado_por.last_name }}{% endif %}
         </p>
       </div>

@@ -81,7 +81,12 @@
   display: flex;
   justify-content: center;
   gap: 6px;
-  flex-wrap: wrap;
+}
+
+.inv-acciones .pac-btn,
+.inv-lote small,
+.pac-tabla td[data-label="Cantidad"] {
+  white-space: nowrap;
 }
 
 .inv-modal-icono {

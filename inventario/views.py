@@ -1,6 +1,7 @@
 from datetime import date
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
@@ -8,10 +9,11 @@ from django.urls import reverse
 from django.utils.http import urlencode
 from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
+from usuarios.forms import validar_rut
 from usuarios.views import es_personal_clinica, es_veterinaria
 from .forms import MovimientoForm, ProveedorForm
 from .models import Insumo, Lote, Movimiento, OrdenCompra, Proveedor, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
-from .ocr import buscar_insumo, leer_numero_documento, leer_texto, separar_productos
+from .ocr import buscar_insumo, buscar_proveedor, leer_numero_documento, leer_proveedor, leer_texto, separar_productos
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -69,18 +71,42 @@ def eliminar_proveedor(request, proveedor_id):
 
 
 def leer_orden(foto):
-    resultado = {'filas': [], 'numero': ''}
+    resultado = {'filas': [], 'numero': '', 'proveedor': {'nombre': '', 'rut': '', 'contacto': '', 'telefono': ''}}
     try:
-        texto = leer_texto(foto)
+        lectura = leer_texto(foto)
     except Exception:
         return resultado
-    if texto is None:
+    if lectura is None:
         return resultado
 
+    texto = lectura['ParsedText']
     resultado['numero'] = leer_numero_documento(texto)
+    resultado['proveedor'] = leer_proveedor(lectura['TextOverlay']['Lines'])
     for producto in separar_productos(texto):
         resultado['filas'].append({'nombre': producto['nombre'], 'cantidad': producto['cantidad'], 'precio': producto['precio'], 'por_caja': producto['por_caja'], 'codigo': producto['codigo'], 'insumo': buscar_insumo(producto['nombre'], producto['codigo'])})
     return resultado
+
+def elegir_proveedor(request):
+    eleccion = request.POST.get('proveedor', '')
+    if eleccion.isdigit():
+        return Proveedor.objects.filter(id=eleccion).first()
+    if eleccion != 'nuevo':
+        return None
+
+    nombre = request.POST.get('proveedor_nombre', '').strip()
+    try:
+        rut = validar_rut(request.POST.get('proveedor_rut', ''))
+    except ValidationError:
+        return None
+    if nombre == '':
+        return None
+
+    proveedor = Proveedor.objects.filter(rut=rut).first()
+    if proveedor is None:
+        contacto = request.POST.get('proveedor_contacto', '').strip()
+        telefono = request.POST.get('proveedor_telefono', '').strip()
+        proveedor = Proveedor.objects.create(nombre=nombre, rut=rut, contacto=contacto, telefono=telefono)
+    return proveedor
 
 
 def aviso_orden_repetida(request, numero):
@@ -128,7 +154,12 @@ def registrar_orden(request):
         return redirect('orden_compra')
 
     with transaction.atomic():
-        orden = crear_orden_compra(request.user, numero)
+        proveedor = elegir_proveedor(request)
+        if request.POST.get('proveedor') == 'nuevo' and proveedor is None:
+            messages.error(request, 'El nombre o el RUT del proveedor no es válido.')
+            return redirect('orden_compra')
+
+        orden = crear_orden_compra(request.user, numero, proveedor)
         registradas = 0
         for i in range(len(insumos)):
             codigo = codigos[i].strip()
@@ -147,13 +178,14 @@ def registrar_orden(request):
             vencimiento = leer_fecha(vencimientos[i])
             unidades = int(cantidades[i]) * por_caja
             registrar_movimiento(insumo, 'Entrada', unidades, 'Orden de compra', None, request.user, orden, vencimiento)
+            if proveedor is not None:
+                insumo.proveedores.add(proveedor)
             registradas = registradas + 1
 
         if registradas == 0:
-            orden.delete()
+            transaction.set_rollback(True)
 
     if registradas == 0:
-        orden.delete()
         messages.error(request, 'No se registró ninguna entrada. Elige el insumo de cada producto.')
         return redirect('orden_compra')
     messages.success(request, f'Orden {orden.codigo} registrada con {registradas} productos.')
@@ -169,24 +201,33 @@ def orden_compra(request):
     if request.method == 'POST' and 'registrar' in request.POST:
         return registrar_orden(request)
 
-    filas = []
-    numero = ''
-    if request.method == 'POST':
-        foto = request.FILES.get('foto')
-        if foto is None:
-            messages.error(request, 'Sube la foto de la orden de compra.')
-            return redirect('orden_compra')
+    if request.method != 'POST':
+        return render(request, 'inventario/orden_compra.html', {'filas': []})
 
-        resultado = leer_orden(foto)
-        filas = resultado['filas']
-        numero = resultado['numero']
-        if len(filas) == 0:
-            messages.error(request, 'No se pudieron leer productos en la imagen. Intenta con una foto más clara.')
-            return redirect('orden_compra')
-        if aviso_orden_repetida(request, numero):
-            return redirect('orden_compra')
+    foto = request.FILES.get('foto')
+    if foto is None:
+        messages.error(request, 'Sube la foto de la orden de compra.')
+        return redirect('orden_compra')
 
-    context = {'filas': filas, 'numero': numero, 'insumos': Insumo.objects.order_by('nombre')}
+    resultado = leer_orden(foto)
+    filas = resultado['filas']
+    numero = resultado['numero']
+    if len(filas) == 0:
+        messages.error(request, 'No se pudieron leer productos en la imagen. Intenta con una foto más clara.')
+        return redirect('orden_compra')
+    if aviso_orden_repetida(request, numero):
+        return redirect('orden_compra')
+
+    proveedor = resultado['proveedor']
+    elegido = 'nuevo'
+    if proveedor['nombre'] == '' and proveedor['rut'] == '':
+        elegido = ''
+    encontrado = buscar_proveedor(proveedor)
+    if encontrado is not None:
+        elegido = encontrado.id
+        proveedor = {'nombre': encontrado.nombre, 'rut': encontrado.rut, 'contacto': encontrado.contacto, 'telefono': encontrado.telefono}
+
+    context = {'filas': filas, 'numero': numero, 'insumos': Insumo.objects.order_by('nombre'), 'proveedores': Proveedor.objects.order_by('nombre'), 'proveedor': proveedor, 'elegido': elegido}
     return render(request, 'inventario/orden_compra.html', context)
 
 
