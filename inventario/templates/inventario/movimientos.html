@@ -63,8 +63,11 @@
             <td data-label="Fecha">{{ movimiento.fecha|date:"d/m/Y H:i" }}</td>
             {% if fila.orden %}
             <td data-label="Insumo">
-              <strong>Orden {{ fila.orden.codigo }}</strong>
-              <a href="{% url 'detalle_orden' fila.orden.codigo %}" class="pac-btn ms-2">Ver productos</a>
+              <div class="d-flex align-items-center gap-2 text-nowrap">
+                <strong>Orden {{ fila.orden.codigo }}</strong>
+                {% if fila.orden.numero_documento %}<span class="text-muted small">Doc. N° {{ fila.orden.numero_documento }}</span>{% endif %}
+                <a href="{% url 'detalle_orden' fila.orden.codigo %}" class="pac-btn">Ver productos</a>
+              </div>
             </td>
             {% else %}
             <td data-label="Insumo"><strong>{{ movimiento.insumo.nombre }}</strong></td>

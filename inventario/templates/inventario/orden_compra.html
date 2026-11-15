@@ -36,30 +36,40 @@ Orden de compra - Vet Arica
     <form method="post" class="cita-interna-form">
       {% csrf_token %}
       <div class="cita-seccion">
+        <div class="mb-3" style="max-width: 260px">
+          <label class="form-label" for="numero_documento">N° del documento</label>
+          <input type="text" id="numero_documento" name="numero_documento" value="{{ numero }}" class="form-control" placeholder="Ej: 452910">
+        </div>
         <table class="table align-middle mb-0">
           <thead>
             <tr>
               <th>Leído en la orden</th>
               <th>Insumo</th>
-              <th style="width: 120px">Cantidad</th>
-              <th style="width: 160px">Costo neto</th>
+              <th style="width: 110px">Cantidad</th>
+              <th style="width: 110px">Unid. por caja</th>
+              <th style="width: 150px">Precio en la orden</th>
               <th style="width: 170px">Vencimiento</th>
             </tr>
           </thead>
           <tbody>
             {% for fila in filas %}
             <tr>
-              <td><input type="text" name="nombre" value="{{ fila.nombre }}" class="form-control"></td>
+              <td>
+                <input type="text" name="nombre" value="{{ fila.nombre }}" class="form-control">
+                <input type="hidden" name="codigo" value="{{ fila.codigo }}">
+                {% if fila.codigo %}<small class="text-muted">Código: {{ fila.codigo }}</small>{% endif %}
+              </td>
               <td>
                 <select name="insumo" class="form-select">
                   <option value="">No registrar</option>
-                  <option value="nuevo">Crear insumo nuevo</option>
+                  <option value="nuevo" {% if not fila.insumo %}selected{% endif %}>Crear insumo nuevo</option>
                   {% for insumo in insumos %}
                   <option value="{{ insumo.id }}" {% if fila.insumo.id == insumo.id %}selected{% endif %}>{{ insumo.nombre }}</option>
                   {% endfor %}
                 </select>
               </td>
               <td><input type="number" name="cantidad" min="0" value="{{ fila.cantidad }}" class="form-control"></td>
+              <td><input type="number" name="por_caja" min="1" value="{{ fila.por_caja }}" class="form-control"></td>
               <td><input type="number" name="precio" min="0" value="{{ fila.precio }}" class="form-control"></td>
               <td><input type="date" name="vencimiento" class="form-control"></td>
             </tr>

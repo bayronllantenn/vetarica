@@ -2,13 +2,14 @@ from datetime import date
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
 from usuarios.views import es_personal_clinica, es_veterinaria
 from .forms import MovimientoForm, ProveedorForm
-from .models import Insumo, Movimiento, OrdenCompra, Proveedor, crear_orden_compra, registrar_movimiento
-from .ocr import buscar_insumo, leer_texto, separar_productos
+from .models import Insumo, Lote, Movimiento, OrdenCompra, Proveedor, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
+from .ocr import buscar_insumo, leer_numero_documento, leer_texto, separar_productos
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -66,37 +67,49 @@ def eliminar_proveedor(request, proveedor_id):
 
 
 def leer_orden(foto):
-    filas = []
+    resultado = {'filas': [], 'numero': ''}
     try:
         texto = leer_texto(foto)
     except Exception:
-        return filas
+        return resultado
     if texto is None:
-        return filas
+        return resultado
 
+    resultado['numero'] = leer_numero_documento(texto)
     for producto in separar_productos(texto):
-        filas.append({'nombre': producto['nombre'], 'cantidad': producto['cantidad'], 'precio': producto['precio'], 'insumo': buscar_insumo(producto['nombre'])})
-    return filas
+        resultado['filas'].append({'nombre': producto['nombre'], 'cantidad': producto['cantidad'], 'precio': producto['precio'], 'por_caja': producto['por_caja'], 'codigo': producto['codigo'], 'insumo': buscar_insumo(producto['nombre'], producto['codigo'])})
+    return resultado
 
 
-def elegir_insumo(insumo_id, nombre):
+def aviso_orden_repetida(request, numero):
+    repetida = buscar_orden_repetida(numero)
+    if repetida is None:
+        return False
+    fecha = repetida.fecha.strftime('%d/%m/%Y')
+    messages.error(request, f'El documento N° {numero} ya fue registrado el {fecha} como {repetida.codigo}.')
+    return True
+
+
+def elegir_insumo(insumo_id, nombre, codigo):
     if insumo_id.isdigit():
         return Insumo.objects.filter(id=insumo_id).first()
     if insumo_id == 'nuevo' and nombre != '':
-        insumo = Insumo.objects.filter(nombre__iexact=nombre).first()
+        insumo = None
+        if codigo != '':
+            insumo = Insumo.objects.filter(codigo_proveedor__iexact=codigo).first()
+        if insumo is None:
+            insumo = Insumo.objects.filter(nombre__iexact=nombre).first()
         if insumo is None:
             insumo = Insumo(nombre=nombre, categoria='Otro')
         return insumo
     return None
 
 
-def guardar_vencimiento(insumo, texto):
+def leer_fecha(texto):
     try:
-        fecha = date.fromisoformat(texto)
+        return date.fromisoformat(texto)
     except ValueError:
-        return
-    if insumo.fecha_vencimiento is None or fecha < insumo.fecha_vencimiento:
-        insumo.fecha_vencimiento = fecha
+        return None
 
 
 def registrar_orden(request):
@@ -105,22 +118,39 @@ def registrar_orden(request):
     cantidades = request.POST.getlist('cantidad')
     precios = request.POST.getlist('precio')
     vencimientos = request.POST.getlist('vencimiento')
+    por_cajas = request.POST.getlist('por_caja')
+    codigos = request.POST.getlist('codigo')
+    numero =request.POST.get('numero_documento', '').strip()
 
-    orden = crear_orden_compra(request.user)
-    registradas = 0
-    for i in range(len(insumos)):
-        insumo = elegir_insumo(insumos[i], nombres[i].strip())
-        if insumo is None or not cantidades[i].isdigit() or int(cantidades[i]) == 0:
-            continue
+    if aviso_orden_repetida(request, numero):
+        return redirect('orden_compra')
 
-        if precios[i].isdigit():
-            insumo.costo = int(precios[i])
-        guardar_vencimiento(insumo, vencimientos[i])
-        registrar_movimiento(insumo, 'Entrada', int(cantidades[i]), 'Orden de compra', None, request.user, orden)
-        registradas = registradas + 1
+    with transaction.atomic():
+        orden = crear_orden_compra(request.user, numero)
+        registradas = 0
+        for i in range(len(insumos)):
+            codigo = codigos[i].strip()
+            insumo = elegir_insumo(insumos[i], nombres[i].strip(), codigo)
+            if insumo is None or not cantidades[i].isdigit() or int(cantidades[i]) == 0:
+                continue
+            if codigo != '' and insumo.codigo_proveedor == '':
+                insumo.codigo_proveedor = codigo
+
+            por_caja = 1
+            if por_cajas[i].isdigit() and int(por_cajas[i]) > 0:
+                por_caja = int(por_cajas[i])
+
+            if precios[i].isdigit():
+                insumo.costo = int(precios[i]) // por_caja
+            vencimiento = leer_fecha(vencimientos[i])
+            unidades = int(cantidades[i]) * por_caja
+            registrar_movimiento(insumo, 'Entrada', unidades, 'Orden de compra', None, request.user, orden, vencimiento)
+            registradas = registradas + 1
+
+        if registradas == 0:
+            orden.delete()
 
     if registradas == 0:
-        orden.delete()
         messages.error(request, 'No se registró ninguna entrada. Elige el insumo de cada producto.')
         return redirect('orden_compra')
     messages.success(request, f'Orden {orden.codigo} registrada con {registradas} productos.')
@@ -137,18 +167,23 @@ def orden_compra(request):
         return registrar_orden(request)
 
     filas = []
+    numero = ''
     if request.method == 'POST':
         foto = request.FILES.get('foto')
         if foto is None:
             messages.error(request, 'Sube la foto de la orden de compra.')
             return redirect('orden_compra')
 
-        filas = leer_orden(foto)
+        resultado = leer_orden(foto)
+        filas = resultado['filas']
+        numero = resultado['numero']
         if len(filas) == 0:
             messages.error(request, 'No se pudieron leer productos en la imagen. Intenta con una foto más clara.')
             return redirect('orden_compra')
+        if aviso_orden_repetida(request, numero):
+            return redirect('orden_compra')
 
-    context = {'filas': filas, 'insumos': Insumo.objects.order_by('nombre')}
+    context = {'filas': filas, 'numero': numero, 'insumos': Insumo.objects.order_by('nombre')}
     return render(request, 'inventario/orden_compra.html', context)
 
 
@@ -169,7 +204,7 @@ def nuevo_movimiento(request):
             if se_registro:
                 messages.success(request, f'{tipo} de {cantidad} {insumo.nombre} registrada.')
                 return redirect('movimientos')
-            messages.error(request, f'No hay stock suficiente. Quedan {insumo.stock_actual} de {insumo.nombre}.')
+            messages.error(request, f'No hay stock suficiente. Quedan {insumo.stock_disponible()} de {insumo.nombre} sin vencer.')
     else:
         form = MovimientoForm()
 
@@ -202,6 +237,18 @@ def movimientos(request):
 
     context = {'filas': filas, 'insumos': Insumo.objects.order_by('nombre'), 'insumo_id': insumo_id, 'tipo': tipo}
     return render(request, 'inventario/movimientos.html', context)
+
+
+@login_required(login_url='sin_acceso')
+def dar_de_baja(request, lote_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    lote = get_object_or_404(Lote.objects.select_related('insumo'), id=lote_id)
+    if request.method == 'POST' and lote.cantidad > 0 and lote.estado_vencimiento() == 'Vencido':
+        cantidad = lote.cantidad
+        dar_de_baja_lote(lote, request.user)
+        messages.success(request, f'Se dieron de baja {cantidad} {lote.insumo.nombre} vencidos.')
+    return redirect('inventario')
 
 
 @never_cache

@@ -33,6 +33,7 @@
             <th class="inv-monto">Valor neto</th>
             <th class="inv-monto">Beneficio</th>
             <th class="inv-monto">Total</th>
+            <th>Vence</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -50,6 +51,27 @@
             <td data-label="Valor neto" class="inv-monto">{% if fila.neto %}${{ fila.neto }}{% else %}-{% endif %}</td>
             <td data-label="Beneficio" class="inv-monto inv-beneficio">{% if fila.insumo.ganancia and fila.beneficio %}{{ fila.insumo.ganancia }}% = ${{ fila.beneficio }}{% elif fila.insumo.ganancia %}{{ fila.insumo.ganancia }}%{% else %}-{% endif %}</td>
             <td data-label="Total" class="inv-monto"><strong>{% if fila.total %}${{ fila.total }}{% else %}-{% endif %}</strong></td>
+            <td data-label="Vence">
+              {% for lote in fila.insumo.lotes_vigentes %}
+              <div class="inv-lote">
+                {% if lote.fecha_vencimiento %}{{ lote.fecha_vencimiento|date:"d/m/Y" }}{% else %}Sin fecha{% endif %}
+                {% if lote.estado_vencimiento == 'Vencido' %}
+                <span class="inv-etiqueta inv-etiqueta-bajo">Vencido</span>
+                {% elif lote.estado_vencimiento == 'Por vencer' %}
+                <span class="inv-etiqueta inv-etiqueta-aviso">Por vencer</span>
+                {% endif %}
+                <small class="d-block text-muted">{{ lote.cantidad }} {{ fila.insumo.unidad }}{% if lote.orden %} · {{ lote.orden.codigo }}{% endif %}</small>
+                {% if lote.estado_vencimiento == 'Vencido' %}
+                <form method="post" action="{% url 'dar_de_baja' lote.id %}" class="mt-1">
+                  {% csrf_token %}
+                  <button type="submit" class="pac-btn text-danger"><i class="bi bi-trash"></i> Dar de baja</button>
+                </form>
+                {% endif %}
+              </div>
+              {% empty %}
+              -
+              {% endfor %}
+            </td>
             <td data-label="Acciones">
               <a href="{% url 'movimientos' %}?insumo={{ fila.insumo.id }}" class="pac-btn">
                 <i class="bi bi-clock-history"></i> Movimientos

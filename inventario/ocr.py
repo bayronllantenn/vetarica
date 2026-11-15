@@ -30,6 +30,25 @@ def es_codigo(texto):
     return False
 
 
+def leer_numero_documento(texto):
+    for linea in texto.split('\n'):
+        if 'ORDEN DE COMPRA' not in linea.upper():
+            continue
+        for palabra in linea.replace('\t', ' ').split():
+            palabra = palabra.replace('#', '').replace('.', '')
+            if palabra.isdigit():
+                return palabra
+    return ''
+
+
+def unidades_por_caja(nombre):
+    palabras = nombre.replace('(', ' ').replace(')', ' ').split()
+    for i in range(len(palabras) - 1):
+        if palabras[i].upper() == 'CAJA' and palabras[i + 1].isdigit():
+            return int(palabras[i + 1])
+    return 1
+
+
 def solo_numero(texto):
     return texto.replace('$', '').replace('.', '').replace(',', '').replace(' ', '')
 
@@ -47,6 +66,7 @@ def separar_productos(texto):
 
         precios = []
         cantidad = ''
+        codigo = ''
         textos = []
         for celda in celdas:
             if celda.startswith('$'):
@@ -54,7 +74,10 @@ def separar_productos(texto):
             elif celda.isdigit():
                 if cantidad == '':
                     cantidad = celda
-            elif es_codigo(celda) or celda.upper() in UNIDADES:
+            elif es_codigo(celda):
+                if codigo == '':
+                    codigo = celda
+            elif celda.upper() in UNIDADES:
                 continue
             else:
                 textos.append(celda)
@@ -63,6 +86,12 @@ def separar_productos(texto):
         partes = nombre.split(' ', 1)
         if len(partes) == 2 and es_codigo(partes[0]):
             nombre = partes[1]
+            if codigo == '':
+                codigo = partes[0]
+
+        posicion = nombre.upper().find(' LOT ')
+        if posicion >= 0:
+            nombre = nombre[:posicion]
 
         partes = nombre.split(' ', 1)
         if len(partes) == 2 and partes[0].isdigit():
@@ -92,12 +121,17 @@ def separar_productos(texto):
         if cantidad == '' or nombre == '':
             continue
 
-        productos.append({'cantidad': int(cantidad), 'nombre': nombre, 'precio': int(precio)})
+        productos.append({'cantidad': int(cantidad), 'nombre': nombre, 'precio': int(precio), 'por_caja': unidades_por_caja(nombre), 'codigo': codigo})
 
     return productos
 
 
-def buscar_insumo(nombre):
+def buscar_insumo(nombre, codigo=''):
+    if codigo != '':
+        insumo = Insumo.objects.filter(codigo_proveedor__iexact=codigo).first()
+        if insumo is not None:
+            return insumo
+
     insumos = Insumo.objects.all()
 
     for insumo in insumos:

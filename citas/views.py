@@ -525,8 +525,8 @@ def leer_insumos_usados(request):
             usados[insumo] = int(cantidad)
 
     for insumo in usados:
-        if usados[insumo] > insumo.stock_actual:
-            return {}, f'No hay stock suficiente de {insumo.nombre} (quedan {insumo.stock_actual}).'
+        if usados[insumo] > insumo.stock_disponible():
+            return {}, f'No hay stock suficiente de {insumo.nombre} (quedan {insumo.stock_disponible()} sin vencer).'
 
     return usados, None
 
