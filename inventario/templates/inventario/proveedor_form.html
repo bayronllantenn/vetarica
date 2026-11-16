@@ -9,9 +9,7 @@
 {% block css %}
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
-<link href="{% static 'citas/css/cita_interna.css' %}" rel="stylesheet" />
-<link href="{% static 'inventario/css/proveedor_form.css' %}" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+<link href="{% static 'citas/css/cita_interna.css' %}" rel="stylesheet" /><link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
 {% endblock %}
 
 {% block topbar %}{% endblock %}
@@ -48,15 +46,7 @@
           <div class="col-md-4">{{ form.telefono|as_crispy_field }}</div>
           <div class="col-md-4">{{ form.email|as_crispy_field }}</div>
         </div>
-        {% if form.insumos.field.queryset.exists %}
-        <p class="form-label">Insumos que entrega</p>
-        <div class="lista-insumos">
-          {{ form.insumos }}
-        </div>
-        {{ form.insumos.errors }}
-        {% else %}
-        <p class="sin-insumos">AÃºn no hay insumos registrados para asociar.</p>
-        {% endif %}
+        {{ form.descripcion|as_crispy_field }}
       </div>
 
       <div class="cita-acciones">

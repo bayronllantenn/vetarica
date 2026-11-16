@@ -10,7 +10,7 @@ from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
 from usuarios.views import es_personal_clinica, es_veterinaria
 from .forms import MovimientoForm, ProveedorForm
-from .models import Insumo, Lote, Movimiento, OrdenCompra, Proveedor, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
+from .models import CATEGORIAS_INSUMO, Insumo,Lote, Movimiento, OrdenCompra, Proveedor, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
 from .ocr import buscar_insumo, leer_numero_documento, leer_texto, separar_productos
 
 @never_cache
@@ -19,12 +19,13 @@ def proveedores(request):
     if not es_veterinaria(request.user):
         return redirect('sin_acceso')
     buscar = request.GET.get('buscar', '').strip()
-    lista = Proveedor.objects.prefetch_related('insumos').order_by('nombre')
+    lista = Proveedor.objects.order_by('nombre')
     if buscar:
         por_nombre = lista.filter(nombre__icontains=buscar)
         por_rut = lista.filter(rut__icontains=buscar)
         por_contacto = lista.filter(contacto__icontains=buscar)
-        lista = por_nombre | por_rut | por_contacto
+        por_descripcion = lista.filter(descripcion__icontains=buscar)
+        lista = por_nombre | por_rut | por_contacto | por_descripcion
     return render(request, 'inventario/proveedores.html', {'proveedores': lista, 'buscar': buscar})
 
 @login_required(login_url='sin_acceso')
@@ -54,7 +55,7 @@ def editar_proveedor(request, proveedor_id):
             messages.success(request, f'{proveedor.nombre} fue actualizado correctamente.')
             return redirect('proveedores')
     else:
-        form = ProveedorForm(instance=proveedor, initial={'insumos': proveedor.insumos.all()})
+        form = ProveedorForm(instance=proveedor)
     return render(request, 'inventario/proveedor_form.html', {'form': form, 'proveedor': proveedor})
 
 @login_required(login_url='sin_acceso')
@@ -263,6 +264,13 @@ def detalle_orden(request, codigo):
     lista = orden.movimientos.select_related('insumo').order_by('insumo__nombre')
     return render(request, 'inventario/detalle_orden.html', {'orden': orden, 'movimientos': lista})
 
+def es_categoria_valida(categoria):
+    for valor, texto in CATEGORIAS_INSUMO:
+        if valor == categoria:
+            return True
+    return False
+
+
 @never_cache
 @login_required(login_url='sin_acceso')
 def inventario(request):
@@ -272,12 +280,16 @@ def inventario(request):
     if request.method == 'POST':
         insumo = get_object_or_404(Insumo, id=request.POST.get('insumo_id', '0'))
         ganancia = request.POST.get('ganancia', '').strip()
-        if ganancia.isdigit():
-            insumo.ganancia = int(ganancia)
-            insumo.save()
-            messages.success(request, f'Beneficio de {insumo.nombre} actualizado a {insumo.ganancia}%.')
-        else:
+        categoria = request.POST.get('categoria', '')
+        if not ganancia.isdigit():
             messages.error(request, 'El beneficio debe ser un número entero, por ejemplo 30.')
+        elif not es_categoria_valida(categoria):
+            messages.error(request, 'Elige una categoría de la lista.')
+        else:
+            insumo.ganancia = int(ganancia)
+            insumo.categoria = categoria
+            insumo.save()
+            messages.success(request, f'{insumo.nombre} actualizado: {insumo.categoria}, {insumo.ganancia}% de beneficio.')
 
         pagina = request.POST.get('page', '1')
         if not pagina.isdigit():
@@ -305,4 +317,4 @@ def inventario(request):
             total = separar_miles(insumo.costo + ganancia)
         lista.append({'insumo': insumo, 'neto': neto, 'beneficio': beneficio, 'total': total})
 
-    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar})
+    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'categorias': CATEGORIAS_INSUMO})

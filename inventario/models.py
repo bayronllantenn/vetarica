@@ -34,6 +34,7 @@ class Proveedor(models.Model):
     contacto = models.CharField(max_length=100, blank=True)
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
+    descripcion = models.TextField('Qué provee', blank=True)
 
     def __str__(self):
         return self.nombre
@@ -47,7 +48,6 @@ class Insumo(models.Model):
     stock_actual = models.PositiveIntegerField(default=0)
     stock_minimo = models.PositiveIntegerField(default=0)
     fecha_vencimiento = models.DateField(null=True, blank=True)
-    proveedores = models.ManyToManyField(Proveedor, blank=True, related_name='insumos')
     costo = models.PositiveIntegerField('Costo neto', default=0)
     ganancia = models.PositiveIntegerField('Ganancia (%)', default=0)
 
@@ -75,10 +75,14 @@ class Insumo(models.Model):
             return True
         return False
 
-    def lotes_vigentes(self):
-        con_fecha = list(self.lotes.filter(cantidad__gt=0, fecha_vencimiento__isnull=False).select_related('orden').order_by('fecha_vencimiento', 'id'))
-        sin_fecha = list(self.lotes.filter(cantidad__gt=0, fecha_vencimiento__isnull=True).select_related('orden').order_by('id'))
-        return con_fecha + sin_fecha
+    def lotes_con_fecha(self):
+        return self.lotes.filter(cantidad__gt=0, fecha_vencimiento__isnull=False).select_related('orden').order_by('fecha_vencimiento', 'id')
+
+    def unidades_sin_fecha(self):
+        total = 0
+        for lote in self.lotes.filter(cantidad__gt=0, fecha_vencimiento__isnull=True):
+            total = total + lote.cantidad
+        return total
 
     def estado_vencimiento(self):
         return estado_de_fecha(self.fecha_vencimiento)

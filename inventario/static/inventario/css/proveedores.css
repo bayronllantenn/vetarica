@@ -3,9 +3,10 @@
   color: #0b5a52;
 }
 
-.pac-tabla .prov-insumo {
-  display: inline-block;
-  margin: 2px 4px 2px 0;
+.pac-tabla .prov-descripcion {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+  color: #4b5b58;
 }
 
 .pac-tabla .pac-acciones {

@@ -39,7 +39,7 @@
             <th>Contacto</th>
             <th>Teléfono</th>
             <th>Correo</th>
-            <th>Insumos</th>
+            <th>Qué provee</th>
             <th class="pac-acciones">Acciones</th>
           </tr>
         </thead>
@@ -58,13 +58,7 @@
             <td data-label="Contacto">{{ proveedor.contacto }}</td>
             <td data-label="Teléfono">{{ proveedor.telefono }}</td>
             <td data-label="Correo">{{ proveedor.email }}</td>
-            <td data-label="Insumos">
-              {% for insumo in proveedor.insumos.all %}
-              <span class="pac-etiqueta prov-insumo">{{ insumo.nombre }}</span>
-              {% empty %}
-              <span class="pac-etiqueta">Sin insumos</span>
-              {% endfor %}
-            </td>
+            <td data-label="Qué provee" class="prov-descripcion">{{ proveedor.descripcion|default:"-"|truncatechars:80 }}</td>
             <td class="pac-acciones">
               <a href="{% url 'editar_proveedor' proveedor.id %}" class="pac-btn">
                 <i class="bi bi-pencil-square"></i> Editar
@@ -97,7 +91,7 @@
       <div class="modal-eliminar-caja">
         <span class="modal-eliminar-icono"><i class="bi bi-trash"></i></span>
         <h3>¿Eliminar {{ proveedor.nombre }}?</h3>
-        <p>Los insumos no se borran, solo dejan de tener asociado este proveedor.</p>
+        <p>Esta acción no se puede deshacer.</p>
         <div class="modal-eliminar-botones">
           <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
           <form action="{% url 'eliminar_proveedor' proveedor.id %}" method="post" class="mascota-eliminar-form">

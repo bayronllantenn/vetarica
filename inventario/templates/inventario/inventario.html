@@ -63,9 +63,10 @@
             <td data-label="Beneficio" class="inv-monto inv-beneficio">{% if fila.insumo.ganancia and fila.beneficio %}{{ fila.insumo.ganancia }}% = ${{ fila.beneficio }}{% elif fila.insumo.ganancia %}{{ fila.insumo.ganancia }}%{% else %}-{% endif %}</td>
             <td data-label="Total" class="inv-monto"><strong>{% if fila.total %}${{ fila.total }}{% else %}-{% endif %}</strong></td>
             <td data-label="Vence">
-              {% for lote in fila.insumo.lotes_vigentes %}
+              {% with sin_fecha=fila.insumo.unidades_sin_fecha %}
+              {% for lote in fila.insumo.lotes_con_fecha %}
               <div class="inv-lote">
-                {% if lote.fecha_vencimiento %}{{ lote.fecha_vencimiento|date:"d/m/Y" }}{% else %}Sin fecha{% endif %}
+                {{ lote.fecha_vencimiento|date:"d/m/Y" }}
                 {% if lote.estado_vencimiento == 'Vencido' %}
                 <span class="inv-etiqueta inv-etiqueta-bajo">Vencido</span>
                 {% elif lote.estado_vencimiento == 'Por vencer' %}
@@ -80,8 +81,15 @@
                 {% endif %}
               </div>
               {% empty %}
-              -
+              {% if not sin_fecha %}-{% endif %}
               {% endfor %}
+              {% if sin_fecha %}
+              <div class="inv-lote">
+                Sin fecha
+                <small class="d-block text-muted">{{ sin_fecha }} {{ fila.insumo.unidad }}</small>
+              </div>
+              {% endif %}
+              {% endwith %}
             </td>
             <td data-label="Acciones">
               <div class="inv-acciones">
@@ -133,14 +141,21 @@
     <div class="modal-eliminar" id="beneficio-{{ fila.insumo.id }}">
       <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
       <div class="modal-eliminar-caja">
-        <span class="modal-eliminar-icono inv-modal-icono"><i class="bi bi-percent"></i></span>
-        <h3>Beneficio de {{ fila.insumo.nombre }}</h3>
-        <p>Valor neto: {% if fila.neto %}${{ fila.neto }}{% else %}sin costo{% endif %}. Escribe el % de ganancia.</p>
+        <span class="modal-eliminar-icono inv-modal-icono"><i class="bi bi-pencil-square"></i></span>
+        <h3>Editar {{ fila.insumo.nombre }}</h3>
+        <p>Valor neto: {% if fila.neto %}${{ fila.neto }}{% else %}sin costo{% endif %}.</p>
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="insumo_id" value="{{ fila.insumo.id }}" />
           <input type="hidden" name="page" value="{{ page_obj.number }}" />
           <input type="hidden" name="buscar" value="{{ buscar }}" />
+          <label class="form-label" for="categoria-{{ fila.insumo.id }}">Categoría</label>
+          <select id="categoria-{{ fila.insumo.id }}" name="categoria" class="form-select mb-3">
+            {% for valor, texto in categorias %}
+            <option value="{{ valor }}" {% if fila.insumo.categoria == valor %}selected{% endif %}>{{ texto }}</option>
+            {% endfor %}
+          </select>
+          <label class="form-label">% de ganancia</label>
           <div class="inv-modal-campo">
             <input type="number" name="ganancia" min="0" value="{{ fila.insumo.ganancia }}" class="form-control" required />
             <span>%</span>
