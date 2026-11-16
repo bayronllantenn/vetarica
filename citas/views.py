@@ -130,7 +130,7 @@ def agregar_mascota(request):
 # AGENDAR CITA ----------------------------------------------------------------------------------------
 def agendar_view(request):
     if request.user.is_authenticated:
-        mascotas = Mascota.objects.filter(dueno=request.user)
+        mascotas = Mascota.objects.filter(dueno=request.user, activa=True)
     else:
         mascotas = []
     fecha_seleccionada = leer_fecha(leer_dato(request, 'fecha'))
@@ -140,7 +140,7 @@ def agendar_view(request):
     mascota_elegida = None
     mascota_id = leer_dato(request, 'mascota_id')
     if mascota_id and mascota_id.isdigit() and request.user.is_authenticated:
-        mascota_elegida = Mascota.objects.filter(id=mascota_id, dueno=request.user).first()
+        mascota_elegida = Mascota.objects.filter(id=mascota_id, dueno=request.user, activa=True).first()
 
     # solo escondemos los datos de contacto si la cuenta ya los tiene
     # completos si falta alguno se muestran para que los complete ahi
@@ -276,7 +276,8 @@ def iniciar_pago_webpay(request, id):
         return render(request, 'citas/pago/redirigir_webpay.html', {'url': response['url'], 'token': response['token']})
 
     except Exception as e:
-        messages.error(request, f'Error al iniciar el pago: {e}')
+        print('Error al iniciar el pago en Webpay:', e)
+        messages.error(request, 'No se pudo iniciar el pago. Intenta nuevamente en unos minutos.')
         return redirect('reserva_fallida_id', solicitud.pk)
 
 
@@ -335,8 +336,9 @@ def retorno_webpay(request):
             messages.error(request, 'El pago no fue aprobado. La cita fue cancelada.')
             return redirect('reserva_fallida_id', solicitud.pk)
     except Exception as e:
+        print('Error al confirmar el pago en Webpay:', e)
         marcar_pago_rechazado(solicitud)
-        messages.error(request, f'Error al confirmar el pago: {e}')
+        messages.error(request, 'No se pudo confirmar el pago. La cita fue cancelada y no se realizó ningún cobro.')
         return redirect('reserva_fallida_id', solicitud.pk)
 
 
@@ -468,7 +470,7 @@ def crear_cita_interna(request):
         form = CitaInternaForm()
 
     if buscar:
-        form.fields['mascota'].queryset = buscar_mascotas(buscar)
+        form.fields['mascota'].queryset = buscar_mascotas(buscar).filter(activa=True)
     else:
         form.fields['mascota'].queryset = Mascota.objects.none()
 

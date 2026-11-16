@@ -112,7 +112,7 @@ def sin_acceso_view(request):
 @login_required(login_url='sin_acceso')
 def dashboard_usuario(request):
     ahora = timezone.now()
-    mascotas = request.user.mascotas.all()
+    mascotas = request.user.mascotas.filter(activa=True)
 
     mascotas_info = []
     for mascota in mascotas:
@@ -549,7 +549,7 @@ def historial_citas(request):
 
 @login_required(login_url='sin_acceso')
 def ficha_mascota(request, mascota_id):
-    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user)
+    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
     historial = FichaMedica.objects.filter(mascota=mascota)
     historial = historial.order_by('-fecha_atencion')
     context = {
@@ -575,15 +575,16 @@ def configuracion(request):
 
 @login_required(login_url='sin_acceso')
 def eliminar_mascota(request, mascota_id):
-    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user)
+    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
     if request.method == 'POST':
-        mascota.delete()
+        mascota.activa = False
+        mascota.save()
         messages.success(request, f'{mascota.nombre} fue eliminada correctamente.')
     return redirect('dashboard')
 
 @login_required(login_url='sin_acceso')
 def editar_mascota(request, mascota_id):
-    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user)
+    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
     if request.method == 'POST':
         form = MascotaForm(request.POST, request.FILES, instance=mascota)
         if form.is_valid():

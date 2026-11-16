@@ -49,6 +49,7 @@
                 <span class="pac-avatar pac-avatar-{{ paciente.mascota.especie|lower }}">{{ paciente.mascota.nombre|first|upper }}</span>
                 <div>
                   <strong>{{ paciente.mascota.nombre }}</strong>
+                  {% if not paciente.mascota.activa %}<span class="pac-etiqueta">Dada de baja por el dueño</span>{% endif %}
                   <span>{{ paciente.mascota.especie }}</span>
                 </div>
               </div>

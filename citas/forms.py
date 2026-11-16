@@ -530,7 +530,7 @@ def nombre_servicio_con_precio(tipo):
 class CitaInternaForm(forms.ModelForm):
     mascota = forms.ModelChoiceField(
         label='Paciente registrado',
-        queryset=Mascota.objects.all(),
+        queryset=Mascota.objects.filter(activa=True),
         required=False,
         empty_label='Paciente nuevo (escribe los datos abajo)',
     )

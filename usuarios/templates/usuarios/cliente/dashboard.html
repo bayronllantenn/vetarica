@@ -176,7 +176,7 @@ Vet Arica{% endblock %} {% block css %}
       <div class="modal-eliminar-caja">
         <span class="modal-eliminar-icono"><i class="bi bi-trash"></i></span>
         <h3>¿Eliminar a {{ item.mascota.nombre }}?</h3>
-        <p>Se borrarán sus datos. Esta acción no se puede deshacer.</p>
+        <p>Dejará de aparecer en tu cuenta. La clínica conserva su historial clínico.</p>
         <div class="modal-eliminar-botones">
           <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
           <form action="{% url 'eliminar_mascota' item.mascota.id %}" method="post" class="mascota-eliminar-form">

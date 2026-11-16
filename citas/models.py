@@ -166,6 +166,7 @@ class Mascota(models.Model):
     estado_reproductivo = models.CharField(max_length=10, choices=ESTADOS_REPRODUCTIVOS, blank=True)
     microchip = models.CharField(max_length=20, blank=True)
     fecha_nacimiento = models.DateField(null=True)
+    activa = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.nombre}"
