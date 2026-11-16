@@ -722,7 +722,8 @@ def imprimir_ficha(request, ficha_id):
     if ficha.observaciones:
         antecedentes['Observaciones'] = ficha.observaciones
 
-    context = {'ficha': ficha, 'antecedentes': antecedentes, 'es_personal': es_personal}
+    insumos_usados, total_insumos = valor_insumos_de_ficha(ficha)
+    context = {'ficha': ficha, 'antecedentes': antecedentes, 'es_personal': es_personal, 'insumos_usados': insumos_usados, 'total_insumos': total_insumos}
     return render(request, 'citas/imprimir_ficha.html', context)
 
 # PACIENTES ----------------------------------------------------------------------------------------

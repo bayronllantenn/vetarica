@@ -5,6 +5,7 @@ Vet Arica{% endblock %} {% block css %}
 <link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
 <link href="{% static 'citas/css/ficha_clinica.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
@@ -150,11 +151,12 @@ Vet Arica{% endblock %} {% block css %}
             </div>
 
             {% if insumos_por_categoria %}
-            <div id="lista-insumos">
+            <div id="lista-insumos"></div>
+            <template id="plantilla-insumo">
               <div class="row g-2 align-items-center fila-insumo mb-2">
                 <div class="col-md-7">
-                  <select name="insumo_id" class="form-select">
-                    <option value="">Elige un insumo</option>
+                  <select name="insumo_id" class="buscador-insumo">
+                    <option value="">Escribe para buscar un insumo</option>
                     {% for grupo in insumos_por_categoria %}
                     {% if grupo.insumos %}
                     <optgroup label="{{ grupo.categoria }}">
@@ -177,7 +179,7 @@ Vet Arica{% endblock %} {% block css %}
                   </button>
                 </div>
               </div>
-            </div>
+            </template>
             {% endif %}
 
             {% if insumos_ya_usados %}
@@ -207,12 +209,6 @@ Vet Arica{% endblock %} {% block css %}
                   </tr>
                 </tbody>
               </table>
-            </div>
-            {% else %}
-            <div class="fic-insumos-vacio">
-              <i class="bi bi-box-seam"></i>
-              <p>Todavía no se registran insumos</p>
-              <span>Registra los medicamentos o materiales utilizados en esta atención.</span>
             </div>
             {% endif %}
           </div>
@@ -253,6 +249,7 @@ Vet Arica{% endblock %} {% block css %}
 </div>
 {% endblock %} {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
   const notyf = new Notyf({
     duration: 3000,
@@ -265,21 +262,22 @@ Vet Arica{% endblock %} {% block css %}
 
   function agregarInsumo() {
     const lista = document.getElementById("lista-insumos");
-    const fila = lista.querySelector(".fila-insumo").cloneNode(true);
-    fila.querySelector("select").value = "";
-    fila.querySelector("input").value = "";
+    const plantilla = document.getElementById("plantilla-insumo");
+    const fila = plantilla.content.firstElementChild.cloneNode(true);
     lista.appendChild(fila);
-  }
+    new TomSelect(fila.querySelector("select"), {maxOptions: null,placeholder: "Escribe para buscar un insumo",render: {no_results: function () {return '<div class="no-results">No se encontró ese insumo</div>';},},});}
 
   function quitarInsumo(boton) {
     const lista = document.getElementById("lista-insumos");
     const fila = boton.closest(".fila-insumo");
     if (lista.querySelectorAll(".fila-insumo").length > 1) {
+      fila.querySelector("select").tomselect.destroy();
       fila.remove();
     } else {
-      fila.querySelector("select").value = "";
+      fila.querySelector("select").tomselect.clear();
       fila.querySelector("input").value = "";
     }
   }
+  if (document.getElementById("plantilla-insumo")) {agregarInsumo();}
 </script>
 {% endblock %}
