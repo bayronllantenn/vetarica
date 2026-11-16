@@ -150,6 +150,40 @@ body {
   margin-bottom: 10px;
 }
 
+.tabla-insumos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla-insumos th {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e4e4e7;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #71717a;
+}
+
+.tabla-insumos td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f4f4f5;
+  overflow-wrap: anywhere;
+}
+
+.tabla-insumos th:nth-child(n+2),
+.tabla-insumos td:nth-child(n+2) {
+  text-align: right;
+}
+
+.tabla-insumos tfoot td {
+  border-bottom: none;
+  border-top: 1px solid #e4e4e7;
+  font-weight: 700;
+}
+
 .texto p {
   margin: 4px 0 0;
   font-size: 0.92rem;
