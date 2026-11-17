@@ -46,17 +46,17 @@ Vet Arica{% endblock %} {% block css %}
               {% endif %}
             </td>
             <td class="pac-acciones">
-              <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="pac-btn">
+              <a href="{% url 'editar_tipo_consulta' tipo.id %}" class="pac-btn pac-btn-editar">
                 <i class="bi bi-pencil-square"></i> Editar
               </a>
               {% if tipo.activo %}
-              <a href="#ocultar-{{ tipo.id }}" class="pac-btn serv-btn-rojo">
+              <a href="#ocultar-{{ tipo.id }}" class="pac-btn pac-btn-eliminar">
                 <i class="bi bi-eye-slash"></i> Ocultar
               </a>
               {% else %}
               <form action="{% url 'ocultar_tipo_consulta' tipo.id %}" method="post" class="serv-form">
                 {% csrf_token %}
-                <button type="submit" class="pac-btn pac-btn-verde">
+                <button type="submit" class="pac-btn pac-btn-editar">
                   <i class="bi bi-eye"></i> Mostrar
                 </button>
               </form>

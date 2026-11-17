@@ -11,7 +11,7 @@ from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
 from usuarios.forms import validar_rut
 from usuarios.views import es_personal_clinica, es_veterinaria
-from .forms import MovimientoForm, ProveedorForm
+from .forms import InsumoForm, MovimientoForm, ProveedorForm
 from .models import CATEGORIAS_INSUMO, Insumo, Lote, Movimiento, OrdenCompra, Proveedor, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
 from .ocr import buscar_insumo, buscar_proveedor, leer_numero_documento, leer_proveedor, leer_texto, separar_productos
 
@@ -121,7 +121,7 @@ def aviso_orden_repetida(request, numero):
 
 def elegir_insumo(insumo_id, nombre, codigo):
     if insumo_id.isdigit():
-        return Insumo.objects.filter(id=insumo_id).first()
+        return Insumo.objects.filter(id=insumo_id, activo=True).first()
     if insumo_id == 'nuevo' and nombre != '':
         insumo = None
         if codigo != '':
@@ -178,7 +178,10 @@ def registrar_orden(request):
                 insumo.costo = int(precios[i]) // por_caja
             vencimiento = leer_fecha(vencimientos[i])
             unidades = int(cantidades[i]) * por_caja
+            insumo.activo = True
             registrar_movimiento(insumo, 'Entrada', unidades, 'Orden de compra', None, request.user, orden, vencimiento)
+            if proveedor is not None:
+                insumo.proveedores.add(proveedor)
             registradas = registradas + 1
 
         if registradas == 0:
@@ -226,7 +229,7 @@ def orden_compra(request):
         elegido = encontrado.id
         proveedor = {'nombre': encontrado.nombre, 'rut': encontrado.rut, 'contacto': encontrado.contacto, 'telefono': encontrado.telefono}
 
-    context = {'filas': filas, 'numero': numero, 'insumos': Insumo.objects.order_by('nombre'), 'proveedores': Proveedor.objects.order_by('nombre'), 'proveedor': proveedor, 'elegido': elegido}
+    context = {'filas': filas, 'numero': numero, 'insumos': Insumo.objects.filter(activo=True).order_by('nombre'), 'proveedores': Proveedor.objects.order_by('nombre'), 'proveedor': proveedor, 'elegido': elegido}
     return render(request, 'inventario/orden_compra.html', context)
 
 
@@ -237,6 +240,7 @@ def nuevo_movimiento(request):
 
     if request.method == 'POST':
         form = MovimientoForm(request.POST)
+        form.fields['insumo'].queryset = Insumo.objects.filter(activo=True)
         if form.is_valid():
             insumo = form.cleaned_data['insumo']
             tipo = form.cleaned_data['tipo']
@@ -250,6 +254,7 @@ def nuevo_movimiento(request):
             messages.error(request, f'No hay stock suficiente. Quedan {insumo.stock_disponible()} de {insumo.nombre} sin vencer.')
     else:
         form = MovimientoForm()
+        form.fields['insumo'].queryset = Insumo.objects.filter(activo=True)
 
     return render(request, 'inventario/movimiento_form.html', {'form': form})
 
@@ -272,11 +277,12 @@ def movimientos(request):
     filas = []
     ordenes_vistas = []
     for movimiento in lista:
-        if movimiento.orden is None or insumo_id != '':
+        if movimiento.orden is None or movimiento.tipo != 'Entrada' or insumo_id != '':
             filas.append({'movimiento': movimiento, 'orden': None})
         elif movimiento.orden_id not in ordenes_vistas:
             ordenes_vistas.append(movimiento.orden_id)
-            filas.append({'movimiento': movimiento, 'orden': movimiento.orden})
+            productos = movimiento.orden.movimientos.filter(tipo='Entrada').count()
+            filas.append({'movimiento': movimiento, 'orden': movimiento.orden, 'productos': productos})
 
     context = {'filas': filas, 'insumos': Insumo.objects.order_by('nombre'), 'insumo_id': insumo_id, 'tipo': tipo}
     return render(request, 'inventario/movimientos.html', context)
@@ -300,8 +306,46 @@ def detalle_orden(request, codigo):
     if not es_personal_clinica(request.user):
         return redirect('sin_acceso')
     orden = get_object_or_404(OrdenCompra, codigo=codigo)
-    lista = orden.movimientos.select_related('insumo').order_by('insumo__nombre')
+    lista = orden.movimientos.filter(tipo='Entrada').select_related('insumo').order_by('insumo__nombre')
     return render(request, 'inventario/detalle_orden.html', {'orden': orden, 'movimientos': lista})
+
+
+@login_required(login_url='sin_acceso')
+def nuevo_insumo(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        form = InsumoForm(request.POST)
+        if form.is_valid():
+            stock_inicial = form.cleaned_data['stock_inicial']
+            vencimiento = form.cleaned_data['vencimiento']
+            with transaction.atomic():
+                insumo = form.save()
+                if stock_inicial > 0:
+                    registrar_movimiento(insumo, 'Entrada', stock_inicial, 'Stock inicial', None, request.user, None, vencimiento)
+            messages.success(request, f'{insumo.nombre} fue agregado al inventario.')
+            return redirect('inventario')
+    else:
+        form = InsumoForm()
+
+    return render(request, 'inventario/insumo_form.html', {'form': form})
+
+
+@login_required(login_url='sin_acceso')
+def eliminar_insumo(request, insumo_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    insumo = get_object_or_404(Insumo, id=insumo_id, activo=True)
+    if request.method == 'POST':
+        if insumo.movimientos.exists() or insumo.ventas.exists():
+            insumo.activo = False
+            insumo.save()
+            messages.success(request, f'{insumo.nombre} fue eliminado. Su historial se conserva.')
+        else:
+            insumo.delete()
+            messages.success(request, f'{insumo.nombre} fue eliminado.')
+    return redirect('inventario')
 
 def es_categoria_valida(categoria):
     for valor, texto in CATEGORIAS_INSUMO:
@@ -317,27 +361,50 @@ def inventario(request):
         return redirect('sin_acceso')
 
     if request.method == 'POST':
-        insumo = get_object_or_404(Insumo, id=request.POST.get('insumo_id', '0'))
+        insumo = get_object_or_404(Insumo, id=request.POST.get('insumo_id', '0'), activo=True)
         ganancia = request.POST.get('ganancia', '').strip()
         categoria = request.POST.get('categoria', '')
+        costo = request.POST.get('costo', '').strip()
+        stock_minimo = request.POST.get('stock_minimo', '').strip()
         if not ganancia.isdigit():
             messages.error(request, 'El beneficio debe ser un número entero, por ejemplo 30.')
+        elif not costo.isdigit():
+            messages.error(request, 'El costo debe ser un número entero.')
+        elif not stock_minimo.isdigit():
+            messages.error(request, 'El stock mínimo debe ser un número entero.')
         elif not es_categoria_valida(categoria):
             messages.error(request, 'Elige una categoría de la lista.')
         else:
             insumo.ganancia = int(ganancia)
             insumo.categoria = categoria
+            insumo.costo = int(costo)
+            insumo.stock_minimo = int(stock_minimo)
             insumo.save()
-            messages.success(request, f'{insumo.nombre} actualizado: {insumo.categoria}, {insumo.ganancia}% de beneficio.')
+            insumo.proveedores.clear()
+            for proveedor_id in request.POST.getlist('proveedores'):
+                if proveedor_id.isdigit():
+                    proveedor = Proveedor.objects.filter(id=proveedor_id).first()
+                    if proveedor is not None:
+                        insumo.proveedores.add(proveedor)
+            messages.success(request, f'{insumo.nombre} fue actualizado.')
 
         pagina = request.POST.get('page', '1')
         if not pagina.isdigit():
             pagina = '1'
-        datos = urlencode({'page': pagina, 'buscar': request.POST.get('buscar', '')})
+        datos = urlencode({'page': pagina, 'buscar': request.POST.get('buscar', ''), 'eliminados': request.POST.get('eliminados', '')})
         return redirect(reverse('inventario') + '?' + datos + '#cerrar')
 
     buscar = request.GET.get('buscar', '').strip()
-    insumos = Insumo.objects.order_by('categoria', 'nombre')
+    eliminados = request.GET.get('eliminados', '')
+    if eliminados == '1':
+        ver_eliminados = True
+    else:
+        ver_eliminados = False
+
+    if ver_eliminados:
+        insumos = Insumo.objects.filter(activo=False).order_by('categoria', 'nombre')
+    else:
+        insumos = Insumo.objects.filter(activo=True).order_by('categoria', 'nombre')
     if buscar:
         insumos = insumos.filter(nombre__icontains=buscar)
 
@@ -356,4 +423,4 @@ def inventario(request):
             total = separar_miles(insumo.costo + ganancia)
         lista.append({'insumo': insumo, 'neto': neto, 'beneficio': beneficio, 'total': total})
 
-    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'categorias': CATEGORIAS_INSUMO})
+    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'ver_eliminados': ver_eliminados, 'categorias': CATEGORIAS_INSUMO, 'proveedores': Proveedor.objects.order_by('nombre')})

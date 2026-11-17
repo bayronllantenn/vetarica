@@ -60,10 +60,10 @@
             <td data-label="Correo">{{ proveedor.email }}</td>
             <td data-label="Qué provee" class="prov-descripcion">{{ proveedor.descripcion|default:"-"|truncatechars:80 }}</td>
             <td class="pac-acciones">
-              <a href="{% url 'editar_proveedor' proveedor.id %}" class="pac-btn">
+              <a href="{% url 'editar_proveedor' proveedor.id %}" class="pac-btn pac-btn-editar">
                 <i class="bi bi-pencil-square"></i> Editar
               </a>
-              <a href="#eliminar-{{ proveedor.id }}" class="pac-btn prov-btn-eliminar">
+              <a href="#eliminar-{{ proveedor.id }}" class="pac-btn pac-btn-eliminar">
                 <i class="bi bi-trash"></i> Eliminar
               </a>
             </td>

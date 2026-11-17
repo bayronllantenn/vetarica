@@ -16,8 +16,3 @@
 .pac-tabla .pac-acciones .pac-btn:first-child {
   margin-left: 0px;
 }
-
-.prov-btn-eliminar:hover {
-  border-color: #dc2626;
-  color: #dc2626;
-}

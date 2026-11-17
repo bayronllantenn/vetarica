@@ -64,17 +64,17 @@
               {% if usuario == request.user %}
               <span class="pac-etiqueta">Tú</span>
               {% else %}
-              <a href="{% url 'editar_usuario' usuario.id %}" class="pac-btn">
+              <a href="{% url 'editar_usuario' usuario.id %}" class="pac-btn pac-btn-editar">
                 <i class="bi bi-pencil-square"></i> Editar
               </a>
               {% if usuario.is_active %}
-              <a href="#bloquear-{{ usuario.id }}" class="pac-btn usr-btn-bloquear">
+              <a href="#bloquear-{{ usuario.id }}" class="pac-btn pac-btn-eliminar">
                 <i class="bi bi-lock"></i> Bloquear
               </a>
               {% else %}
               <form method="post" action="{% url 'bloquear_usuario' usuario.id %}" class="usr-form">
                 {% csrf_token %}
-                <button type="submit" class="pac-btn pac-btn-verde">
+                <button type="submit" class="pac-btn pac-btn-editar">
                   <i class="bi bi-unlock"></i> Desbloquear
                 </button>
               </form>

@@ -20,7 +20,7 @@
       </div>
       <div class="d-flex gap-2">
         <a href="{% url 'orden_compra' %}" class="btn btn-outline-secondary pac-boton">
-          <i class="bi bi-camera"></i> Cargar orden de compra
+          Cargar orden de compra
         </a>
         <a href="{% url 'nuevo_movimiento' %}" class="btn btn-teal pac-boton">
           <i class="bi bi-plus-lg"></i> Registrar movimiento
@@ -50,6 +50,7 @@
           <tr>
             <th>Fecha</th>
             <th>Insumo</th>
+            <th>Orden de compra</th>
             <th>Tipo</th>
             <th>Cantidad</th>
             <th>Motivo</th>
@@ -64,14 +65,21 @@
             {% if fila.orden %}
             <td data-label="Insumo">
               <div class="d-flex align-items-center gap-2 text-nowrap">
-                <strong>Orden {{ fila.orden.codigo }}</strong>
-                {% if fila.orden.numero_documento %}<span class="text-muted small">Doc. N° {{ fila.orden.numero_documento }}</span>{% endif %}
-                <a href="{% url 'detalle_orden' fila.orden.codigo %}" class="pac-btn">Ver productos</a>
+                <strong>Varios</strong>
+                <a href="{% url 'detalle_orden' fila.orden.codigo %}" class="pac-btn pac-btn-ver">Ver productos</a>
               </div>
             </td>
             {% else %}
             <td data-label="Insumo"><strong>{{ movimiento.insumo.nombre }}</strong></td>
             {% endif %}
+            <td data-label="Orden de compra">
+              {% if movimiento.orden %}
+              {{ movimiento.orden.codigo }}
+              {% if movimiento.orden.numero_documento %}<small class="d-block text-muted">Doc. N° {{ movimiento.orden.numero_documento }}</small>{% endif %}
+              {% else %}
+              -
+              {% endif %}
+            </td>
             <td data-label="Tipo">
               {% if movimiento.tipo == 'Entrada' %}
               <span class="serv-estado serv-estado-web">Entrada</span>
@@ -80,11 +88,11 @@
               {% endif %}
             </td>
             {% if fila.orden %}
-            <td data-label="Cantidad">{{ fila.orden.movimientos.count }} productos</td>
+            <td data-label="Cantidad">{{ fila.productos }} productos</td>
             {% else %}
             <td data-label="Cantidad">{{ movimiento.cantidad }} {{ movimiento.insumo.unidad }}</td>
             {% endif %}
-            <td data-label="Motivo">{{ movimiento.motivo|default:"-" }}{% if movimiento.orden and not fila.orden %} ({{ movimiento.orden.codigo }}){% endif %}</td>
+            <td data-label="Motivo">{{ movimiento.motivo|default:"-" }}</td>
             <td data-label="Registrado por">
               {% if movimiento.registrado_por %}
               {{ movimiento.registrado_por.first_name }} {{ movimiento.registrado_por.last_name }}

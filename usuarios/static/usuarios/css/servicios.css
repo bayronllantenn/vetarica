@@ -25,11 +25,6 @@
   opacity: 1;
 }
 
-.serv-btn-rojo:hover {
-  border-color: #b91c1c;
-  color: #b91c1c;
-}
-
 .serv-form {
   display: inline;
 }

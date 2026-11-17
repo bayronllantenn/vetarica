@@ -127,6 +127,21 @@
   background: #0b7268;
 }
 
+.inv-ver-eliminados {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.inv-modal-proveedores {
+  max-height: 160px;
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
 @media (max-width: 767px) {
   .pac-tabla td {
     text-align: left;

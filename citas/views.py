@@ -505,7 +505,7 @@ def insumos_por_categoria():
     grupos = []
     for categoria in CATEGORIAS_INSUMO:
         nombre = categoria[0]
-        insumos = Insumo.objects.filter(categoria=nombre).order_by('nombre')
+        insumos = Insumo.objects.filter(categoria=nombre, activo=True).order_by('nombre')
         grupos.append({'categoria': nombre, 'insumos': insumos})
     return grupos
 
@@ -517,7 +517,7 @@ def leer_insumos_usados(request):
     for i in range(len(ids)):
         if not ids[i].isdigit():
             continue
-        insumo = Insumo.objects.filter(id=ids[i]).first()
+        insumo = Insumo.objects.filter(id=ids[i], activo=True).first()
         cantidad = cantidades[i]
         if insumo is None or not cantidad.isdigit() or int(cantidad) == 0:
             return {}, 'Revisa los insumos: elige un insumo y una cantidad mayor a 0.'

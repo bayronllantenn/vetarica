@@ -202,6 +202,30 @@
   color: #fff;
 }
 
+.pac-btn-editar,
+.pac-btn-ver,
+.pac-btn-eliminar {
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.pac-btn-editar:hover {
+  border-color: #0b7268;
+  background: #0b7268;
+  color: #fff;
+}
+
+.pac-btn-ver:hover {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.pac-btn-eliminar:hover {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #fff;
+}
+
 .pac-vacio {
   padding: 64px 16px;
   text-align: center;

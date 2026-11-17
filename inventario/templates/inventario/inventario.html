@@ -15,11 +15,16 @@
     <section class="dash-hero pac-titulo">
       <div>
         <h1>Inventario</h1>
-        <p class="dash-subtitle">{{ page_obj.paginator.count }} insumos registrados</p>
+        <p class="dash-subtitle">{{ page_obj.paginator.count }} insumos {% if ver_eliminados %}eliminados{% else %}registrados{% endif %}</p>
       </div>
-      <a href="{% url 'movimientos' %}" class="btn btn-teal pac-boton">
-        <i class="bi bi-box-seam"></i> Ver movimientos
-      </a>
+      <div class="d-flex gap-2">
+        <a href="{% url 'movimientos' %}" class="btn btn-outline-secondary pac-boton">
+          Ver movimientos
+        </a>
+        <a href="{% url 'nuevo_insumo' %}" class="btn btn-teal pac-boton">
+          <i class="bi bi-plus-lg"></i> Nuevo insumo
+        </a>
+      </div>
     </section>
 
     <form method="get" class="pac-buscador">
@@ -27,10 +32,11 @@
         <i class="bi bi-search"></i>
         <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar insumo">
       </div>
+      <div class="form-check inv-ver-eliminados">
+        <input type="checkbox" name="eliminados" value="1" id="ver-eliminados" class="form-check-input" {% if ver_eliminados %}checked{% endif %} />
+        <label class="form-check-label" for="ver-eliminados">Ver eliminados</label>
+      </div>
       <button type="submit" class="btn btn-teal pac-boton">Buscar</button>
-      {% if buscar %}
-      <a href="{% url 'inventario' %}" class="btn btn-outline-secondary pac-boton">Limpiar</a>
-      {% endif %}
     </form>
 
     <section class="pac-panel">
@@ -51,7 +57,15 @@
         <tbody>
           {% for fila in lista %}
           <tr>
-            <td data-label="Nombre"><strong>{{ fila.insumo.nombre }}</strong></td>
+            <td data-label="Nombre">
+              <strong>{{ fila.insumo.nombre }}</strong>
+              {% if not fila.insumo.activo %}
+              <span class="inv-etiqueta inv-etiqueta-bajo">Eliminado</span>
+              {% endif %}
+              {% if fila.insumo.proveedores.all %}
+              <small class="d-block text-muted">{% for proveedor in fila.insumo.proveedores.all %}{{ proveedor.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}</small>
+              {% endif %}
+            </td>
             <td data-label="Cantidad">
               {{ fila.insumo.stock_actual }} {{ fila.insumo.unidad }}
               {% if fila.insumo.tiene_stock_bajo %}
@@ -76,7 +90,7 @@
                 {% if lote.estado_vencimiento == 'Vencido' %}
                 <form method="post" action="{% url 'dar_de_baja' lote.id %}" class="mt-1">
                   {% csrf_token %}
-                  <button type="submit" class="pac-btn text-danger"><i class="bi bi-trash"></i> Dar de baja</button>
+                  <button type="submit" class="pac-btn pac-btn-eliminar"><i class="bi bi-trash"></i> Dar de baja</button>
                 </form>
                 {% endif %}
               </div>
@@ -93,12 +107,19 @@
             </td>
             <td data-label="Acciones">
               <div class="inv-acciones">
-                <a href="#beneficio-{{ fila.insumo.id }}" class="pac-btn pac-btn-verde">
+                {% if fila.insumo.activo %}
+                <a href="#beneficio-{{ fila.insumo.id }}" class="pac-btn pac-btn-editar">
                   <i class="bi bi-pencil-square"></i> Editar
                 </a>
-                <a href="{% url 'movimientos' %}?insumo={{ fila.insumo.id }}" class="pac-btn">
+                {% endif %}
+                <a href="{% url 'movimientos' %}?insumo={{ fila.insumo.id }}" class="pac-btn pac-btn-ver">
                   <i class="bi bi-clock-history"></i> Movimientos
                 </a>
+                {% if fila.insumo.activo %}
+                <a href="#eliminar-{{ fila.insumo.id }}" class="pac-btn pac-btn-eliminar">
+                  <i class="bi bi-trash"></i> Eliminar
+                </a>
+                {% endif %}
               </div>
             </td>
           </tr>
@@ -111,12 +132,12 @@
         <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
         <div class="inv-paginacion-botones">
           {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}{% if buscar %}&buscar={{ buscar|urlencode }}{% endif %}" class="inv-paginacion-btn">
+          <a href="?page={{ page_obj.previous_page_number }}{% if buscar %}&buscar={{ buscar|urlencode }}{% endif %}{% if ver_eliminados %}&eliminados=1{% endif %}" class="inv-paginacion-btn">
             <i class="bi bi-chevron-left"></i> Anterior
           </a>
           {% endif %}
           {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}{% if buscar %}&buscar={{ buscar|urlencode }}{% endif %}" class="inv-paginacion-btn">
+          <a href="?page={{ page_obj.next_page_number }}{% if buscar %}&buscar={{ buscar|urlencode }}{% endif %}{% if ver_eliminados %}&eliminados=1{% endif %}" class="inv-paginacion-btn">
             Siguiente <i class="bi bi-chevron-right"></i>
           </a>
           {% endif %}
@@ -128,7 +149,10 @@
         <i class="bi bi-box-seam"></i>
         {% if buscar %}
         <p>No hay insumos que coincidan con "{{ buscar }}".</p>
-        <span>Prueba con otra palabra o aprieta "Limpiar".</span>
+        <span>Prueba con otra palabra.</span>
+        {% elif ver_eliminados %}
+        <p>No hay insumos eliminados.</p>
+        <span>Desmarca "Ver eliminados" y aprieta "Buscar" para volver al inventario.</span>
         {% else %}
         <p>Todavía no hay insumos registrados.</p>
         <span>Los insumos aparecen aquí cuando se registran en el sistema.</span>
@@ -138,28 +162,50 @@
     </section>
 
     {% for fila in lista %}
+    {% if fila.insumo.activo %}
     <div class="modal-eliminar" id="beneficio-{{ fila.insumo.id }}">
       <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
       <div class="modal-eliminar-caja">
         <span class="modal-eliminar-icono inv-modal-icono"><i class="bi bi-pencil-square"></i></span>
         <h3>Editar {{ fila.insumo.nombre }}</h3>
-        <p>Valor neto: {% if fila.neto %}${{ fila.neto }}{% else %}sin costo{% endif %}.</p>
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="insumo_id" value="{{ fila.insumo.id }}" />
           <input type="hidden" name="page" value="{{ page_obj.number }}" />
           <input type="hidden" name="buscar" value="{{ buscar }}" />
+          {% if ver_eliminados %}<input type="hidden" name="eliminados" value="1" />{% endif %}
           <label class="form-label" for="categoria-{{ fila.insumo.id }}">Categoría</label>
           <select id="categoria-{{ fila.insumo.id }}" name="categoria" class="form-select mb-3">
             {% for valor, texto in categorias %}
             <option value="{{ valor }}" {% if fila.insumo.categoria == valor %}selected{% endif %}>{{ texto }}</option>
             {% endfor %}
           </select>
+          <div class="row g-2 mb-3 text-start">
+            <div class="col-6">
+              <label class="form-label" for="costo-{{ fila.insumo.id }}">Costo neto ($)</label>
+              <input type="number" id="costo-{{ fila.insumo.id }}" name="costo" min="0" value="{{ fila.insumo.costo }}" class="form-control" required />
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="minimo-{{ fila.insumo.id }}">Stock mínimo</label>
+              <input type="number" id="minimo-{{ fila.insumo.id }}" name="stock_minimo" min="0" value="{{ fila.insumo.stock_minimo }}" class="form-control" required />
+            </div>
+          </div>
           <label class="form-label">% de ganancia</label>
           <div class="inv-modal-campo">
             <input type="number" name="ganancia" min="0" value="{{ fila.insumo.ganancia }}" class="form-control" required />
             <span>%</span>
           </div>
+          {% if proveedores %}
+          <label class="form-label">Proveedores</label>
+          <div class="inv-modal-proveedores">
+            {% for proveedor in proveedores %}
+            <div class="form-check">
+              <input type="checkbox" name="proveedores" value="{{ proveedor.id }}" id="prov-{{ fila.insumo.id }}-{{ proveedor.id }}" class="form-check-input" {% if proveedor in fila.insumo.proveedores.all %}checked{% endif %} />
+              <label class="form-check-label" for="prov-{{ fila.insumo.id }}-{{ proveedor.id }}">{{ proveedor.nombre }}</label>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
           <div class="modal-eliminar-botones">
             <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
             <button type="submit" class="modal-eliminar-confirmar inv-modal-guardar">Guardar</button>
@@ -167,6 +213,23 @@
         </form>
       </div>
     </div>
+
+    <div class="modal-eliminar" id="eliminar-{{ fila.insumo.id }}">
+      <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+      <div class="modal-eliminar-caja">
+        <span class="modal-eliminar-icono"><i class="bi bi-trash"></i></span>
+        <h3>¿Eliminar {{ fila.insumo.nombre }}?</h3>
+        <p>Dejará de aparecer en el inventario y en las fichas. Si tiene movimientos, su historial se conserva y puedes verlo marcando "Ver eliminados".</p>
+        <form method="post" action="{% url 'eliminar_insumo' fila.insumo.id %}">
+          {% csrf_token %}
+          <div class="modal-eliminar-botones">
+            <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
+            <button type="submit" class="modal-eliminar-confirmar">Eliminar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
     {% endfor %}
   </main>
 </div>

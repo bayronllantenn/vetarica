@@ -181,11 +181,11 @@ def buscar_proveedor(datos):
 
 def buscar_insumo(nombre, codigo=''):
     if codigo != '':
-        insumo = Insumo.objects.filter(codigo_proveedor__iexact=codigo).first()
+        insumo = Insumo.objects.filter(codigo_proveedor__iexact=codigo, activo=True).first()
         if insumo is not None:
             return insumo
 
-    insumos = Insumo.objects.all()
+    insumos = Insumo.objects.filter(activo=True)
 
     for insumo in insumos:
         if insumo.nombre.upper() in nombre.upper():

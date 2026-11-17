@@ -74,15 +74,15 @@
               <span class="pac-contador">{{ paciente.cantidad_fichas }}</span>
             </td>
             <td class="pac-acciones">
-              <a href="{% url 'fichas_paciente' paciente.mascota.id %}" class="pac-btn">
+              <a href="{% url 'fichas_paciente' paciente.mascota.id %}" class="pac-btn pac-btn-ver">
                 <i class="bi bi-file-earmark-text"></i> Ver fichas
               </a>
               {% if paciente.cita_sin_ficha %}
-              <a href="{% url 'ficha_medica_detalle' paciente.cita_sin_ficha.id %}" class="pac-btn">
+              <a href="{% url 'ficha_medica_detalle' paciente.cita_sin_ficha.id %}" class="pac-btn pac-btn-editar">
                 <i class="bi bi-plus-lg"></i> Agregar ficha
               </a>
               {% else %}
-              <a href="{% url 'ficha_sin_cita' paciente.mascota.id %}" class="pac-btn">
+              <a href="{% url 'ficha_sin_cita' paciente.mascota.id %}" class="pac-btn pac-btn-editar">
                 <i class="bi bi-plus-lg"></i> Agregar ficha
               </a>
               {% endif %}

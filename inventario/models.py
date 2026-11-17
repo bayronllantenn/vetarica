@@ -50,6 +50,8 @@ class Insumo(models.Model):
     fecha_vencimiento = models.DateField(null=True, blank=True)
     costo = models.PositiveIntegerField('Costo neto', default=0)
     ganancia = models.PositiveIntegerField('Ganancia (%)', default=0)
+    activo = models.BooleanField(default=True)
+    proveedores = models.ManyToManyField(Proveedor, blank=True, related_name='insumos')
 
     def __str__(self):
         return self.nombre
