@@ -15,6 +15,27 @@ from .forms import MovimientoForm, ProveedorForm
 from .models import CATEGORIAS_INSUMO, Insumo, Lote, Movimiento, OrdenCompra, Proveedor, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
 from .ocr import buscar_insumo, buscar_proveedor, leer_numero_documento, leer_proveedor, leer_texto, separar_productos
 
+def alertas(request):
+    if not request.user.is_authenticated or not es_personal_clinica(request.user):
+        return {}
+
+    lista = []
+    for insumo in Insumo.objects.order_by('nombre'):
+        if insumo.tiene_stock_bajo():
+            lista.append(insumo)
+
+    paginador = Paginator(lista, 3)
+    pagina = paginador.get_page(request.GET.get('alertas'))
+
+    datos = request.GET.copy()
+    if 'alertas' in datos:
+        del datos['alertas']
+    url = '?'
+    if datos:
+        url = '?' + datos.urlencode() + '&'
+
+    return {'alertas': pagina, 'alertas_url': url}
+
 @never_cache
 @login_required(login_url='sin_acceso')
 def proveedores(request):
@@ -320,15 +341,19 @@ def inventario(request):
         insumo = get_object_or_404(Insumo, id=request.POST.get('insumo_id', '0'))
         ganancia = request.POST.get('ganancia', '').strip()
         categoria = request.POST.get('categoria', '')
+        stock_minimo = request.POST.get('stock_minimo', '').strip()
         if not ganancia.isdigit():
             messages.error(request, 'El beneficio debe ser un número entero, por ejemplo 30.')
+        elif not stock_minimo.isdigit():
+            messages.error(request, 'El stock mínimo debe ser un número entero, por ejemplo 5.')
         elif not es_categoria_valida(categoria):
             messages.error(request, 'Elige una categoría de la lista.')
         else:
             insumo.ganancia = int(ganancia)
             insumo.categoria = categoria
+            insumo.stock_minimo = int(stock_minimo)
             insumo.save()
-            messages.success(request, f'{insumo.nombre} actualizado: {insumo.categoria}, {insumo.ganancia}% de beneficio.')
+            messages.success(request, f'{insumo.nombre} actualizado: {insumo.categoria}, {insumo.ganancia}% de beneficio, stock mínimo {insumo.stock_minimo}.')
 
         pagina = request.POST.get('page', '1')
         if not pagina.isdigit():

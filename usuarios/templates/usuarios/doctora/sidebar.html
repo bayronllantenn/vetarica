@@ -18,15 +18,14 @@
       <strong>VetArica</strong>
       <span>Portal {{ request.user.get_rol_display }} </span>
     </div>
-    <details class="sidebar-notificaciones">
-      <summary class="sidebar-campana" aria-label="Notificaciones">
+    <div class="sidebar-notificaciones">
+      <a href="#notificaciones" class="sidebar-campana" aria-label="Notificaciones">
         <i class="bi bi-bell" aria-hidden="true"></i>
-      </summary>
-      <div class="sidebar-notificaciones-panel">
-        <strong>Notificaciones</strong>
-        <p>No tienes notificaciones por ahora.</p>
-      </div>
-    </details>
+        {% if alertas.paginator.count %}
+        <span class="sidebar-campana-numero">{{ alertas.paginator.count }}</span>
+        {% endif %}
+      </a>
+    </div>
   </div>
 
   <nav class="sidebar-nav">
@@ -96,6 +95,58 @@
     </a>
   </div>
 </aside>
+
+<div class="modal-eliminar" id="notificaciones">
+  <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+  <div class="alertas-caja">
+    <a href="#cerrar" class="alertas-x" aria-label="Cerrar"><i class="bi bi-x-lg"></i></a>
+
+    <div class="alertas-cabecera">
+      <span class="alertas-icono"><i class="bi bi-bell"></i></span>
+      <h3>Notificaciones</h3>
+      {% if alertas.paginator.count %}
+      <p><span class="alertas-punto"></span> {{ alertas.paginator.count }} alertas de bajo stock en inventario</p>
+      {% else %}
+      <p>No tienes notificaciones por ahora.</p>
+      {% endif %}
+    </div>
+
+    {% if alertas.paginator.count %}
+    <div class="alertas-cuerpo">
+      {% for insumo in alertas %}
+      <div class="alertas-tarjeta">
+        <span class="alertas-tarjeta-icono"><i class="bi bi-exclamation-triangle"></i></span>
+        <div class="alertas-tarjeta-texto">
+          <strong>{{ insumo.nombre }}</strong>
+          <span>Quedan {{ insumo.stock_actual }} {{ insumo.unidad }} (mínimo {{ insumo.stock_minimo }})</span>
+        </div>
+        <span class="alertas-etiqueta">Bajo stock</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if alertas.paginator.num_pages > 1 %}
+    <div class="alertas-paginacion">
+      {% if alertas.has_previous %}
+      <a href="{{ alertas_url }}alertas={{ alertas.previous_page_number }}#notificaciones"><i class="bi bi-chevron-left"></i> Anterior</a>
+      {% else %}
+      <span class="alertas-apagado"><i class="bi bi-chevron-left"></i> Anterior</span>
+      {% endif %}
+      <span>Página <strong>{{ alertas.number }}</strong> de <strong>{{ alertas.paginator.num_pages }}</strong></span>
+      {% if alertas.has_next %}
+      <a href="{{ alertas_url }}alertas={{ alertas.next_page_number }}#notificaciones">Siguiente <i class="bi bi-chevron-right"></i></a>
+      {% else %}
+      <span class="alertas-apagado">Siguiente <i class="bi bi-chevron-right"></i></span>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="alertas-pie">
+      <a href="#cerrar" class="alertas-cerrar">Cerrar</a>
+    </div>
+  </div>
+</div>
 
 <script>
   if (localStorage.getItem("modo") == "oscuro") {

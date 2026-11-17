@@ -160,6 +160,11 @@
             <input type="number" name="ganancia" min="0" value="{{ fila.insumo.ganancia }}" class="form-control" required />
             <span>%</span>
           </div>
+          <label class="form-label">Stock mínimo</label>
+          <div class="inv-modal-campo">
+            <input type="number" name="stock_minimo" min="0" value="{{ fila.insumo.stock_minimo }}" class="form-control" required />
+            <span>{{ fila.insumo.unidad }}</span>
+          </div>
           <div class="modal-eliminar-botones">
             <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
             <button type="submit" class="modal-eliminar-confirmar inv-modal-guardar">Guardar</button>
