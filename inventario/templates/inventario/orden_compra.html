@@ -78,6 +78,39 @@ Orden de compra - Vet Arica
         </table>
       </div>
 
+      <div class="cita-seccion">
+        <h2 class="h5 mb-3">Proveedor</h2>
+        <div class="mb-3">
+          <label class="form-label" for="proveedor">Proveedor de la orden</label>
+          <select name="proveedor" id="proveedor" class="form-select">
+            <option value="" {% if elegido == '' %}selected{% endif %}>Sin proveedor</option>
+            <option value="nuevo" {% if elegido == 'nuevo' %}selected{% endif %}>Crear proveedor nuevo</option>
+            {% for p in proveedores %}
+            <option value="{{ p.id }}" {% if elegido == p.id %}selected{% endif %}>{{ p.nombre }}</option>
+            {% endfor %}
+          </select>
+          <small class="text-muted">Los datos de abajo se usan solo si eliges "Crear proveedor nuevo".</small>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="proveedor_nombre">Nombre de la empresa</label>
+            <input type="text" id="proveedor_nombre" name="proveedor_nombre" value="{{ proveedor.nombre }}" maxlength="100" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="proveedor_rut">RUT</label>
+            <input type="text" id="proveedor_rut" name="proveedor_rut" value="{{ proveedor.rut }}" class="form-control" placeholder="76123456-7">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="proveedor_contacto">Persona de contacto</label>
+            <input type="text" id="proveedor_contacto" name="proveedor_contacto" value="{{ proveedor.contacto }}" maxlength="100" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="proveedor_telefono">Teléfono</label>
+            <input type="text" id="proveedor_telefono" name="proveedor_telefono" value="{{ proveedor.telefono }}" maxlength="20" class="form-control">
+          </div>
+        </div>
+      </div>
+
       <div class="cita-acciones">
         <a href="{% url 'orden_compra' %}" class="btn btn-outline-secondary">Subir otra foto</a>
         <button type="submit" name="registrar" value="1" class="btn btn-teal">Registrar entradas</button>

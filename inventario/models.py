@@ -103,6 +103,7 @@ def estado_de_fecha(fecha):
 class OrdenCompra(models.Model):
     codigo = models.CharField(max_length=10, unique=True)
     numero_documento = models.CharField('N° del documento', max_length=30, blank=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name='ordenes')
     fecha = models.DateTimeField(auto_now_add=True)
     registrado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='ordenes_compra')
 
@@ -110,11 +111,11 @@ class OrdenCompra(models.Model):
         return self.codigo
 
 # generar id aleatoria para las ordenes de compra colegas
-def crear_orden_compra(usuario, numero_documento=''):
+def crear_orden_compra(usuario, numero_documento='', proveedor=None):
     codigo = 'OC-' + get_random_string(6, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789')
     while OrdenCompra.objects.filter(codigo=codigo).exists():
         codigo = 'OC-' + get_random_string(6, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789')
-    return OrdenCompra.objects.create(codigo=codigo, numero_documento=numero_documento, registrado_por=usuario)
+    return OrdenCompra.objects.create(codigo=codigo, numero_documento=numero_documento, proveedor=proveedor, registrado_por=usuario)
 
 
 def buscar_orden_repetida(numero_documento):
