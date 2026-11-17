@@ -16,7 +16,7 @@
     <section class="dash-hero pac-titulo">
       <div>
         <h1>Movimientos</h1>
-        <p class="dash-subtitle">{{ filas|length }} registros</p>
+        <p class="dash-subtitle">{{ page_obj.paginator.count }} registros</p>
       </div>
       <div class="d-flex gap-2">
         <a href="{% url 'orden_compra' %}" class="btn btn-outline-secondary pac-boton">
@@ -97,6 +97,24 @@
           {% endfor %}
         </tbody>
       </table>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+      <footer class="pac-paginacion">
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        <div class="pac-paginacion-botones">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if insumo_id %}&insumo={{ insumo_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="pac-paginacion-btn">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </a>
+          {% endif %}
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if insumo_id %}&insumo={{ insumo_id }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}" class="pac-paginacion-btn">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </a>
+          {% endif %}
+        </div>
+      </footer>
+      {% endif %}
       {% else %}
       <div class="pac-vacio">
         <i class="bi bi-box-seam"></i>

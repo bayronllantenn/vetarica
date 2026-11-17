@@ -396,10 +396,9 @@ def usuarios_list(request):
         # el | junta los resultados de las 4 busquedas en una sola lista
         usuarios = por_nombre | por_apellido | por_correo | por_rut
 
-    context = {
-        'usuarios': usuarios,
-        'buscar': buscar,
-    }
+    paginador = Paginator(usuarios, 10)
+    page_obj = paginador.get_page(request.GET.get('page'))
+    context = {'usuarios': page_obj,'page_obj': page_obj,'buscar': buscar, 'sugerencias': Persona.objects.order_by('first_name', 'last_name')}
     return render(request, 'usuarios/doctora/usuarios_list.html', context)
 
 @never_cache

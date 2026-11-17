@@ -7,6 +7,7 @@
 <link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
 <link href="{% static 'inventario/css/inventario.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
@@ -25,7 +26,13 @@
     <form method="get" class="pac-buscador">
       <div class="pac-campo">
         <i class="bi bi-search"></i>
-        <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar insumo">
+        <select id="buscar" name="buscar" placeholder="Buscar insumo">
+          <option value=""></option>
+          {% if buscar %}<option value="{{ buscar }}" selected>{{ buscar }}</option>{% endif %}
+          {% for s in sugerencias %}
+          <option value="{{ s.nombre }}">{{ s.nombre }}</option>
+          {% endfor %}
+        </select>
       </div>
       <button type="submit" class="btn btn-teal pac-boton">Buscar</button>
       {% if buscar %}
@@ -172,6 +179,14 @@
 </div>
 {% endblock %} {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+  new TomSelect("#buscar", {create: true, persist: false, maxOptions: 30, plugins: ["clear_button"], openOnFocus: false, onChange: function () { this.input.form.submit(); },
+    score: function (texto) { const puntaje = this.getScoreFunction(texto); return function (item) { return texto ? puntaje(item) : 0; }; },
+    render: {option_create: function (data, escape) { return '<div class="create">Buscar "' + escape(data.input) + '"</div>'; },no_results: function () { return '<div class="no-results">Sin coincidencias</div>'; },
+    },
+  });
+</script>
 <script>
   const notyf = new Notyf({
     duration: 3000,
