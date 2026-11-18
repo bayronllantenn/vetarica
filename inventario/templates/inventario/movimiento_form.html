@@ -38,7 +38,10 @@ Registrar movimiento - Vet Arica
           <div class="col-md-3">{{ form.tipo|as_crispy_field }}</div>
           <div class="col-md-3">{{ form.cantidad|as_crispy_field }}</div>
         </div>
-        {{ form.motivo|as_crispy_field }}
+        <div class="row gx-3">
+          <div class="col-md-6">{{ form.proveedor|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.motivo|as_crispy_field }}</div>
+        </div>
       </div>
 
       <div class="cita-acciones">

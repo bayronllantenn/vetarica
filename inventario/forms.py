@@ -50,8 +50,8 @@ class InsumoForm(forms.ModelForm):
 class MovimientoForm(forms.ModelForm):
     class Meta:
         model = Movimiento
-        fields = ('insumo', 'tipo', 'cantidad', 'motivo')
-        labels = {'insumo': 'Insumo', 'tipo': 'Tipo de movimiento', 'cantidad': 'Cantidad', 'motivo': 'Motivo'}
+        fields = ('insumo', 'tipo', 'cantidad', 'proveedor', 'motivo')
+        labels = {'insumo': 'Insumo', 'tipo': 'Tipo de movimiento', 'cantidad': 'Cantidad', 'proveedor': 'Proveedor (solo en entradas)', 'motivo': 'Motivo'}
         widgets = {
             'motivo': forms.TextInput(attrs={'placeholder': 'Ej: compra a proveedor, uso en consulta'}),
         }
@@ -61,3 +61,12 @@ class MovimientoForm(forms.ModelForm):
         if cantidad == 0:
             raise forms.ValidationError('La cantidad debe ser mayor a 0.')
         return cantidad
+
+    def clean_proveedor(self):
+        proveedor = self.cleaned_data['proveedor']
+        tipo = ''
+        if 'tipo' in self.cleaned_data:
+            tipo = self.cleaned_data['tipo']
+        if proveedor is not None and tipo == 'Salida':
+            raise forms.ValidationError('El proveedor solo se indica en una entrada.')
+        return proveedor

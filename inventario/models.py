@@ -143,6 +143,7 @@ class Lote(models.Model):
 class Movimiento(models.Model):
     insumo = models.ForeignKey(Insumo, on_delete=models.PROTECT, related_name='movimientos')
     orden = models.ForeignKey(OrdenCompra, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos')
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos')
     tipo = models.CharField(max_length=10, choices=TIPOS_MOVIMIENTO)
     cantidad = models.PositiveIntegerField()
     motivo = models.CharField(max_length=200, blank=True)
@@ -207,7 +208,7 @@ def dar_de_baja_lote(lote, usuario):
     Movimiento.objects.create(insumo=insumo, tipo='Salida', cantidad=cantidad, motivo='Baja por vencimiento', registrado_por=usuario, orden=lote.orden)
 
 
-def registrar_movimiento(insumo, tipo, cantidad, motivo='', ficha=None, usuario=None, orden=None, vencimiento=None):
+def registrar_movimiento(insumo, tipo, cantidad, motivo='', ficha=None, usuario=None, orden=None, vencimiento=None, proveedor=None):
     if tipo == 'Salida' and cantidad > insumo.stock_disponible():
         return False
 
@@ -221,5 +222,5 @@ def registrar_movimiento(insumo, tipo, cantidad, motivo='', ficha=None, usuario=
         descontar_de_lotes(insumo, cantidad)
     actualizar_vencimiento(insumo)
 
-    Movimiento.objects.create(insumo=insumo, tipo=tipo, cantidad=cantidad, motivo=motivo, ficha=ficha, registrado_por=usuario, orden=orden)
+    Movimiento.objects.create(insumo=insumo, tipo=tipo, cantidad=cantidad, motivo=motivo, ficha=ficha, registrado_por=usuario, orden=orden, proveedor=proveedor)
     return True

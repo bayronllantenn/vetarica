@@ -241,20 +241,25 @@ def nuevo_movimiento(request):
     if request.method == 'POST':
         form = MovimientoForm(request.POST)
         form.fields['insumo'].queryset = Insumo.objects.filter(activo=True)
+        form.fields['proveedor'].queryset = Proveedor.objects.order_by('nombre')
         if form.is_valid():
             insumo = form.cleaned_data['insumo']
             tipo = form.cleaned_data['tipo']
             cantidad = form.cleaned_data['cantidad']
             motivo = form.cleaned_data['motivo']
+            proveedor = form.cleaned_data['proveedor']
 
-            se_registro = registrar_movimiento(insumo, tipo, cantidad, motivo, None, request.user)
+            se_registro = registrar_movimiento(insumo, tipo, cantidad, motivo=motivo, usuario=request.user, proveedor=proveedor)
             if se_registro:
+                if proveedor is not None:
+                    insumo.proveedores.add(proveedor)
                 messages.success(request, f'{tipo} de {cantidad} {insumo.nombre} registrada.')
                 return redirect('movimientos')
             messages.error(request, f'No hay stock suficiente. Quedan {insumo.stock_disponible()} de {insumo.nombre} sin vencer.')
     else:
         form = MovimientoForm()
         form.fields['insumo'].queryset = Insumo.objects.filter(activo=True)
+        form.fields['proveedor'].queryset = Proveedor.objects.order_by('nombre')
 
     return render(request, 'inventario/movimiento_form.html', {'form': form})
 
@@ -267,7 +272,7 @@ def movimientos(request):
     insumo_id = request.GET.get('insumo', '')
     tipo = request.GET.get('tipo', '')
 
-    lista = Movimiento.objects.select_related('insumo', 'registrado_por', 'orden').order_by('-fecha')
+    lista = Movimiento.objects.select_related('insumo', 'registrado_por', 'orden', 'proveedor').order_by('-fecha')
     if insumo_id.isdigit():
         insumo_id = int(insumo_id)
         lista = lista.filter(insumo_id=insumo_id)

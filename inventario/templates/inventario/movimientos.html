@@ -92,7 +92,12 @@
             {% else %}
             <td data-label="Cantidad">{{ movimiento.cantidad }} {{ movimiento.insumo.unidad }}</td>
             {% endif %}
-            <td data-label="Motivo">{{ movimiento.motivo|default:"-" }}</td>
+            <td data-label="Motivo">
+              {{ movimiento.motivo|default:"-" }}
+              {% if movimiento.proveedor %}
+              <div class="small text-muted">Proveedor: {{ movimiento.proveedor.nombre }}</div>
+              {% endif %}
+            </td>
             <td data-label="Registrado por">
               {% if movimiento.registrado_por %}
               {{ movimiento.registrado_por.first_name }} {{ movimiento.registrado_por.last_name }}
