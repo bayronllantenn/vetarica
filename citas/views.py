@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
+from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
@@ -756,8 +757,10 @@ def pacientes(request):
     if buscar:
         mascotas = buscar_mascotas(buscar).order_by('dueno__first_name', 'nombre')
 
+    paginador = Paginator(mascotas, 10)
+    page_obj = paginador.get_page(request.GET.get('page'))
     lista_pacientes = []
-    for mascota in mascotas:
+    for mascota in page_obj:
         fichas = FichaMedica.objects.filter(mascota=mascota).order_by('-fecha_atencion')
         lista_pacientes.append({
             'mascota': mascota,
@@ -766,10 +769,7 @@ def pacientes(request):
             'cita_sin_ficha': citas_sin_ficha(mascota).first(),
         })
 
-    context = {
-        'lista_pacientes': lista_pacientes,
-        'buscar': buscar,
-    }
+    context = {'lista_pacientes': lista_pacientes,'page_obj': page_obj,'buscar': buscar, 'sugerencias': Mascota.objects.select_related('dueno').order_by('nombre')}
     return render(request, 'citas/doctora/pacientes.html', context)
 
 # INGRESOS ----------------------------------------------------------------------------------------

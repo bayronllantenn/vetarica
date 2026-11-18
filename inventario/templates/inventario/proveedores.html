@@ -7,6 +7,7 @@
 <link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
 <link href="{% static 'inventario/css/proveedores.css' %}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
 {% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
 {% include 'usuarios/doctora/sidebar.html' %}
 {% endblock %} {% block content %}
@@ -15,7 +16,7 @@
     <section class="dash-hero pac-titulo">
       <div>
         <h1>Proveedores</h1>
-        <p class="dash-subtitle">{{ proveedores|length }} proveedores registrados</p>
+        <p class="dash-subtitle">{{ page_obj.paginator.count }} proveedores registrados</p>
       </div>
       <a href="{% url 'crear_proveedor' %}" class="btn btn-teal pac-boton">
         <i class="bi bi-plus-lg"></i> Nuevo proveedor
@@ -25,7 +26,13 @@
     <form method="get" class="pac-buscador">
       <div class="pac-campo">
         <i class="bi bi-search"></i>
-        <input type="text" name="buscar" value="{{ buscar }}" placeholder="Buscar por nombre, RUT o contacto">
+        <select id="buscar" name="buscar" placeholder="Buscar por nombre, RUT o contacto">
+          <option value=""></option>
+          {% if buscar %}<option value="{{ buscar }}" selected>{{ buscar }}</option>{% endif %}
+          {% for s in sugerencias %}
+          <option value="{{ s.nombre }}">{{ s.nombre }} · {{ s.rut }}</option>
+          {% endfor %}
+        </select>
       </div>
       <button type="submit" class="btn btn-teal pac-boton">Buscar</button>
     </form>
@@ -71,6 +78,23 @@
           {% endfor %}
         </tbody>
       </table>
+      {% if page_obj.paginator.num_pages > 1 %}
+      <footer class="pac-paginacion">
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        <div class="pac-paginacion-botones">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if buscar %}&buscar={{ buscar|urlencode }}{% endif %}" class="pac-paginacion-btn">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </a>
+          {% endif %}
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if buscar %}&buscar={{ buscar|urlencode }}{% endif %}" class="pac-paginacion-btn">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </a>
+          {% endif %}
+        </div>
+      </footer>
+      {% endif %}
       {% else %}
       <div class="pac-vacio">
         <i class="bi bi-search"></i>
@@ -106,6 +130,14 @@
 </div>
 {% endblock %} {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+  new TomSelect("#buscar", {create: true, persist: false, maxOptions: 30, plugins: ["clear_button"], openOnFocus: false, onChange: function () { this.input.form.submit(); },
+    score: function (texto) { const puntaje = this.getScoreFunction(texto); return function (item) { return texto ? puntaje(item) : 0; }; },
+    render: {option_create: function (data, escape) { return '<div class="create">Buscar "' + escape(data.input) + '"</div>'; },no_results: function () { return '<div class="no-results">Sin coincidencias</div>'; },
+    },
+  });
+</script>
 <script>
   const notyf = new Notyf({
     duration: 3000,

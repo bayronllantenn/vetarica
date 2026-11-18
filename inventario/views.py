@@ -28,7 +28,9 @@ def proveedores(request):
         por_contacto = lista.filter(contacto__icontains=buscar)
         por_descripcion = lista.filter(descripcion__icontains=buscar)
         lista = por_nombre | por_rut | por_contacto | por_descripcion
-    return render(request, 'inventario/proveedores.html', {'proveedores': lista, 'buscar': buscar})
+    paginador = Paginator(lista, 10)
+    page_obj = paginador.get_page(request.GET.get('page'))
+    return render(request, 'inventario/proveedores.html', {'proveedores': page_obj, 'page_obj': page_obj, 'buscar': buscar, 'sugerencias': Proveedor.objects.order_by('nombre')})
 
 @login_required(login_url='sin_acceso')
 def crear_proveedor(request):
@@ -289,7 +291,9 @@ def movimientos(request):
             productos = movimiento.orden.movimientos.filter(tipo='Entrada').count()
             filas.append({'movimiento': movimiento, 'orden': movimiento.orden, 'productos': productos})
 
-    context = {'filas': filas, 'insumos': Insumo.objects.order_by('nombre'), 'insumo_id': insumo_id, 'tipo': tipo}
+    paginador = Paginator(filas, 10)
+    page_obj = paginador.get_page(request.GET.get('page'))
+    context = {'filas': page_obj, 'page_obj': page_obj, 'insumos': Insumo.objects.order_by('nombre'), 'insumo_id': insumo_id, 'tipo': tipo}
     return render(request, 'inventario/movimientos.html', context)
 
 
@@ -413,7 +417,7 @@ def inventario(request):
     if buscar:
         insumos = insumos.filter(nombre__icontains=buscar)
 
-    paginador = Paginator(insumos, 8)
+    paginador = Paginator(insumos, 10)
     page_obj = paginador.get_page(request.GET.get('page'))
 
     lista = []
@@ -428,4 +432,4 @@ def inventario(request):
             total = separar_miles(insumo.costo + ganancia)
         lista.append({'insumo': insumo, 'neto': neto, 'beneficio': beneficio, 'total': total})
 
-    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'ver_eliminados': ver_eliminados, 'categorias': CATEGORIAS_INSUMO, 'proveedores': Proveedor.objects.order_by('nombre')})
+    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'ver_eliminados': ver_eliminados, 'categorias': CATEGORIAS_INSUMO, 'proveedores': Proveedor.objects.order_by('nombre'), 'sugerencias': Insumo.objects.order_by('nombre')})
