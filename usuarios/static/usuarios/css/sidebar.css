@@ -212,6 +212,8 @@
 }
 
 .sidebar-campana {
+  position: relative;
+  text-decoration: none;
   display: grid;
   place-items: center;
   width: 28px;
@@ -222,40 +224,186 @@
   list-style: none;
 }
 
-.sidebar-campana::-webkit-details-marker {
-  display: none;
-}
-
-.sidebar-campana:hover,
-.sidebar-notificaciones[open] .sidebar-campana {
+.sidebar-campana:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
 }
 
-.sidebar-notificaciones-panel {
+.sidebar-campana-numero {
   position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 1100;
-  width: 280px;
-  padding: 16px;
+  top: -5px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+
+.alertas-caja {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: 92vh;
+  overflow-y: auto;
   background: #fff;
-  border: 1px solid #e1ebe8;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.12);
+  border-radius: 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
 }
 
-.sidebar-doctora .sidebar-notificaciones-panel strong {
-  display: block;
-  margin-bottom: 8px;
-  color: #111;
-  font-size: 0.9rem;
+.alertas-x {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  text-decoration: none;
 }
 
-.sidebar-notificaciones-panel p {
+.alertas-x:hover {
+  color: #475569;
+}
+
+.alertas-cabecera {
+  padding: 28px 24px 18px;
+  text-align: center;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.alertas-icono {
+  display: inline-grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: #fde8ea;
+  color: #e5484d;
+  font-size: 1.5rem;
+}
+
+.alertas-cabecera h3 {
+  margin: 0 0 6px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.alertas-cabecera p {
   margin: 0;
-  color: #5f6368;
-  font-size: 0.88rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.alertas-punto {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: #f59e0b;
+  vertical-align: middle;
+}
+
+.alertas-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 24px;
+  background: #f8fafc;
+}
+
+.alertas-tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: 14px;
+  text-align: left;
+}
+
+.alertas-tarjeta-icono {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #fff4d6;
+  color: #e08a00;
+}
+
+.alertas-tarjeta-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.alertas-tarjeta-texto strong {
+  display: block;
+  color: #111827;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.alertas-tarjeta-texto span {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.alertas-etiqueta {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border: 1px solid #fcd34d;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #b45309;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.alertas-paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px 0;
+  color: #334155;
+  font-size: 0.85rem;
+}
+
+.alertas-paginacion a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.alertas-apagado {
+  color: #cbd5e1;
+}
+
+.alertas-pie {
+  padding: 14px 24px 20px;
+}
+
+.alertas-cerrar {
+  display: block;
+  padding: 11px;
+  border-radius: 12px;
+  background: #eef2f6;
+  color: #1f2937;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.alertas-cerrar:hover {
+  background: #e2e8f0;
+  color: #1f2937;
 }
 
 .sidebar-usuario {
@@ -300,14 +448,6 @@
   font-size: 0.78rem;
 }
 
-@media (max-width: 991.98px) {
-  .sidebar-notificaciones-panel {
-    left: auto;
-    right: 0;
-    width: 220px;
-  }
-}
-
 .sidebar-modo {
   width: 100%;
   border: none;
@@ -341,8 +481,17 @@ body:has(.sidebar-doctora) .dash-hero .dash-subtitle {
   color: #6b7a77;
 }
 
-.modo-oscuro .dash-shell {
+.modo-oscuro .dash-shell,
+.modo-oscuro .alertas-caja {
   filter: invert(0.9) hue-rotate(180deg);
+}
+
+.modo-oscuro .alertas-caja {
+  box-shadow: none;
+}
+
+.modo-oscuro .alertas-cuerpo {
+  background: #fff;
 }
 
 .modo-oscuro .dash-shell img,
