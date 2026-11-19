@@ -368,6 +368,34 @@
   font-weight: 600;
 }
 
+.alertas-etiqueta-roja {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.alertas-ocultar {
+  margin: 0;
+}
+
+.alertas-ocultar button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #eef2f6;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.alertas-ocultar button:hover {
+  background: #e2e8f0;
+  color: #111827;
+}
+
 .alertas-paginacion {
   display: flex;
   align-items: center;

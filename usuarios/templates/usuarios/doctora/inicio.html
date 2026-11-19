@@ -91,6 +91,16 @@
             {% endif %}
           </div>
           {% endif %}
+
+          <div class="ih-bloque">
+            <span class="ih-etiqueta ih-alertas-titulo">Alertas</span>
+            {% if alertas.paginator.count %}
+            <span class="ih-detalle">Tienes {{ alertas.paginator.count }} notificaci{{ alertas.paginator.count|pluralize:"ón,ones" }} de alertas sobre tu inventario.</span>
+            <a href="#notificaciones" class="ih-boton ih-alertas-boton">Ver notificaciones</a>
+            {% else %}
+            <span class="ih-sin-dato">No tienes alertas sobre tu inventario</span>
+            {% endif %}
+          </div>
         </aside>
         {% endif %}
       </div>

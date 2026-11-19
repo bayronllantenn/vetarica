@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 from usuarios.forms import validar_rut
-from .models import Insumo, Movimiento, Proveedor
+from .models import Insumo, Proveedor
 
 
 class ProveedorForm(forms.ModelForm):
@@ -47,26 +47,22 @@ class InsumoForm(forms.ModelForm):
         return vencimiento
 
 
-class MovimientoForm(forms.ModelForm):
-    class Meta:
-        model = Movimiento
-        fields = ('insumo', 'tipo', 'cantidad', 'proveedor', 'motivo')
-        labels = {'insumo': 'Insumo', 'tipo': 'Tipo de movimiento', 'cantidad': 'Cantidad', 'proveedor': 'Proveedor (solo en entradas)', 'motivo': 'Motivo'}
-        widgets = {
-            'motivo': forms.TextInput(attrs={'placeholder': 'Ej: compra a proveedor, uso en consulta'}),
-        }
+MOTIVOS_BAJA = [
+    ('Rotura o daño', 'Rotura o daño'),
+    ('Pérdida', 'Pérdida'),
+    ('Uso interno de la clínica', 'Uso interno de la clínica'),
+    ('Devolución al proveedor', 'Devolución al proveedor'),
+    ('Corrección de inventario', 'Corrección de inventario'),
+]
 
-    def clean_cantidad(self):
-        cantidad = self.cleaned_data['cantidad']
-        if cantidad == 0:
-            raise forms.ValidationError('La cantidad debe ser mayor a 0.')
-        return cantidad
 
-    def clean_proveedor(self):
-        proveedor = self.cleaned_data['proveedor']
-        tipo = ''
-        if 'tipo' in self.cleaned_data:
-            tipo = self.cleaned_data['tipo']
-        if proveedor is not None and tipo == 'Salida':
-            raise forms.ValidationError('El proveedor solo se indica en una entrada.')
-        return proveedor
+class BajaForm(forms.Form):
+    insumo = forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True).order_by('nombre'), label='Insumo')
+    cantidad = forms.IntegerField(min_value=1, label='Cantidad')
+    motivo = forms.ChoiceField(choices=MOTIVOS_BAJA, label='Motivo')
+
+
+class VentaForm(forms.Form):
+    insumo = forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True, stock_actual__gt=0).order_by('nombre'), label='Producto')
+    cantidad = forms.IntegerField(min_value=1, label='Cantidad')
+    cliente = forms.CharField(max_length=100, label='Cliente', widget=forms.TextInput(attrs={'placeholder': 'Nombre del cliente'}))
