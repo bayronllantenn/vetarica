@@ -835,6 +835,10 @@ def ingresos_doctora(request):
     meses.reverse()
     montos_por_mes.reverse()
 
+    filas_meses = []
+    for i in range(len(meses)):
+        filas_meses.append({'mes': meses[i], 'monto': separar_miles(montos_por_mes[i])})
+
     promedio = 0
     if cantidad > 0:
         promedio = total // cantidad
@@ -869,6 +873,9 @@ def ingresos_doctora(request):
         'promedio': separar_miles(promedio),
         'meses': meses,
         'montos_por_mes': montos_por_mes,
+        'filas_meses': filas_meses,
+        'hoy': hoy,
+        'primer_dia_mes': primer_dia_mes,
         'mes_anterior': primer_dia_mes_anterior,
         'fin_mes_anterior': ultimo_dia_mes_anterior,
         'inicio_trimestre': inicio_trimestre,

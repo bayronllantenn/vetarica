@@ -11,28 +11,61 @@ Vet Arica{% endblock %} {% block css %}
 {% endblock %} {% block content %}
 <div class="dash-shell fondo-huellas pac-pagina">
   <main class="dash-content pac-contenido">
+    <div class="ing-pdf">
+      <header class="ing-pdf-membrete">
+        <img src="{% static 'inicio/img/marca/logo2.png' %}" alt="Vet Arica" class="ing-pdf-logo" />
+        <div class="ing-pdf-membrete-datos"><strong>Clínica Veterinaria Vet Arica</strong><span>Arica, Chile</span><span>Documento interno · Área de administración</span></div>
+      </header>
+      <div class="ing-pdf-franja"></div>
+      <div class="ing-pdf-encabezado"><h1 class="ing-pdf-titulo">Reporte de ingresos</h1><span class="ing-pdf-folio">N° ING-{% now "Ymd-Hi" %}</span></div>
+      <table class="ing-pdf-datos">
+        <tr><th>Período</th><td>{{ desde|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</td></tr>
+        <tr><th>Fecha de emisión</th><td>{% now "d/m/Y" %}, {% now "H:i" %} hrs</td></tr>
+        {% if request.user.first_name %}<tr><th>Emitido por</th><td>{{ request.user.first_name }} {{ request.user.last_name }}</td></tr>{% endif %}
+        <tr><th>Origen de los datos</th><td>Citas pagadas en línea mediante Webpay Plus (Transbank)</td></tr>
+      </table>
+      <h2 class="ing-pdf-seccion">1. Resumen del período</h2>
+      <table class="ing-pdf-tabla">
+        <tr><td>Ingresos del período</td><td class="ing-derecha"><strong>${{ total }}</strong></td></tr>
+        <tr><td>Citas pagadas</td><td class="ing-derecha">{{ cantidad }}</td></tr>
+        <tr><td>Ticket promedio por cita</td><td class="ing-derecha">${{ promedio }}</td></tr>
+        <tr><td>Ingresos del mes en curso</td><td class="ing-derecha">${{ total_mes }}{% if diferencia is not None %} <span class="ing-pdf-nota">({% if not bajo %}+{% endif %}{{ diferencia }}% respecto a {{ mes_anterior|date:"F" }})</span>{% endif %}</td></tr>
+      </table>
+      <h2 class="ing-pdf-seccion">2. Ingresos por mes</h2>
+      <table class="ing-pdf-tabla">
+        <thead><tr><th>Mes</th><th class="ing-derecha">Monto</th></tr></thead>
+        {% for fila in filas_meses %}<tr><td>{{ fila.mes }}</td><td class="ing-derecha">${{ fila.monto }}</td></tr>
+        {% empty %}<tr><td colspan="2">Sin ingresos registrados en el período.</td></tr>{% endfor %}
+        <tfoot><tr><td>Total</td><td class="ing-derecha">${{ total }}</td></tr></tfoot>
+      </table>
+      <h2 class="ing-pdf-seccion">3. Detalle de citas pagadas</h2>
+    </div>
+
     <section class="dash-hero pac-titulo">
       <div>
         <h1>Ingresos</h1>
         <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas.</p>
-        <p class="ing-solo-pdf">Vet Arica · Reporte del {{ desde|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</p>
       </div>
 
-      <form method="get" class="ing-filtro">
-        <div>
-          <label for="desde">Desde</label>
-          <input type="date" id="desde" name="desde" value="{{ desde|date:'Y-m-d' }}" />
+      <div class="ing-filtro">
+        <div class="ing-grupo">
+          <span class="ing-grupo-titulo">Período rápido</span>
+          <div class="ing-atajos">
+            <a href="{% url 'ingresos_doctora' %}" class="{% if desde == primer_dia_mes and hasta == hoy %}activo{% endif %}">Este mes</a>
+            <a href="?desde={{ mes_anterior|date:'Y-m-d' }}&hasta={{ fin_mes_anterior|date:'Y-m-d' }}" class="{% if desde == mes_anterior and hasta == fin_mes_anterior %}activo{% endif %}">Mes anterior</a>
+            <a href="?desde={{ inicio_trimestre|date:'Y-m-d' }}&hasta={{ fin_mes_anterior|date:'Y-m-d' }}" class="{% if desde == inicio_trimestre and hasta == fin_mes_anterior %}activo{% endif %}">Trimestre</a>
+          </div>
         </div>
-        <div>
-          <label for="hasta">Hasta</label>
-          <input type="date" id="hasta" name="hasta" value="{{ hasta|date:'Y-m-d' }}" />
-        </div>
-        <button type="submit" class="pac-btn"><i class="bi bi-funnel"></i> Filtrar</button>
-        <a href="{% url 'ingresos_doctora' %}" class="pac-btn">Este mes</a>
-        <a href="?desde={{ mes_anterior|date:'Y-m-d' }}&hasta={{ fin_mes_anterior|date:'Y-m-d' }}" class="pac-btn">Mes anterior</a>
-        <a href="?desde={{ inicio_trimestre|date:'Y-m-d' }}&hasta={{ fin_mes_anterior|date:'Y-m-d' }}" class="pac-btn">Trimestre</a>
-        <button type="button" class="pac-btn pac-btn-verde" onclick="window.print()"><i class="bi bi-download"></i> Descargar PDF</button>
-      </form>
+        <form method="get" class="ing-grupo">
+          <span class="ing-grupo-titulo">Rango personalizado</span>
+          <div class="ing-rango">
+            <input type="date" name="desde" value="{{ desde|date:'Y-m-d' }}" aria-label="Desde" /> a
+            <input type="date" name="hasta" value="{{ hasta|date:'Y-m-d' }}" aria-label="Hasta" />
+            <button type="submit" class="ing-aplicar">Aplicar</button>
+          </div>
+        </form>
+        <button type="button" class="pac-btn ing-btn-pdf" onclick="window.print()"><i class="bi bi-download"></i> Descargar PDF</button>
+      </div>
     </section>
 
     <section class="ing-resumen">
@@ -76,25 +109,21 @@ Vet Arica{% endblock %} {% block css %}
       {% if citas_pagadas %}
       <table class="pac-tabla">
         <thead>
-          <tr>
-            <th>Fecha / Hora</th>
-            <th>Mascota / Dueño</th>
-            <th>Servicio</th>
-            <th>Contacto</th>
-            <th class="ing-derecha">Monto</th>
-          </tr>
+          <tr><th>Fecha de pago</th><th>N° de transacción</th><th>Mascota / Dueño</th><th>Servicio</th><th>Fecha de la cita</th><th class="ing-derecha">Monto</th></tr>
         </thead>
         <tbody>
           {% for cita in citas_pagadas %}
           <tr>
-            <td><strong>{{ cita.fecha_pago|date:"d M Y" }}</strong><span>{{ cita.fecha_pago|date:"H:i" }}</span></td>
+            <td data-label="Fecha de pago"><strong>{{ cita.fecha_pago|date:"d/m/Y" }}</strong><span>{{ cita.fecha_pago|date:"H:i" }} hrs</span></td>
+            <td data-label="N° de transacción">{{ cita.webpay_orden|default:"-" }}<span>Webpay Plus</span></td>
             <td class="pac-dueno"><strong>{{ cita.nombre_mascota }}</strong><span>{{ cita.nombre }} {{ cita.apellido }}</span></td>
             <td data-label="Servicio">{{ cita.tipo_consulta.nombre }}</td>
-            <td class="pac-dueno"><strong>{{ cita.telefono }}</strong><span>{{ cita.email }}</span></td>
+            <td data-label="Fecha de la cita">{{ cita.fecha_hora|date:"d/m/Y" }}<span>{{ cita.fecha_hora|date:"H:i" }} hrs</span></td>
             <td data-label="Monto" class="ing-derecha"><strong>${{ cita.monto_texto }}</strong></td>
           </tr>
           {% endfor %}
         </tbody>
+        <tfoot class="ing-total"><tr><td colspan="5">Total del período ({{ cantidad }} cita{{ cantidad|pluralize }})</td><td class="ing-derecha"><strong>${{ total }}</strong></td></tr></tfoot>
       </table>
       {% else %}
       <div class="pac-vacio">
@@ -103,6 +132,12 @@ Vet Arica{% endblock %} {% block css %}
       </div>
       {% endif %}
     </section>
+
+    <div class="ing-pdf ing-pdf-firmas">
+      <div><span class="ing-pdf-linea"></span><strong>Emitido por</strong>{{ request.user.first_name }} {{ request.user.last_name }}</div>
+      <div><span class="ing-pdf-linea"></span><strong>Revisado y aprobado por</strong>Nombre y firma</div>
+    </div>
+    <footer class="ing-pie">Montos expresados en pesos chilenos (CLP), IVA incluido. Las citas con pago presencial en la clínica no forman parte de este reporte. Documento generado por el Sistema de gestión Vet Arica.</footer>
   </main>
 </div>
 {% endblock %} {% block extra_js %}
@@ -121,7 +156,7 @@ Vet Arica{% endblock %} {% block css %}
   Chart.defaults.font.family = '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
   Chart.defaults.color = "#6b7a77";
 
-  const grafico = new Chart(document.getElementById("grafico-meses"), {
+  new Chart(document.getElementById("grafico-meses"), {
     type: "bar",
     data: {
       labels: [{% for mes in meses %}"{{ mes }}",{% endfor %}],
@@ -145,14 +180,6 @@ Vet Arica{% endblock %} {% block css %}
         y: { beginAtZero: true, grid: { color: "#eef1f0" }, border: { display: false } },
       },
     },
-  });
-
-  window.addEventListener("beforeprint", function () {
-    grafico.resize(1000, 240);
-  });
-
-  window.addEventListener("afterprint", function () {
-    grafico.resize();
   });
 </script>
 {% endblock %}
