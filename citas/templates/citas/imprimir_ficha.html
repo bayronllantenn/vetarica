@@ -151,8 +151,6 @@
             <tr>
               <th>Insumo</th>
               <th>Cantidad</th>
-              <th>Precio unitario</th>
-              <th>Subtotal</th>
             </tr>
           </thead>
           <tbody>
@@ -160,17 +158,9 @@
             <tr>
               <td>{{ usado.nombre }}</td>
               <td>{{ usado.cantidad }} {{ usado.unidad }}</td>
-              <td>${{ usado.precio }}</td>
-              <td>${{ usado.subtotal }}</td>
             </tr>
             {% endfor %}
           </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3">Total insumos</td>
-              <td>${{ total_insumos }}</td>
-            </tr>
-          </tfoot>
         </table>
       </section>
       {% endif %}

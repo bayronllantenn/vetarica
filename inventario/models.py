@@ -146,6 +146,7 @@ class Movimiento(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos')
     tipo = models.CharField(max_length=10, choices=TIPOS_MOVIMIENTO)
     cantidad = models.PositiveIntegerField()
+    precio_unitario = models.PositiveIntegerField(default=0)
     motivo = models.CharField(max_length=200, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
     ficha = models.ForeignKey('citas.FichaMedica',on_delete=models.SET_NULL,null=True,blank=True,related_name='movimientos_inventario',)
@@ -222,5 +223,8 @@ def registrar_movimiento(insumo, tipo, cantidad, motivo='', ficha=None, usuario=
         descontar_de_lotes(insumo, cantidad)
     actualizar_vencimiento(insumo)
 
-    Movimiento.objects.create(insumo=insumo, tipo=tipo, cantidad=cantidad, motivo=motivo, ficha=ficha, registrado_por=usuario, orden=orden, proveedor=proveedor)
+    precio = 0
+    if tipo == 'Salida':
+        precio = insumo.precio_venta()
+    Movimiento.objects.create(insumo=insumo, tipo=tipo, cantidad=cantidad, precio_unitario=precio, motivo=motivo, ficha=ficha, registrado_por=usuario, orden=orden, proveedor=proveedor)
     return True

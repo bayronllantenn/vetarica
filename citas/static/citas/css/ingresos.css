@@ -98,6 +98,14 @@
   text-align: right;
 }
 
+.ing-subtitulo-separado {
+  margin-top: 28px;
+}
+
+.pac-tabla .ing-total td {
+  background: #f7faf9;
+}
+
 @media (max-width: 991px) {
   .ing-resumen {
     grid-template-columns: repeat(2, minmax(0, 1fr));

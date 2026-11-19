@@ -178,8 +178,6 @@ Vet Arica{% endblock %} {% block css %}
                   <tr>
                     <th>Insumo</th>
                     <th>Cantidad</th>
-                    <th>Precio unitario</th>
-                    <th>Subtotal</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -187,14 +185,8 @@ Vet Arica{% endblock %} {% block css %}
                   <tr>
                     <td><strong>{{ usado.nombre }}</strong></td>
                     <td data-label="Cantidad">{{ usado.cantidad }} {{ usado.unidad }}</td>
-                    <td data-label="Precio unitario">${{ usado.precio }}</td>
-                    <td data-label="Subtotal">${{ usado.subtotal }}</td>
                   </tr>
                   {% endfor %}
-                  <tr class="fic-total">
-                    <td colspan="3"><strong>Total insumos</strong></td>
-                    <td><strong>${{ total_insumos }}</strong></td>
-                  </tr>
                 </tbody>
               </table>
             </div>

@@ -81,19 +81,29 @@ Bloqueos - Vet Arica
           <span class="bloqueo-etiqueta">Bloqueo</span>
           {% endif %}
 
-          <form
-            action="{% url 'eliminar_bloqueo' bloqueo.id %}"
-            method="post"
-            onsubmit="return confirm('¿Seguro que quieres eliminar este bloqueo?');"
-          >
-            {% csrf_token %}
-            <button type="submit" class="bloqueo-eliminar" title="Eliminar bloqueo" aria-label="Eliminar bloqueo">
-              <i class="bi bi-trash3"></i>
-            </button>
-          </form>
+          <a href="#eliminar-{{ bloqueo.id }}" class="bloqueo-eliminar" title="Eliminar bloqueo" aria-label="Eliminar bloqueo">
+            <i class="bi bi-trash3"></i>
+          </a>
         </article>
         {% endfor %}
         </div>
+        {% for bloqueo in bloqueos %}
+        <div class="modal-eliminar" id="eliminar-{{ bloqueo.id }}">
+          <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+          <div class="modal-eliminar-caja">
+            <span class="modal-eliminar-icono"><i class="bi bi-trash3"></i></span>
+            <h3>¿Eliminar este bloqueo?</h3>
+            <p>{{ bloqueo.fecha|date:"d/m/Y" }} de {{ bloqueo.hora_inicio }} a {{ bloqueo.hora_fin }}. Ese horario quedará disponible para agendar.</p>
+            <div class="modal-eliminar-botones">
+              <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
+              <form action="{% url 'eliminar_bloqueo' bloqueo.id %}" method="post" class="mascota-eliminar-form">
+                {% csrf_token %}
+                <button type="submit" class="modal-eliminar-confirmar">Sí, eliminar</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
         {% else %}
         <div class="bloqueos-vacio">
           <i class="bi bi-calendar-check"></i>

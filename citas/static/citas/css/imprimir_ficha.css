@@ -178,11 +178,6 @@ body {
   text-align: right;
 }
 
-.tabla-insumos tfoot td {
-  border-bottom: none;
-  border-top: 1px solid #e4e4e7;
-  font-weight: 700;
-}
 
 .texto p {
   margin: 4px 0 0;

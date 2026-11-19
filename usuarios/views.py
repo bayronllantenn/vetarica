@@ -11,6 +11,7 @@ from django.views.decorators.cache import never_cache
 from citas.forms import BloqueoHorarioForm, HORAS_ATENCION, rango_del_dia, MascotaForm, TipoConsultaForm
 from citas.models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita, TipoConsulta
 from citas.recordatorios import enviar_recordatorios
+from inventario.models import Movimiento
 from .forms import ConfiguracionForm, CrearUsuarioForm, EditarUsuarioForm, LoginForm, RegisterForm
 from .models import Persona
 
@@ -184,6 +185,9 @@ def inicio_doctora(request):
     for pago in pagos_del_mes:
         if pago.monto_pagado:
             ingresos_mes = ingresos_mes + pago.monto_pagado
+    salidas_del_mes = Movimiento.objects.filter(tipo='Salida', ficha__isnull=False, fecha__gte=inicio_mes)
+    for salida in salidas_del_mes:
+        ingresos_mes = ingresos_mes + salida.cantidad * salida.precio_unitario
 
     # separa los miles con punto
     ingresos_mes = format(ingresos_mes, ',').replace(',', '.')
