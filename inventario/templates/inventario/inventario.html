@@ -84,33 +84,30 @@
             <td data-label="Beneficio" class="inv-monto inv-beneficio">{% if fila.insumo.ganancia and fila.beneficio %}{{ fila.insumo.ganancia }}% = ${{ fila.beneficio }}{% elif fila.insumo.ganancia %}{{ fila.insumo.ganancia }}%{% else %}-{% endif %}</td>
             <td data-label="Total" class="inv-monto"><strong>{% if fila.total %}${{ fila.total }}{% else %}-{% endif %}</strong></td>
             <td data-label="Vence">
-              {% with sin_fecha=fila.insumo.unidades_sin_fecha %}
-              {% for lote in fila.insumo.lotes_con_fecha %}
+              {% if fila.primer_lote %}
               <div class="inv-lote">
-                {{ lote.fecha_vencimiento|date:"d/m/Y" }}
-                {% if lote.estado_vencimiento == 'Vencido' %}
+                <span class="inv-lote-fecha">{{ fila.primer_lote.fecha_vencimiento|date:"d/m/Y" }}</span>
+                {% if fila.primer_lote.estado_vencimiento == 'Vencido' %}
                 <span class="inv-etiqueta inv-etiqueta-bajo">Vencido</span>
-                {% elif lote.estado_vencimiento == 'Por vencer' %}
+                {% elif fila.primer_lote.estado_vencimiento == 'Por vencer' %}
                 <span class="inv-etiqueta inv-etiqueta-aviso">Por vencer</span>
                 {% endif %}
-                <small class="d-block text-muted">{{ lote.cantidad }} {{ fila.insumo.unidad }}{% if lote.orden %} · {{ lote.orden.codigo }}{% endif %}</small>
-                {% if lote.estado_vencimiento == 'Vencido' %}
-                <form method="post" action="{% url 'dar_de_baja' lote.id %}" class="mt-1">
+                <small class="d-block text-muted">{{ fila.primer_lote.cantidad }} {{ fila.insumo.unidad }}{% if fila.cantidad_lotes > 1 %} · <a href="{% url 'lotes_insumo' fila.insumo.id %}" class="inv-ver-lotes">Ver {{ fila.cantidad_lotes }} lotes</a>{% endif %}</small>
+                {% if fila.primer_lote.estado_vencimiento == 'Vencido' %}
+                <form method="post" action="{% url 'dar_de_baja' fila.primer_lote.id %}" class="mt-1">
                   {% csrf_token %}
                   <button type="submit" class="pac-btn pac-btn-eliminar"><i class="bi bi-trash"></i> Dar de baja</button>
                 </form>
                 {% endif %}
               </div>
-              {% empty %}
-              {% if not sin_fecha %}-{% endif %}
-              {% endfor %}
-              {% if sin_fecha %}
+              {% elif fila.sin_fecha %}
               <div class="inv-lote">
                 Sin fecha
-                <small class="d-block text-muted">{{ sin_fecha }} {{ fila.insumo.unidad }}</small>
+                <small class="d-block text-muted">{{ fila.sin_fecha }} {{ fila.insumo.unidad }}</small>
               </div>
+              {% else %}
+              -
               {% endif %}
-              {% endwith %}
             </td>
             <td data-label="Acciones">
               <div class="inv-acciones">
@@ -175,7 +172,7 @@
       <div class="modal-eliminar-caja">
         <span class="modal-eliminar-icono inv-modal-icono"><i class="bi bi-pencil-square"></i></span>
         <h3>Editar {{ fila.insumo.nombre }}</h3>
-        <form method="post">
+        <form method="post" class="inv-modal-form">
           {% csrf_token %}
           <input type="hidden" name="insumo_id" value="{{ fila.insumo.id }}" />
           <input type="hidden" name="page" value="{{ page_obj.number }}" />
@@ -187,32 +184,22 @@
             <option value="{{ valor }}" {% if fila.insumo.categoria == valor %}selected{% endif %}>{{ texto }}</option>
             {% endfor %}
           </select>
-          <div class="row g-2 mb-3 text-start">
-            <div class="col-6">
-              <label class="form-label" for="costo-{{ fila.insumo.id }}">Costo neto ($)</label>
-              <input type="number" id="costo-{{ fila.insumo.id }}" name="costo" min="0" value="{{ fila.insumo.costo }}" class="form-control" required />
-            </div>
+          <div class="row g-3 mb-4">
             <div class="col-6">
               <label class="form-label" for="minimo-{{ fila.insumo.id }}">Stock mínimo</label>
-              <input type="number" id="minimo-{{ fila.insumo.id }}" name="stock_minimo" min="0" value="{{ fila.insumo.stock_minimo }}" class="form-control" required />
+              <div class="input-group">
+                <input type="number" id="minimo-{{ fila.insumo.id }}" name="stock_minimo" min="0" value="{{ fila.insumo.stock_minimo }}" class="form-control" required />
+                <span class="input-group-text">{{ fila.insumo.unidad }}</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="ganancia-{{ fila.insumo.id }}">Ganancia</label>
+              <div class="input-group">
+                <input type="number" id="ganancia-{{ fila.insumo.id }}" name="ganancia" min="0" value="{{ fila.insumo.ganancia }}" class="form-control" required />
+                <span class="input-group-text">%</span>
+              </div>
             </div>
           </div>
-          <label class="form-label">% de ganancia</label>
-          <div class="inv-modal-campo">
-            <input type="number" name="ganancia" min="0" value="{{ fila.insumo.ganancia }}" class="form-control" required />
-            <span>%</span>
-          </div>
-          {% if proveedores %}
-          <label class="form-label">Proveedores</label>
-          <div class="inv-modal-proveedores">
-            {% for proveedor in proveedores %}
-            <div class="form-check">
-              <input type="checkbox" name="proveedores" value="{{ proveedor.id }}" id="prov-{{ fila.insumo.id }}-{{ proveedor.id }}" class="form-check-input" {% if proveedor in fila.insumo.proveedores.all %}checked{% endif %} />
-              <label class="form-check-label" for="prov-{{ fila.insumo.id }}-{{ proveedor.id }}">{{ proveedor.nombre }}</label>
-            </div>
-            {% endfor %}
-          </div>
-          {% endif %}
           <div class="modal-eliminar-botones">
             <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
             <button type="submit" class="modal-eliminar-confirmar inv-modal-guardar">Guardar</button>

@@ -1,0 +1,63 @@
+{% extends 'inicio/base.html' %}
+{% load static %}
+{% block title %}Lotes de {{ insumo.nombre }} - Vet Arica{% endblock %}
+{% block css %}
+<link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
+<link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/pacientes.css' %}" rel="stylesheet" />
+<link href="{% static 'inventario/css/inventario.css' %}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
+{% endblock %} {% block topbar %}{% endblock %} {% block navbar %}{% endblock %} {% block sidebar %}
+{% include 'usuarios/doctora/sidebar.html' %}
+{% endblock %} {% block content %}
+<div class="dash-shell fondo-huellas pac-pagina">
+  <main class="dash-content pac-contenido">
+    <section class="dash-hero pac-titulo">
+      <div>
+        <h1>Lotes de {{ insumo.nombre }}</h1>
+        <p class="dash-subtitle">{{ insumo.stock_actual }} {{ insumo.unidad }} en total · ordenados por fecha de vencimiento</p>
+      </div>
+      <a href="{% url 'inventario' %}" class="btn btn-outline-secondary pac-boton">Volver</a>
+    </section>
+
+    <section class="pac-panel">
+      <table class="pac-tabla">
+        <thead>
+          <tr><th>Vence</th><th>Estado</th><th>Cantidad</th><th>Orden de compra</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+          {% for lote in lotes %}
+          <tr>
+            <td data-label="Vence"><strong>{{ lote.fecha_vencimiento|date:"d/m/Y" }}</strong></td>
+            <td data-label="Estado">
+              {% if lote.estado_vencimiento == 'Vencido' %}<span class="inv-etiqueta inv-etiqueta-bajo">Vencido</span>
+              {% elif lote.estado_vencimiento == 'Por vencer' %}<span class="inv-etiqueta inv-etiqueta-aviso">Por vencer</span>
+              {% else %}-{% endif %}
+            </td>
+            <td data-label="Cantidad">{{ lote.cantidad }} {{ insumo.unidad }}</td>
+            <td data-label="Orden de compra">{{ lote.orden.codigo|default:"-" }}</td>
+            <td data-label="Acciones">
+              {% if lote.estado_vencimiento == 'Vencido' %}
+              <form method="post" action="{% url 'dar_de_baja' lote.id %}">
+                {% csrf_token %}<input type="hidden" name="volver" value="lotes" />
+                <button type="submit" class="pac-btn pac-btn-eliminar"><i class="bi bi-trash"></i> Dar de baja</button>
+              </form>
+              {% else %}-{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% if sin_fecha %}
+          <tr><td data-label="Vence"><strong>Sin fecha</strong></td><td data-label="Estado">-</td><td data-label="Cantidad">{{ sin_fecha }} {{ insumo.unidad }}</td><td data-label="Orden de compra">-</td><td data-label="Acciones">-</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script>
+  const notyf = new Notyf({ duration: 3000, position: { x: "center", y: "top" } });
+  {% for message in messages %}notyf.{% if message.tags == 'success' %}success{% else %}error{% endif %}("{{ message|escapejs }}");{% endfor %}
+</script>
+{% endblock %}

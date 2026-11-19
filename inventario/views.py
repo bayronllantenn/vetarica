@@ -327,7 +327,19 @@ def dar_de_baja(request, lote_id):
         cantidad = lote.cantidad
         dar_de_baja_lote(lote, request.user)
         messages.success(request, f'Se dieron de baja {cantidad} {lote.insumo.nombre} vencidos.')
+    if request.POST.get('volver', '') == 'lotes':
+        return redirect('lotes_insumo', insumo_id=lote.insumo_id)
     return redirect('inventario')
+
+
+@never_cache
+@login_required(login_url='sin_acceso')
+def lotes_insumo(request, insumo_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    insumo = get_object_or_404(Insumo, id=insumo_id)
+    context = {'insumo': insumo, 'lotes': insumo.lotes_con_fecha(), 'sin_fecha': insumo.unidades_sin_fecha()}
+    return render(request, 'inventario/lotes_insumo.html', context)
 
 
 @never_cache
@@ -394,12 +406,9 @@ def inventario(request):
         insumo = get_object_or_404(Insumo, id=request.POST.get('insumo_id', '0'), activo=True)
         ganancia = request.POST.get('ganancia', '').strip()
         categoria = request.POST.get('categoria', '')
-        costo = request.POST.get('costo', '').strip()
         stock_minimo = request.POST.get('stock_minimo', '').strip()
         if not ganancia.isdigit():
             messages.error(request, 'El beneficio debe ser un número entero, por ejemplo 30.')
-        elif not costo.isdigit():
-            messages.error(request, 'El costo debe ser un número entero.')
         elif not stock_minimo.isdigit():
             messages.error(request, 'El stock mínimo debe ser un número entero, por ejemplo 5.')
         elif not es_categoria_valida(categoria):
@@ -407,15 +416,8 @@ def inventario(request):
         else:
             insumo.ganancia = int(ganancia)
             insumo.categoria = categoria
-            insumo.costo = int(costo)
             insumo.stock_minimo = int(stock_minimo)
             insumo.save()
-            insumo.proveedores.clear()
-            for proveedor_id in request.POST.getlist('proveedores'):
-                if proveedor_id.isdigit():
-                    proveedor = Proveedor.objects.filter(id=proveedor_id).first()
-                    if proveedor is not None:
-                        insumo.proveedores.add(proveedor)
             messages.success(request, f'{insumo.nombre} fue actualizado.')
 
         pagina = request.POST.get('page', '1')
@@ -451,6 +453,13 @@ def inventario(request):
             neto = separar_miles(insumo.costo)
             beneficio = separar_miles(ganancia)
             total = separar_miles(insumo.costo + ganancia)
-        lista.append({'insumo': insumo, 'neto': neto, 'beneficio': beneficio, 'total': total})
 
-    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'ver_eliminados': ver_eliminados, 'categorias': CATEGORIAS_INSUMO, 'proveedores': Proveedor.objects.order_by('nombre'), 'sugerencias': Insumo.objects.order_by('nombre')})
+        primer_lote = insumo.lotes_con_fecha().first()
+        cantidad_lotes = insumo.lotes_con_fecha().count()
+        sin_fecha = insumo.unidades_sin_fecha()
+        if sin_fecha > 0:
+            cantidad_lotes = cantidad_lotes + 1
+
+        lista.append({'insumo': insumo, 'neto': neto, 'beneficio': beneficio, 'total': total, 'primer_lote': primer_lote, 'sin_fecha': sin_fecha, 'cantidad_lotes': cantidad_lotes})
+
+    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'ver_eliminados': ver_eliminados, 'categorias': CATEGORIAS_INSUMO, 'sugerencias': Insumo.objects.order_by('nombre')})

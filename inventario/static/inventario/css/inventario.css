@@ -127,6 +127,29 @@
   background: #0b7268;
 }
 
+.inv-lote {
+  white-space: nowrap;
+}
+
+.inv-lote-fecha {
+  font-weight: 600;
+  color: #123c33;
+}
+
+.inv-lote small {
+  margin-top: 2px;
+}
+
+.inv-ver-lotes {
+  color: #0b7268;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.inv-ver-lotes:hover {
+  text-decoration: underline;
+}
+
 .inv-ver-eliminados {
   display: flex;
   align-items: center;
