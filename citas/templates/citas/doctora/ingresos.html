@@ -22,21 +22,23 @@ Vet Arica{% endblock %} {% block css %}
         <tr><th>Período</th><td>{{ desde|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</td></tr>
         <tr><th>Fecha de emisión</th><td>{% now "d/m/Y" %}, {% now "H:i" %} hrs</td></tr>
         {% if request.user.first_name %}<tr><th>Emitido por</th><td>{{ request.user.first_name }} {{ request.user.last_name }}</td></tr>{% endif %}
-        <tr><th>Origen de los datos</th><td>Citas pagadas en línea mediante Webpay Plus (Transbank)</td></tr>
+        <tr><th>Origen de los datos</th><td>Citas pagadas en línea mediante Webpay Plus (Transbank) e insumos usados en fichas clínicas</td></tr>
       </table>
       <h2 class="ing-pdf-seccion">1. Resumen del período</h2>
       <table class="ing-pdf-tabla">
-        <tr><td>Ingresos del período</td><td class="ing-derecha"><strong>${{ total }}</strong></td></tr>
+        <tr><td>Ingresos por citas</td><td class="ing-derecha">${{ total_citas }}</td></tr>
+        <tr><td>Ingresos por insumos</td><td class="ing-derecha">${{ total_insumos }}</td></tr>
+        <tr><td>Total del período</td><td class="ing-derecha"><strong>${{ total }}</strong></td></tr>
         <tr><td>Citas pagadas</td><td class="ing-derecha">{{ cantidad }}</td></tr>
         <tr><td>Ticket promedio por cita</td><td class="ing-derecha">${{ promedio }}</td></tr>
         <tr><td>Ingresos del mes en curso</td><td class="ing-derecha">${{ total_mes }}{% if diferencia is not None %} <span class="ing-pdf-nota">({% if not bajo %}+{% endif %}{{ diferencia }}% respecto a {{ mes_anterior|date:"F" }})</span>{% endif %}</td></tr>
       </table>
       <h2 class="ing-pdf-seccion">2. Ingresos por mes</h2>
       <table class="ing-pdf-tabla">
-        <thead><tr><th>Mes</th><th class="ing-derecha">Monto</th></tr></thead>
-        {% for fila in filas_meses %}<tr><td>{{ fila.mes }}</td><td class="ing-derecha">${{ fila.monto }}</td></tr>
-        {% empty %}<tr><td colspan="2">Sin ingresos registrados en el período.</td></tr>{% endfor %}
-        <tfoot><tr><td>Total</td><td class="ing-derecha">${{ total }}</td></tr></tfoot>
+        <thead><tr><th>Mes</th><th class="ing-derecha">Citas</th><th class="ing-derecha">Insumos</th><th class="ing-derecha">Total</th></tr></thead>
+        {% for fila in filas_meses %}<tr><td>{{ fila.mes }}</td><td class="ing-derecha">${{ fila.citas }}</td><td class="ing-derecha">${{ fila.insumos }}</td><td class="ing-derecha">${{ fila.monto }}</td></tr>
+        {% empty %}<tr><td colspan="4">Sin ingresos registrados en el período.</td></tr>{% endfor %}
+        <tfoot><tr><td>Total</td><td class="ing-derecha">${{ total_citas }}</td><td class="ing-derecha">${{ total_insumos }}</td><td class="ing-derecha">${{ total }}</td></tr></tfoot>
       </table>
       <h2 class="ing-pdf-seccion">3. Detalle de citas pagadas</h2>
     </div>
@@ -44,7 +46,7 @@ Vet Arica{% endblock %} {% block css %}
     <section class="dash-hero pac-titulo">
       <div>
         <h1>Ingresos</h1>
-        <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas.</p>
+        <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas e insumos ocupados.</p>
       </div>
 
       <div class="ing-filtro">
@@ -70,16 +72,19 @@ Vet Arica{% endblock %} {% block css %}
 
     <section class="ing-resumen">
       <div class="ing-dato">
-        <span><i class="bi bi-cash-stack"></i> Ingresos del período</span>
+        <span><i class="bi bi-calendar-check"></i> Citas</span>
+        <strong>${{ total_citas }}</strong>
+        <p class="ing-cambio">{{ cantidad }} citas pagadas · promedio ${{ promedio }}</p>
+      </div>
+      <div class="ing-dato">
+        <span><i class="bi bi-box-seam"></i> Insumos</span>
+        <strong>${{ total_insumos }}</strong>
+        <p class="ing-cambio">Usados en fichas clínicas</p>
+      </div>
+      <div class="ing-dato">
+        <span><i class="bi bi-cash-stack"></i> Total del período</span>
         <strong>${{ total }}</strong>
-      </div>
-      <div class="ing-dato">
-        <span><i class="bi bi-calendar-check"></i> Citas pagadas</span>
-        <strong>{{ cantidad }}</strong>
-      </div>
-      <div class="ing-dato">
-        <span><i class="bi bi-receipt"></i> Ticket promedio</span>
-        <strong>${{ promedio }}</strong>
+        <p class="ing-cambio">Citas + insumos</p>
       </div>
       <div class="ing-dato">
         <span><i class="bi bi-graph-up"></i> Este mes vs {{ mes_anterior|date:"F" }}</span>
@@ -123,7 +128,7 @@ Vet Arica{% endblock %} {% block css %}
           </tr>
           {% endfor %}
         </tbody>
-        <tfoot class="ing-total"><tr><td colspan="5">Total del período ({{ cantidad }} cita{{ cantidad|pluralize }})</td><td class="ing-derecha"><strong>${{ total }}</strong></td></tr></tfoot>
+        <tfoot class="ing-total-pdf"><tr><td colspan="5">Total citas ({{ cantidad }} cita{{ cantidad|pluralize }})</td><td class="ing-derecha"><strong>${{ total_citas }}</strong></td></tr></tfoot>
       </table>
       {% else %}
       <div class="pac-vacio">
@@ -133,11 +138,47 @@ Vet Arica{% endblock %} {% block css %}
       {% endif %}
     </section>
 
+    <h2 class="ing-pdf ing-pdf-seccion">4. Insumos ocupados</h2>
+    <h2 class="ing-subtitulo ing-subtitulo-separado">Insumos ocupados</h2>
+    <section class="pac-panel">
+      {% if insumos_ocupados %}
+      <table class="pac-tabla">
+        <thead>
+          <tr>
+            <th>Insumo</th>
+            <th>Cantidad</th>
+            <th class="ing-derecha">Precio unitario</th>
+            <th class="ing-derecha">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for insumo in insumos_ocupados %}
+          <tr>
+            <td><strong>{{ insumo.nombre }}</strong></td>
+            <td data-label="Cantidad">{{ insumo.cantidad }} {{ insumo.unidad }}</td>
+            <td data-label="Precio unitario" class="ing-derecha">${{ insumo.precio }}</td>
+            <td data-label="Total" class="ing-derecha"><strong>${{ insumo.monto_texto }}</strong></td>
+          </tr>
+          {% endfor %}
+          <tr class="ing-total">
+            <td colspan="3"><strong>Total insumos</strong></td>
+            <td class="ing-derecha"><strong>${{ total_insumos }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      {% else %}
+      <div class="pac-vacio">
+        <p>No se ocuparon insumos en este período.</p>
+        <span>Aquí aparecen los insumos registrados en las fichas clínicas.</span>
+      </div>
+      {% endif %}
+    </section>
+
     <div class="ing-pdf ing-pdf-firmas">
       <div><span class="ing-pdf-linea"></span><strong>Emitido por</strong>{{ request.user.first_name }} {{ request.user.last_name }}</div>
       <div><span class="ing-pdf-linea"></span><strong>Revisado y aprobado por</strong>Nombre y firma</div>
     </div>
-    <footer class="ing-pie">Montos expresados en pesos chilenos (CLP), IVA incluido. Las citas con pago presencial en la clínica no forman parte de este reporte. Documento generado por el Sistema de gestión Vet Arica.</footer>
+    <footer class="ing-pie">Montos expresados en pesos chilenos (CLP), IVA incluido. Los insumos se valorizan al precio registrado al momento de su uso en la ficha clínica. Las citas con pago presencial en la clínica no forman parte de este reporte. Documento generado por el Sistema de gestión Vet Arica.</footer>
   </main>
 </div>
 {% endblock %} {% block extra_js %}
@@ -162,10 +203,15 @@ Vet Arica{% endblock %} {% block css %}
       labels: [{% for mes in meses %}"{{ mes }}",{% endfor %}],
       datasets: [
         {
-          label: "Ingresos",
-          data: [{% for monto in montos_por_mes %}{{ monto }},{% endfor %}],
+          label: "Citas",
+          data: [{% for monto in citas_por_mes %}{{ monto }},{% endfor %}],
           backgroundColor: "#0b7268",
-          borderRadius: 4,
+          maxBarThickness: 40,
+        },
+        {
+          label: "Insumos",
+          data: [{% for monto in insumos_por_mes %}{{ monto }},{% endfor %}],
+          backgroundColor: "#8fd3bf",
           maxBarThickness: 40,
         },
       ],
@@ -174,10 +220,10 @@ Vet Arica{% endblock %} {% block css %}
       maintainAspectRatio: false,
       animation: false,
       layout: { padding: { bottom: 8 } },
-      plugins: { legend: { display: false } },
+      plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12 } } },
       scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, grid: { color: "#eef1f0" }, border: { display: false } },
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, beginAtZero: true, grid: { color: "#eef1f0" }, border: { display: false } },
       },
     },
   });

@@ -177,6 +177,14 @@
   display: block;
 }
 
+.ing-subtitulo-separado {
+  margin-top: 28px;
+}
+
+.pac-tabla .ing-total td {
+  background: #f7faf9;
+}
+
 @media (max-width: 991px) {
   .ing-resumen {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -202,7 +210,7 @@
 .ing-solo-pdf,
 .ing-pdf,
 .ing-pie,
-.ing-total {
+.ing-total-pdf {
   display: none;
 }
 
@@ -492,10 +500,11 @@
     break-inside: avoid;
   }
 
-  .ing-total {
+  .ing-total-pdf {
     display: table-footer-group !important;
   }
 
+  .ing-total-pdf td,
   .ing-total td {
     border-top: 1px solid #1a1a1a !important;
     border-bottom: none !important;

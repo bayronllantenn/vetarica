@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from inventario.models import CATEGORIAS_INSUMO, Insumo, registrar_movimiento
+from inventario.models import CATEGORIAS_INSUMO, Insumo, Movimiento, registrar_movimiento
 from usuarios.models import Persona
 from usuarios.views import es_personal_clinica
 from .forms import CitaInternaForm, FichaMedicaForm, MascotaForm, ReagendarCitaForm, SolicitudCitaForm, cancelar_citas_vencidas, obtener_horas_disponibles, rango_del_dia
@@ -541,7 +541,7 @@ def valor_insumos_de_ficha(ficha):
 
     movimientos = ficha.movimientos_inventario.select_related('insumo').order_by('fecha')
     for movimiento in movimientos:
-        precio = movimiento.insumo.precio_venta()
+        precio = movimiento.precio_unitario
         subtotal = movimiento.cantidad * precio
         total = total + subtotal
         lista.append({
@@ -784,6 +784,16 @@ def sumar_pagos(desde, hasta):
             total = total + cita.monto_pagado
     return total
 
+def sumar_insumos(desde, hasta):
+    inicio = rango_del_dia(desde)[0]
+    fin = rango_del_dia(hasta)[1]
+    salidas = Movimiento.objects.filter(tipo='Salida', ficha__isnull=False, fecha__range=(inicio, fin))
+
+    total = 0
+    for salida in salidas:
+        total = total + salida.cantidad * salida.precio_unitario
+    return total
+
 @never_cache
 @login_required(login_url='sin_acceso')
 def ingresos_doctora(request):
@@ -807,41 +817,64 @@ def ingresos_doctora(request):
     citas_pagadas = SolicitudCita.objects.select_related('tipo_consulta').filter(estado_pago='Pagado', fecha_pago__range=(inicio, fin))
     citas_pagadas = citas_pagadas.order_by('-fecha_pago')
 
-    total = 0
+    total_citas = 0
     cantidad = 0
-    ingresos_por_mes = {}
+    por_mes = {}
     lista_citas = []
     for cita in citas_pagadas:
         monto = 0
         if cita.monto_pagado:
             monto = cita.monto_pagado
-        total = total + monto
+        total_citas = total_citas + monto
         cantidad = cantidad + 1
 
         cita.monto_texto = separar_miles(monto)
         lista_citas.append(cita)
 
-        mes = timezone.localtime(cita.fecha_pago).strftime('%m/%Y')
-        if mes in ingresos_por_mes:
-            ingresos_por_mes[mes] = ingresos_por_mes[mes] + monto
-        else:
-            ingresos_por_mes[mes] = monto
+        mes = timezone.localtime(cita.fecha_pago).date().replace(day=1)
+        if mes not in por_mes:
+            por_mes[mes] = [0, 0]
+        por_mes[mes][0] = por_mes[mes][0] + monto
+
+    salidas = Movimiento.objects.select_related('insumo').filter(tipo='Salida', ficha__isnull=False, fecha__range=(inicio, fin))
+    por_insumo = {}
+    total_insumos = 0
+    for salida in salidas:
+        monto = salida.cantidad * salida.precio_unitario
+        total_insumos = total_insumos + monto
+        if salida.insumo not in por_insumo:
+            por_insumo[salida.insumo] = [0, 0]
+        por_insumo[salida.insumo][0] = por_insumo[salida.insumo][0] + salida.cantidad
+        por_insumo[salida.insumo][1] = por_insumo[salida.insumo][1] + monto
+
+        mes = timezone.localtime(salida.fecha).date().replace(day=1)
+        if mes not in por_mes:
+            por_mes[mes] = [0, 0]
+        por_mes[mes][1] = por_mes[mes][1] + monto
+
+    insumos_ocupados = []
+    for insumo in por_insumo:
+        cantidad_usada = por_insumo[insumo][0]
+        monto = por_insumo[insumo][1]
+        insumos_ocupados.append({'nombre': insumo.nombre, 'cantidad': cantidad_usada, 'unidad': insumo.unidad, 'precio': separar_miles(monto // cantidad_usada), 'monto': monto, 'monto_texto': separar_miles(monto)})
+    insumos_ocupados.sort(key=lambda fila: fila['monto'], reverse=True)
 
     meses = []
-    montos_por_mes = []
-    for mes in ingresos_por_mes:
-        meses.append(mes)
-        montos_por_mes.append(ingresos_por_mes[mes])
-    meses.reverse()
-    montos_por_mes.reverse()
+    citas_por_mes = []
+    insumos_por_mes = []
+    for mes in sorted(por_mes):
+        meses.append(mes.strftime('%m/%Y'))
+        citas_por_mes.append(por_mes[mes][0])
+        insumos_por_mes.append(por_mes[mes][1])
 
     filas_meses = []
     for i in range(len(meses)):
-        filas_meses.append({'mes': meses[i], 'monto': separar_miles(montos_por_mes[i])})
+        monto_mes = citas_por_mes[i] + insumos_por_mes[i]
+        filas_meses.append({'mes': meses[i], 'citas': separar_miles(citas_por_mes[i]), 'insumos': separar_miles(insumos_por_mes[i]), 'monto': separar_miles(monto_mes)})
 
     promedio = 0
     if cantidad > 0:
-        promedio = total // cantidad
+        promedio = total_citas // cantidad
 
     primer_dia_mes = hoy.replace(day=1)
     ultimo_dia_mes_anterior = primer_dia_mes - timedelta(days=1)
@@ -852,8 +885,8 @@ def ingresos_doctora(request):
         inicio_trimestre = inicio_trimestre - timedelta(days=1)
         inicio_trimestre = inicio_trimestre.replace(day=1)
 
-    total_mes = sumar_pagos(primer_dia_mes, hoy)
-    total_mes_anterior = sumar_pagos(primer_dia_mes_anterior, ultimo_dia_mes_anterior)
+    total_mes = sumar_pagos(primer_dia_mes, hoy) + sumar_insumos(primer_dia_mes, hoy)
+    total_mes_anterior = sumar_pagos(primer_dia_mes_anterior, ultimo_dia_mes_anterior) + sumar_insumos(primer_dia_mes_anterior, ultimo_dia_mes_anterior)
 
     sin_ingresos_mes = total_mes == 0
 
@@ -868,11 +901,13 @@ def ingresos_doctora(request):
         'citas_pagadas': lista_citas,
         'desde': desde,
         'hasta': hasta,
-        'total': separar_miles(total),
+        'total': separar_miles(total_citas + total_insumos),
+        'total_citas': separar_miles(total_citas),
         'cantidad': cantidad,
         'promedio': separar_miles(promedio),
         'meses': meses,
-        'montos_por_mes': montos_por_mes,
+        'citas_por_mes': citas_por_mes,
+        'insumos_por_mes': insumos_por_mes,
         'filas_meses': filas_meses,
         'hoy': hoy,
         'primer_dia_mes': primer_dia_mes,
@@ -883,5 +918,7 @@ def ingresos_doctora(request):
         'diferencia': diferencia,
         'bajo': bajo,
         'sin_ingresos_mes': sin_ingresos_mes,
+        'insumos_ocupados': insumos_ocupados,
+        'total_insumos': separar_miles(total_insumos),
     }
     return render(request, 'citas/doctora/ingresos.html', context)
