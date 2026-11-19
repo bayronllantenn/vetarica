@@ -1,5 +1,4 @@
 from django import forms
-from django.utils import timezone
 from usuarios.forms import validar_rut
 from .models import Insumo, Proveedor
 
@@ -23,13 +22,10 @@ class ProveedorForm(forms.ModelForm):
 
 
 class InsumoForm(forms.ModelForm):
-    stock_inicial = forms.IntegerField(label='Stock inicial', min_value=0, initial=0)
-    vencimiento = forms.DateField(label='Fecha de vencimiento', required=False, widget=forms.DateInput(attrs={'type': 'date'}))
-
     class Meta:
         model = Insumo
-        fields = ('nombre', 'categoria', 'unidad', 'stock_minimo')
-        labels = {'nombre': 'Nombre', 'categoria': 'Categoría', 'unidad': 'Unidad', 'stock_minimo': 'Stock mínimo'}
+        fields = ('nombre', 'categoria', 'stock_minimo')
+        labels = {'nombre': 'Nombre', 'categoria': 'Categoría', 'stock_minimo': 'Stock mínimo'}
         widgets = {
             'nombre': forms.TextInput(attrs={'placeholder': 'Ej: Bravecto 20-40 kg'}),
         }
@@ -39,12 +35,6 @@ class InsumoForm(forms.ModelForm):
         if Insumo.objects.filter(nombre__iexact=nombre, activo=True).exists():
             raise forms.ValidationError('Ya existe un insumo con ese nombre.')
         return nombre
-
-    def clean_vencimiento(self):
-        vencimiento = self.cleaned_data['vencimiento']
-        if vencimiento is not None and vencimiento < timezone.localdate():
-            raise forms.ValidationError('La fecha de vencimiento ya pasó.')
-        return vencimiento
 
 
 MOTIVOS_BAJA = [

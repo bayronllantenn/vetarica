@@ -24,7 +24,7 @@
   <main class="dash-content">
     <section class="dash-hero">
       <h1>Nuevo insumo</h1>
-      <p class="dash-subtitle">El stock inicial se registra como una entrada en Movimientos.</p>
+      <p class="dash-subtitle">El insumo se crea sin stock. El stock entra al cargar una orden de compra.</p>
     </section>
 
     <form method="post" novalidate class="cita-interna-form">
@@ -32,14 +32,9 @@
 
       <div class="cita-seccion">
         <div class="row gx-3">
-          <div class="col-md-8">{{ form.nombre|as_crispy_field }}</div>
-          <div class="col-md-4">{{ form.categoria|as_crispy_field }}</div>
-        </div>
-        <div class="row gx-3">
-          <div class="col-md-3">{{ form.unidad|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.nombre|as_crispy_field }}</div>
+          <div class="col-md-3">{{ form.categoria|as_crispy_field }}</div>
           <div class="col-md-3">{{ form.stock_minimo|as_crispy_field }}</div>
-          <div class="col-md-3">{{ form.stock_inicial|as_crispy_field }}</div>
-          <div class="col-md-3">{{ form.vencimiento|as_crispy_field }}</div>
         </div>
       </div>
 
