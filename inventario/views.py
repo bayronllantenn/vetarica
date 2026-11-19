@@ -11,8 +11,8 @@ from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
 from usuarios.forms import validar_rut
 from usuarios.views import es_personal_clinica, es_veterinaria
-from .forms import InsumoForm, MovimientoForm, ProveedorForm
-from .models import CATEGORIAS_INSUMO, Insumo, Lote, Movimiento, OrdenCompra, Proveedor, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
+from .forms import BajaForm, InsumoForm, ProveedorForm, VentaForm
+from .models import CATEGORIAS_INSUMO, Insumo, Lote, Movimiento, OrdenCompra, Proveedor, Venta, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
 from .ocr import buscar_insumo, buscar_proveedor, leer_numero_documento, leer_proveedor, leer_texto, separar_productos
 
 def alertas(request):
@@ -22,7 +22,13 @@ def alertas(request):
     lista = []
     for insumo in Insumo.objects.order_by('nombre'):
         if insumo.tiene_stock_bajo():
-            lista.append(insumo)
+            lista.append({'tipo': 'Bajo stock', 'insumo': insumo})
+
+    lotes = Lote.objects.filter(cantidad__gt=0, alerta_oculta=False, fecha_vencimiento__isnull=False)
+    for lote in lotes.select_related('insumo', 'orden').order_by('fecha_vencimiento'):
+        estado = lote.estado_vencimiento()
+        if estado != '':
+            lista.append({'tipo': estado, 'insumo': lote.insumo, 'lote': lote})
 
     paginador = Paginator(lista, 3)
     pagina = paginador.get_page(request.GET.get('alertas'))
@@ -35,6 +41,20 @@ def alertas(request):
         url = '?' + datos.urlencode() + '&'
 
     return {'alertas': pagina, 'alertas_url': url}
+
+@login_required(login_url='sin_acceso')
+def ocultar_alerta(request, lote_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    lote = get_object_or_404(Lote, id=lote_id)
+    if request.method == 'POST':
+        lote.alerta_oculta = True
+        lote.save()
+
+    volver = request.POST.get('volver', '')
+    if not volver.startswith('/') or volver.startswith('//'):
+        volver = reverse('inventario')
+    return redirect(volver + '#notificaciones')
 
 @never_cache
 @login_required(login_url='sin_acceso')
@@ -262,29 +282,68 @@ def nuevo_movimiento(request):
         return redirect('sin_acceso')
 
     if request.method == 'POST':
-        form = MovimientoForm(request.POST)
-        form.fields['insumo'].queryset = Insumo.objects.filter(activo=True)
-        form.fields['proveedor'].queryset = Proveedor.objects.order_by('nombre')
+        form = BajaForm(request.POST)
         if form.is_valid():
             insumo = form.cleaned_data['insumo']
-            tipo = form.cleaned_data['tipo']
             cantidad = form.cleaned_data['cantidad']
             motivo = form.cleaned_data['motivo']
-            proveedor = form.cleaned_data['proveedor']
 
-            se_registro = registrar_movimiento(insumo, tipo, cantidad, motivo=motivo, usuario=request.user, proveedor=proveedor)
+            se_registro = registrar_movimiento(insumo, 'Salida', cantidad, motivo=motivo, usuario=request.user)
             if se_registro:
-                if proveedor is not None:
-                    insumo.proveedores.add(proveedor)
-                messages.success(request, f'{tipo} de {cantidad} {insumo.nombre} registrada.')
+                messages.success(request, f'Baja de {cantidad} {insumo.nombre} registrada.')
                 return redirect('movimientos')
             messages.error(request, f'No hay stock suficiente. Quedan {insumo.stock_disponible()} de {insumo.nombre} sin vencer.')
     else:
-        form = MovimientoForm()
-        form.fields['insumo'].queryset = Insumo.objects.filter(activo=True)
-        form.fields['proveedor'].queryset = Proveedor.objects.order_by('nombre')
+        form = BajaForm()
 
-    return render(request, 'inventario/movimiento_form.html', {'form': form})
+    context = {
+        'form': form,
+        'titulo': 'Registrar baja',
+        'subtitulo': 'Descuenta del stock los insumos que se rompieron, se perdieron o se usaron fuera de una atención.',
+        'volver': 'movimientos',
+    }
+    return render(request, 'inventario/movimiento_form.html', context)
+
+
+def nombre_con_precio(insumo):
+    return f'{insumo.nombre} - ${separar_miles(insumo.precio_venta())} (quedan {insumo.stock_actual})'
+
+
+@login_required(login_url='sin_acceso')
+def registrar_venta(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        form = VentaForm(request.POST)
+        if form.is_valid():
+            insumo = form.cleaned_data['insumo']
+            cantidad = form.cleaned_data['cantidad']
+            cliente = form.cleaned_data['cliente'].strip()
+            precio = insumo.precio_venta()
+
+            if precio == 0:
+                messages.error(request, f'{insumo.nombre} no tiene costo registrado. Edítalo en el inventario antes de venderlo.')
+            else:
+                with transaction.atomic():
+                    se_registro = registrar_movimiento(insumo, 'Salida', cantidad, motivo=f'Venta a {cliente}', usuario=request.user)
+                    if se_registro:
+                        Venta.objects.create(insumo=insumo, cantidad=cantidad, precio_unitario=precio, nombre_cliente=cliente, registrado_por=request.user)
+                if se_registro:
+                    messages.success(request, f'Venta de {cantidad} {insumo.nombre} registrada: ${separar_miles(precio * cantidad)}.')
+                    return redirect('inventario')
+                messages.error(request, f'No hay stock suficiente. Quedan {insumo.stock_disponible()} de {insumo.nombre} sin vencer.')
+    else:
+        form = VentaForm()
+
+    form.fields['insumo'].label_from_instance = nombre_con_precio
+    context = {
+        'form': form,
+        'titulo': 'Registrar venta',
+        'subtitulo': 'El precio se calcula solo con el costo, el % de ganancia y el IVA, y el stock se descuenta.',
+        'volver': 'inventario',
+    }
+    return render(request, 'inventario/movimiento_form.html', context)
 
 @never_cache
 @login_required(login_url='sin_acceso')

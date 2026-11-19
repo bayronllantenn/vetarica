@@ -105,7 +105,7 @@
       <span class="alertas-icono"><i class="bi bi-bell"></i></span>
       <h3>Notificaciones</h3>
       {% if alertas.paginator.count %}
-      <p><span class="alertas-punto"></span> {{ alertas.paginator.count }} alertas de bajo stock en inventario</p>
+      <p><span class="alertas-punto"></span> {{ alertas.paginator.count }} alertas en el inventario</p>
       {% else %}
       <p>No tienes notificaciones por ahora.</p>
       {% endif %}
@@ -113,14 +113,28 @@
 
     {% if alertas.paginator.count %}
     <div class="alertas-cuerpo">
-      {% for insumo in alertas %}
+      {% for aviso in alertas %}
       <div class="alertas-tarjeta">
+        {% if aviso.lote %}
+        <span class="alertas-tarjeta-icono"><i class="bi bi-calendar-x"></i></span>
+        <div class="alertas-tarjeta-texto">
+          <strong>{{ aviso.insumo.nombre }}</strong>
+          <span>{{ aviso.lote.cantidad }} {{ aviso.insumo.unidad }}{% if aviso.lote.orden %} · {{ aviso.lote.orden.codigo }}{% endif %} · vence el {{ aviso.lote.fecha_vencimiento|date:"d/m/Y" }}</span>
+        </div>
+        <span class="alertas-etiqueta {% if aviso.tipo == 'Vencido' %}alertas-etiqueta-roja{% endif %}">{{ aviso.tipo }}</span>
+        <form method="post" action="{% url 'ocultar_alerta' aviso.lote.id %}" class="alertas-ocultar">
+          {% csrf_token %}
+          <input type="hidden" name="volver" value="{{ request.get_full_path }}">
+          <button type="submit" aria-label="Borrar alerta" title="Borrar alerta"><i class="bi bi-x"></i></button>
+        </form>
+        {% else %}
         <span class="alertas-tarjeta-icono"><i class="bi bi-exclamation-triangle"></i></span>
         <div class="alertas-tarjeta-texto">
-          <strong>{{ insumo.nombre }}</strong>
-          <span>Quedan {{ insumo.stock_actual }} {{ insumo.unidad }} (mínimo {{ insumo.stock_minimo }})</span>
+          <strong>{{ aviso.insumo.nombre }}</strong>
+          <span>Quedan {{ aviso.insumo.stock_actual }} {{ aviso.insumo.unidad }} (mínimo {{ aviso.insumo.stock_minimo }})</span>
         </div>
         <span class="alertas-etiqueta">Bajo stock</span>
+        {% endif %}
       </div>
       {% endfor %}
     </div>

@@ -132,6 +132,7 @@ class Lote(models.Model):
     cantidad = models.PositiveIntegerField()
     fecha_vencimiento = models.DateField(null=True, blank=True)
     fecha_ingreso = models.DateTimeField(auto_now_add=True)
+    alerta_oculta = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.cantidad} {self.insumo.nombre}'

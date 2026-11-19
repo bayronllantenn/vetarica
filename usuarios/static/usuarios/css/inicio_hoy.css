@@ -10,7 +10,7 @@
 .ih-hoja {
   max-width: 1640px;
   margin: 0 auto;
-  padding: 16px 8px;
+  padding: 16px 8px 40px;
   background: #fff;
   border-radius: 16px;
 }
@@ -139,6 +139,22 @@
 
 .ih-resumen {
   gap: 12px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.ih-especie {
+  align-self: start;
+}
+
+.ih-alertas-titulo {
+  font-size: 16px;
+  color: #111;
+}
+
+.ih-alertas-boton {
+  margin-top: 10px;
+  height: 32px;
 }
 
 .ih-panel-cabeza {

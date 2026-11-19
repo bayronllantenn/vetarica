@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-Registrar movimiento - Vet Arica
+{{ titulo }} - Vet Arica
 {% endblock %}
 
 {% block css %}
@@ -25,8 +25,8 @@ Registrar movimiento - Vet Arica
 <div class="dash-shell fondo-huellas">
   <main class="dash-content">
     <section class="dash-hero">
-      <h1>Registrar movimiento</h1>
-      <p class="dash-subtitle">Una entrada suma stock y una salida lo resta.</p>
+      <h1>{{ titulo }}</h1>
+      <p class="dash-subtitle">{{ subtitulo }}</p>
     </section>
 
     <form method="post" novalidate class="cita-interna-form">
@@ -34,19 +34,15 @@ Registrar movimiento - Vet Arica
 
       <div class="cita-seccion">
         <div class="row gx-3">
-          <div class="col-md-6">{{ form.insumo|as_crispy_field }}</div>
-          <div class="col-md-3">{{ form.tipo|as_crispy_field }}</div>
-          <div class="col-md-3">{{ form.cantidad|as_crispy_field }}</div>
-        </div>
-        <div class="row gx-3">
-          <div class="col-md-6">{{ form.proveedor|as_crispy_field }}</div>
-          <div class="col-md-6">{{ form.motivo|as_crispy_field }}</div>
+          {% for campo in form %}
+          <div class="{% if campo.name == 'cantidad' %}col-md-2{% else %}col-md-5{% endif %}">{{ campo|as_crispy_field }}</div>
+          {% endfor %}
         </div>
       </div>
 
       <div class="cita-acciones">
-        <a href="{% url 'movimientos' %}" class="btn btn-outline-secondary">Volver</a>
-        <button type="submit" class="btn btn-teal">Registrar</button>
+        <a href="{% url volver %}" class="btn btn-outline-secondary">Volver</a>
+        <button type="submit" class="btn btn-teal">{{ titulo }}</button>
       </div>
     </form>
   </main>
