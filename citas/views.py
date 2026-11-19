@@ -15,7 +15,7 @@ from .forms import CitaInternaForm, FichaMedicaForm, MascotaForm, ReagendarCitaF
 from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .utils import get_webpay_transaction
 
-# FUNCIONES DE APOYO
+# FUNCIONES DE APOYO-----------------------------------------------------------------------------------
 def puede_ver_solicitud(request, solicitud):
     if solicitud.cliente_id:
         if request.user.is_authenticated and request.user.id == solicitud.cliente_id:
@@ -45,7 +45,7 @@ def leer_fecha(texto):
 def separar_miles(numero):
     return format(numero, ',').replace(',', '.')
 
-# CORREOS ----------------------------------------------------------------------------------------
+# CORREOS----------------------------------------------------------------------------------------------
 def enviar_correo_confirmacion(solicitud):
     if not solicitud.email:
         return
@@ -82,7 +82,8 @@ def enviar_correo_reagendada(solicitud):
     except Exception:
         pass
 
-# MASCOTAS ----------------------------------------------------------------------------------------
+
+#MASCOTAS---------------------------------------------------------------------------------------------
 def elegir_dueno(request, es_personal):
     if not es_personal:
         return request.user
@@ -128,7 +129,7 @@ def agregar_mascota(request):
     context = {'form': form, 'clientes': clientes, 'dueno_elegido': dueno}
     return render(request, plantilla, context)
 
-# AGENDAR CITA ----------------------------------------------------------------------------------------
+# AGENDAR CITA-----------------------------------------------------------------------------------------
 def agendar_view(request):
     if request.user.is_authenticated:
         mascotas = Mascota.objects.filter(dueno=request.user, activa=True)
@@ -242,7 +243,7 @@ def cancelar_solicitud(request, id):
     return redirect('agendar')
 
 
-# WEBPAY ----------------------------------------------------------------------------------------
+# WEBPAY-----------------------------------------------------------------------------------------------
 def iniciar_pago_webpay(request, id):
     solicitud = get_object_or_404(SolicitudCita, id=id)
     if not puede_ver_solicitud(request, solicitud):
@@ -360,7 +361,7 @@ def reserva_fallida(request, id=None):
     return render(request, 'citas/pago/reserva_fallida.html', {'solicitud': solicitud})
 
 
-# REAGENDAR CITA -----------------------------------------------------------------------------------------
+# REAGENDAR CITA---------------------------------------------------------------------------------------
 @never_cache
 @login_required(login_url='sin_acceso')
 def reagendar_cita(request, id):
@@ -418,7 +419,7 @@ def reagendar_cita(request, id):
     return render(request, 'citas/reagendar_cita.html', context)
 
 
-# CITA INTERNA E INASISTENCIA ----------------------------------------------------------------------------------------
+#CITA INTERNA E INASISTENCIA--------------------------------------------------------------------------
 def copiar_datos_de_mascota(solicitud, mascota):
     solicitud.mascota = mascota
     solicitud.nombre_mascota = mascota.nombre
@@ -501,7 +502,7 @@ def marcar_no_asistio(request, cita_id):
     return redirect('agenda_doctora')
 
 
-# FICHA MEDICA ----------------------------------------------------------------------------------------
+#FICHA MEDICA-----------------------------------------------------------------------------------------
 def insumos_por_categoria():
     grupos = []
     for categoria in CATEGORIAS_INSUMO:
@@ -729,7 +730,7 @@ def imprimir_ficha(request, ficha_id):
     context = {'ficha': ficha, 'antecedentes': antecedentes, 'es_personal': es_personal, 'insumos_usados': insumos_usados, 'total_insumos': total_insumos}
     return render(request, 'citas/imprimir_ficha.html', context)
 
-# PACIENTES ----------------------------------------------------------------------------------------
+# PACIENTES --------------------------------------------------------------------------------------------
 def citas_sin_ficha(mascota):
     citas = SolicitudCita.objects.filter(mascota=mascota, estado_pago__in=['Pagado', 'En clinica'], ficha_medica__isnull=True)
     citas = citas.exclude(estado='Cancelada').exclude(estado='Ausente')
@@ -772,7 +773,7 @@ def pacientes(request):
     context = {'lista_pacientes': lista_pacientes,'page_obj': page_obj,'buscar': buscar, 'sugerencias': Mascota.objects.select_related('dueno').order_by('nombre')}
     return render(request, 'citas/doctora/pacientes.html', context)
 
-# INGRESOS ----------------------------------------------------------------------------------------
+# INGRESOS ---------------------------------------------------------------------------------------------
 def sumar_pagos(desde, hasta):
     inicio = rango_del_dia(desde)[0]
     fin = rango_del_dia(hasta)[1]
