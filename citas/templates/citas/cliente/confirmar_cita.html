@@ -7,15 +7,10 @@
     <title>Confirmar Cita - Vet Arica</title>
     <link rel="icon" href="{% static 'inicio/img/marca/favicon.png' %}" />
     <link href="{% static 'citas/css/confirmar_cita.css' %}" rel="stylesheet" />
+    <link href="{% static 'citas/css/fondo_citas.css' %}" rel="stylesheet" />
   </head>
-  <body class="confirmar-body">
-    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="form-deco fondo-camino" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-1" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-2" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-3" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
-    <img src="{% static 'inicio/img/ilustraciones/perro.png' %}" alt="" class="form-deco fondo-perro" />
+  <body class="confirmar-body fondo-citas">
+    {% include "citas/fondo_citas.html" %}
 
     <main class="confirmar-contenido">
       <img src="{% static 'inicio/img/marca/logo_corazon_huella.png' %}" alt="Vet Arica" class="confirmar-logo" />
@@ -32,17 +27,14 @@
             <h2>Datos de contacto</h2>
           </div>
           <div class="confirmar-fila">
-            <img src="{% static 'inicio/img/iconos/cita_usuario.png' %}" alt="" />
             <span class="confirmar-etiqueta">Nombre</span>
             <span class="confirmar-valor">{{ solicitud.nombre }} {{ solicitud.apellido }}</span>
           </div>
           <div class="confirmar-fila">
-            <img src="{% static 'inicio/img/iconos/cita_correo.png' %}" alt="" />
             <span class="confirmar-etiqueta">Email</span>
             <span class="confirmar-valor">{{ solicitud.email }}</span>
           </div>
           <div class="confirmar-fila">
-            <img src="{% static 'inicio/img/iconos/cita_telefono.png' %}" alt="" />
             <span class="confirmar-etiqueta">Teléfono</span>
             <span class="confirmar-valor">{{ solicitud.telefono }}</span>
           </div>
@@ -56,22 +48,18 @@
             <h2>Datos de la atención</h2>
           </div>
           <div class="confirmar-fila">
-            <img src="{% static 'inicio/img/iconos/cita_huella.png' %}" alt="" />
             <span class="confirmar-etiqueta">Mascota</span>
             <span class="confirmar-valor">{{ solicitud.nombre_mascota }}</span>
           </div>
           <div class="confirmar-fila">
-            <img src="{% static 'inicio/img/iconos/cita_estetoscopio.png' %}" alt="" />
             <span class="confirmar-etiqueta">Tipo de consulta</span>
             <span class="confirmar-valor">{{ solicitud.tipo_consulta.nombre }}</span>
           </div>
           <div class="confirmar-fila">
-            <img src="{% static 'inicio/img/iconos/cita_calendario.png' %}" alt="" />
             <span class="confirmar-etiqueta">Fecha</span>
             <span class="confirmar-valor">{{ solicitud.fecha_hora|date:"d-m-Y" }}</span>
           </div>
           <div class="confirmar-fila">
-            <img src="{% static 'inicio/img/iconos/cita_reloj.png' %}" alt="" />
             <span class="confirmar-etiqueta">Hora</span>
             <span class="confirmar-valor">{{ solicitud.fecha_hora|time:"H:i" }}</span>
           </div>
@@ -84,18 +72,12 @@
         </section>
 
         <div class="confirmar-total">
-          <span class="confirmar-total-icono">
-            <img src="{% static 'inicio/img/iconos/cita_documento.png' %}" alt="" />
-          </span>
-          <div>
-            <span class="confirmar-total-texto">Total a pagar</span>
-            <strong class="confirmar-total-monto">${{ solicitud.tipo_consulta.precio_base|floatformat:"0g" }}</strong>
-          </div>
-          <img src="{% static 'inicio/img/decoracion/rayas2.png' %}" alt="" class="confirmar-total-rayas" />
+          <span class="confirmar-total-texto">Total a pagar</span>
+          <strong class="confirmar-total-monto">${{ solicitud.tipo_consulta.precio_base|floatformat:"0g" }}</strong>
         </div>
 
         <a href="{% url 'iniciar_pago_webpay' solicitud.pk %}" class="confirmar-btn-pagar">
-          Pagar con Webpay
+          Pagar
         </a>
 
         <form method="post" action="{% url 'cancelar_solicitud' solicitud.pk %}">

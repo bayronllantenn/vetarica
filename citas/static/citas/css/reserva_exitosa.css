@@ -86,6 +86,9 @@
 }
 
 @media print {
+    @page {
+        margin: 0;
+    }
     .boton-imprimir,
     .comprobante .submit {
         display: none;

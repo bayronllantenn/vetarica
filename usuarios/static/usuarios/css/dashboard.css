@@ -349,37 +349,11 @@ html {
   padding: 0.75rem 0.6rem 0.4rem 0.9rem;
 }
 
-.mascota-card-nombre-fila {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .mascota-card-nombre {
   margin: 0;
   font-weight: 800;
   font-size: 1.25rem;
   color: #1f2d2b;
-}
-
-.mascota-card-sexo-badge {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-}
-
-.mascota-card-verde .mascota-card-sexo-badge {
-  background: #e3efe5;
-  color: #0f766e;
-}
-
-.mascota-card-durazno .mascota-card-sexo-badge {
-  background: #fbe4da;
-  color: #c0674a;
 }
 
 .mascota-subinfo {

@@ -8,6 +8,7 @@
 <link href="{% static 'usuarios/css/sidebar.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/dashboard.css' %}" rel="stylesheet" />
 <link href="{% static 'usuarios/css/ficha_mascota.css' %}" rel="stylesheet" />
+<link href="{% static 'citas/css/fondo_citas.css' %}" rel="stylesheet" />
 {% endblock %}
 
 {% block topbar %}{% endblock %}
@@ -18,10 +19,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="dash-shell ficha-fondo">
-  <span class="ficha-fondo-mancha ficha-fondo-mancha-arriba"></span>
-  <span class="ficha-fondo-mancha ficha-fondo-mancha-abajo"></span>
-
+<div class="dash-shell ficha-fondo fondo-citas">
   <main class="dash-content ficha-content">
     <div class="ficha-top-nav">
       <a href="{% url 'dashboard' %}#mis-mascotas" class="btn-back-pill">
@@ -34,7 +32,6 @@
 
       <section class="ficha-header">
         <div class="ficha-foto-wrap">
-          <img src="{% static 'inicio/img/decoracion/ficha_rayas.png' %}" alt="" class="ficha-foto-rayas" />
           {% if mascota.imagen %}
           <img src="{{ mascota.imagen.url }}" alt="{{ mascota.nombre }}" class="ficha-foto" />
           {% else %}
@@ -83,7 +80,7 @@
           </p>
           <p class="ficha-dato">
             <img src="{% static 'inicio/img/iconos/ficha_icono_edad.png' %}" alt="" class="ficha-dato-icono" />
-            <strong>Fecha de nacimiento:</strong> {{ mascota.fecha_nacimiento|date:"d/m/Y"|default:"—" }}
+            <strong>Fecha de nacimiento:</strong> {{ mascota.fecha_nacimiento|date:"d/m/Y"|default:"-" }}
           </p>
         </div>
       </section>

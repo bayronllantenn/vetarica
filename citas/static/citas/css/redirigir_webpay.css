@@ -6,68 +6,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f3faf7;
     font-family: Arial, sans-serif;
     color: #2b3b38;
     overflow: hidden;
-}
-
-.form-deco {
-    position: fixed;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.fondo-camino {
-    top: 9rem;
-    left: 4rem;
-    width: 190px;
-    transform: rotate(-110deg);
-    opacity: 0.8;
-}
-
-.fondo-huella {
-    width: 36px;
-    opacity: 0.85;
-}
-
-.fondo-huella-1 {
-    top: 2.5rem;
-    left: 13rem;
-    transform: rotate(-20deg);
-}
-
-.fondo-huella-2 {
-    top: 20rem;
-    left: 3rem;
-    width: 34px;
-    transform: rotate(10deg);
-}
-
-.fondo-huella-3 {
-    bottom: 9rem;
-    right: 4rem;
-    transform: rotate(15deg);
-}
-
-.fondo-nube {
-    bottom: -10px;
-}
-
-.fondo-nube-izq {
-    left: -40px;
-    width: 460px;
-}
-
-.fondo-nube-der {
-    right: -40px;
-    width: 420px;
-}
-
-.fondo-perro {
-    bottom: 0;
-    right: 3rem;
-    width: 190px;
 }
 
 .tarjeta {
@@ -172,17 +113,4 @@ body {
     margin-right: 5px;
     color: #1c7a5a;
     font-size: 16px;
-}
-
-@media (max-width: 1100px) {
-    .fondo-perro,
-    .fondo-camino,
-    .fondo-huella {
-        display: none;
-    }
-
-    .fondo-nube-izq,
-    .fondo-nube-der {
-        width: 220px;
-    }
 }

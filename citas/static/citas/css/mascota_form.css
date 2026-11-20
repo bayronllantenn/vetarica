@@ -104,17 +104,6 @@ body.mascota-form-body {
   width: 190px;
 }
 
-.editar-titulo {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 0.4rem;
-}
-
-.editar-titulo-rayas {
-  width: 22px;
-  margin-top: -0.5rem;
-}
-
 .avatar-preview-box.editar-foto {
   width: 140px;
   height: 140px;
@@ -456,6 +445,25 @@ body.mascota-form-body {
 .btn-cancel-mascota:hover {
   background: #d3e6d7;
   color: #123c33;
+}
+
+.editar-mascota,
+.editar-mascota :is(.form-header h1, .form-header p, .btn-back-pill, .editar-foto-hint, .avatar-placeholder span, .campo-lado-label, .form-control, .form-select, .form-text, .btn-submit-mascota, .btn-cancel-mascota),
+.editar-mascota .form-control::placeholder {
+  color: #000;
+}
+
+.editar-mascota :is(button, input, select) {
+  font-family: inherit;
+}
+
+.editar-mascota .btn-submit-mascota {
+  background-color: #b9d4bf;
+}
+
+.editar-mascota .btn-submit-mascota:hover,
+.editar-mascota .btn-submit-mascota:active {
+  background-color: #a7c9ae;
 }
 
 @media (max-width: 576px) {

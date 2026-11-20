@@ -276,10 +276,8 @@
   font-weight: 700;
   color: #123c33;
   margin-bottom: 0.35rem;
-}
-
-.campo-titulo img {
-  width: 26px;
+  min-height: 26px;
+  padding-left: 2rem;
 }
 
 .config-card .form-control {

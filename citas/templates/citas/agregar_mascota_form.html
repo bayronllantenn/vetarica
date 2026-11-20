@@ -20,15 +20,10 @@
       rel="stylesheet"
     />
     <link href="{% static 'citas/css/mascota_form.css' %}" rel="stylesheet" />
+    <link href="{% static 'citas/css/fondo_citas.css' %}" rel="stylesheet" />
   </head>
-  <body class="mascota-form-body">
-    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="form-deco fondo-camino" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-1" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-2" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-3" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
-    <img src="{% static 'inicio/img/ilustraciones/perro.png' %}" alt="" class="form-deco fondo-perro" />
+  <body class="mascota-form-body fondo-citas">
+    {% include "citas/fondo_citas.html" %}
     <div class="mascota-card-wrapper">
       <form class="mascota-form-card" method="post" enctype="multipart/form-data" novalidate id="mascotaForm">
         {% csrf_token %}

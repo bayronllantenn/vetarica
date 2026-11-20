@@ -1,0 +1,87 @@
+.fondo-citas {
+  background-color: #f3faf7;
+}
+
+.form-deco {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.fondo-huella {
+  width: 36px;
+  opacity: 0.85;
+}
+
+.fondo-huella-1 {
+  top: 2.5rem;
+  left: 13rem;
+  transform: rotate(-20deg);
+}
+
+.fondo-huella-1-derecha {
+  top: 2.5rem;
+  right: 13rem;
+  transform: scaleX(-1) rotate(-20deg);
+}
+
+.fondo-huella-2 {
+  top: 20rem;
+  left: 3rem;
+  width: 34px;
+  transform: rotate(10deg);
+}
+
+.fondo-huella-2-derecha {
+  top: 20rem;
+  right: 3rem;
+  width: 34px;
+  transform: scaleX(-1) rotate(10deg);
+}
+
+.fondo-huella-3 {
+  bottom: 9rem;
+  right: 4rem;
+  transform: rotate(15deg);
+}
+
+.fondo-nube {
+  bottom: -10px;
+}
+
+.fondo-nube-izq {
+  left: -40px;
+  width: 460px;
+}
+
+.fondo-nube-der {
+  right: -40px;
+  width: 420px;
+}
+
+.fondo-gato,
+.fondo-perro {
+  bottom: 0;
+  width: 190px;
+}
+
+.fondo-gato {
+  left: 3rem;
+}
+
+.fondo-perro {
+  right: 3rem;
+}
+
+@media (max-width: 1100px) {
+  .fondo-gato,
+  .fondo-perro,
+  .fondo-huella {
+    display: none;
+  }
+
+  .fondo-nube-izq,
+  .fondo-nube-der {
+    width: 220px;
+  }
+}

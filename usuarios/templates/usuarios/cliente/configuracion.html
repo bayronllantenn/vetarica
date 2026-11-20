@@ -83,20 +83,20 @@
         <div class="grid-2">
           <div class="campo-con-icono">
             <label class="campo-titulo" for="{{ form.first_name.id_for_label }}">
-              <img src="{% static 'inicio/img/iconos/config_usuario.png' %}" alt="" /> Nombre
+              Nombre
             </label>
             {{ form.first_name|as_crispy_field }}
           </div>
           <div class="campo-con-icono">
             <label class="campo-titulo" for="{{ form.last_name.id_for_label }}">
-              <img src="{% static 'inicio/img/iconos/config_usuario.png' %}" alt="" /> Apellidos
+              Apellidos
             </label>
             {{ form.last_name|as_crispy_field }}
           </div>
 
           <div class="campo-con-icono mb-3">
             <label class="campo-titulo">
-              <img src="{% static 'inicio/img/iconos/config_documento.png' %}" alt="" /> RUT
+              RUT
             </label>
             <input type="text" class="form-control" value="{{ user.rut }}" disabled>
             <div class="form-text">El RUT no se puede modificar.</div>
@@ -104,13 +104,13 @@
 
           <div class="campo-con-icono">
             <label class="campo-titulo" for="{{ form.telefono.id_for_label }}">
-              <img src="{% static 'inicio/img/iconos/config_telefono.png' %}" alt="" /> Teléfono
+              Teléfono
             </label>
             {{ form.telefono|as_crispy_field }}
           </div>
           <div class="campo-con-icono campo-full">
             <label class="campo-titulo" for="{{ form.email.id_for_label }}">
-              <img src="{% static 'inicio/img/iconos/config_correo.png' %}" alt="" /> Email
+              Email
             </label>
             {{ form.email|as_crispy_field }}
           </div>
