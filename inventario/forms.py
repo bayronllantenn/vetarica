@@ -26,9 +26,15 @@ class InsumoForm(forms.ModelForm):
     stock_inicial = forms.IntegerField(label='Stock inicial', min_value=0, initial=0)
     vencimiento = forms.DateField(label='Fecha de vencimiento', required=False, widget=forms.DateInput(attrs={'type': 'date'}))
 
+    proveedores = forms.ModelMultipleChoiceField(
+        queryset=Proveedor.objects.order_by('nombre', 'pk'),
+        required=False,
+        widget=forms.SelectMultiple(attrs={'size': 4}),
+    )
+
     class Meta:
         model = Insumo
-        fields = ('nombre', 'categoria', 'unidad', 'stock_minimo')
+        fields = ('nombre', 'categoria', 'unidad', 'stock_minimo', 'proveedores')
         labels = {'nombre': 'Nombre', 'categoria': 'Categoría', 'unidad': 'Unidad', 'stock_minimo': 'Stock mínimo'}
         widgets = {
             'nombre': forms.TextInput(attrs={'placeholder': 'Ej: Bravecto 20-40 kg'}),

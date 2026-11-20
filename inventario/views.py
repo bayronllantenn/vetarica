@@ -10,13 +10,13 @@ from django.utils.http import urlencode
 from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
 from usuarios.forms import validar_rut
-from usuarios.views import es_personal_clinica, es_veterinaria
+from usuarios.views import es_equipo_clinico, es_personal_clinica, es_veterinaria
 from .forms import BajaForm, InsumoForm, ProveedorForm, VentaForm
 from .models import CATEGORIAS_INSUMO, Insumo, Lote, Movimiento, OrdenCompra, Proveedor, Venta, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
 from .ocr import buscar_insumo, buscar_proveedor, leer_numero_documento, leer_proveedor, leer_texto, separar_productos
 
 def alertas(request):
-    if not request.user.is_authenticated or not es_personal_clinica(request.user):
+    if not request.user.is_authenticated or not es_equipo_clinico(request.user):
         return {}
 
     lista = []
@@ -44,7 +44,7 @@ def alertas(request):
 
 @login_required(login_url='sin_acceso')
 def ocultar_alerta(request, lote_id):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
     lote = get_object_or_404(Lote, id=lote_id)
     if request.method == 'POST':
@@ -240,7 +240,7 @@ def registrar_orden(request):
 @never_cache
 @login_required(login_url='sin_acceso')
 def orden_compra(request):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
 
     if request.method == 'POST' and 'registrar' in request.POST:
@@ -278,7 +278,7 @@ def orden_compra(request):
 
 @login_required(login_url='sin_acceso')
 def nuevo_movimiento(request):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
 
     if request.method == 'POST':
@@ -348,7 +348,7 @@ def registrar_venta(request):
 @never_cache
 @login_required(login_url='sin_acceso')
 def movimientos(request):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
 
     insumo_id = request.GET.get('insumo', '')
@@ -379,7 +379,7 @@ def movimientos(request):
 
 @login_required(login_url='sin_acceso')
 def dar_de_baja(request, lote_id):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
     lote = get_object_or_404(Lote.objects.select_related('insumo'), id=lote_id)
     if request.method == 'POST' and lote.cantidad > 0 and lote.estado_vencimiento() == 'Vencido':
@@ -394,7 +394,7 @@ def dar_de_baja(request, lote_id):
 @never_cache
 @login_required(login_url='sin_acceso')
 def lotes_insumo(request, insumo_id):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
     insumo = get_object_or_404(Insumo, id=insumo_id)
     context = {'insumo': insumo, 'lotes': insumo.lotes_con_fecha(), 'sin_fecha': insumo.unidades_sin_fecha()}
@@ -404,7 +404,7 @@ def lotes_insumo(request, insumo_id):
 @never_cache
 @login_required(login_url='sin_acceso')
 def detalle_orden(request, codigo):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
     orden = get_object_or_404(OrdenCompra, codigo=codigo)
     lista = orden.movimientos.filter(tipo='Entrada').select_related('insumo').order_by('insumo__nombre')
@@ -413,7 +413,7 @@ def detalle_orden(request, codigo):
 
 @login_required(login_url='sin_acceso')
 def nuevo_insumo(request):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
 
     if request.method == 'POST':
@@ -435,7 +435,7 @@ def nuevo_insumo(request):
 
 @login_required(login_url='sin_acceso')
 def eliminar_insumo(request, insumo_id):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
     insumo = get_object_or_404(Insumo, id=insumo_id, activo=True)
     if request.method == 'POST':
@@ -458,7 +458,7 @@ def es_categoria_valida(categoria):
 @never_cache
 @login_required(login_url='sin_acceso')
 def inventario(request):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
 
     if request.method == 'POST':
@@ -473,11 +473,22 @@ def inventario(request):
         elif not es_categoria_valida(categoria):
             messages.error(request, 'Elige una categoría de la lista.')
         else:
-            insumo.ganancia = int(ganancia)
-            insumo.categoria = categoria
-            insumo.stock_minimo = int(stock_minimo)
-            insumo.save()
-            messages.success(request, f'{insumo.nombre} fue actualizado.')
+            proveedores = None
+            try:
+                if 'editar_proveedores' in request.POST:
+                    campo = InsumoForm.base_fields['proveedores']
+                    proveedores = campo.clean(request.POST.getlist('proveedores'))
+            except ValidationError:
+                messages.error(request, 'Selecciona proveedores registrados en la lista.')
+            else:
+                with transaction.atomic():
+                    insumo.ganancia = int(ganancia)
+                    insumo.categoria = categoria
+                    insumo.stock_minimo = int(stock_minimo)
+                    insumo.save(update_fields=['ganancia', 'categoria', 'stock_minimo'])
+                    if proveedores is not None:
+                        insumo.proveedores.set(proveedores)
+                messages.success(request, f'{insumo.nombre} fue actualizado.')
 
         pagina = request.POST.get('page', '1')
         if not pagina.isdigit():
@@ -499,6 +510,7 @@ def inventario(request):
     if buscar:
         insumos = insumos.filter(nombre__icontains=buscar)
 
+    insumos = insumos.prefetch_related('proveedores')
     paginador = Paginator(insumos, 10)
     page_obj = paginador.get_page(request.GET.get('page'))
 
@@ -521,4 +533,4 @@ def inventario(request):
 
         lista.append({'insumo': insumo, 'neto': neto, 'beneficio': beneficio, 'total': total, 'primer_lote': primer_lote, 'sin_fecha': sin_fecha, 'cantidad_lotes': cantidad_lotes})
 
-    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'ver_eliminados': ver_eliminados, 'categorias': CATEGORIAS_INSUMO, 'sugerencias': Insumo.objects.order_by('nombre')})
+    return render(request, 'inventario/inventario.html', {'lista': lista, 'page_obj': page_obj, 'buscar': buscar, 'ver_eliminados': ver_eliminados, 'categorias': CATEGORIAS_INSUMO, 'proveedores': Proveedor.objects.order_by('nombre', 'pk'), 'sugerencias': Insumo.objects.order_by('nombre')})

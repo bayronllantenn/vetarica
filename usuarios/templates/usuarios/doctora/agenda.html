@@ -70,7 +70,7 @@ Vet Arica{% endblock %} {% block css %}
         <div class="agenda-semana-hora">{{ fila.hora }}</div>
         {% for celda in fila.celdas %}
         <div class="agenda-semana-celda">
-          {% if celda.cita and user.rol != 'tecnico' %}
+          {% if celda.cita %}
           <a href="{% url 'ficha_medica_detalle' celda.cita.id %}" class="agenda-cita agenda-cita-enlace agenda-cita-{{ celda.cita.estado|lower }}" title="Abrir ficha clínica">
             <strong>
               {{ fila.hora }} {{ celda.cita.nombre_mascota }}
