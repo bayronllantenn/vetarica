@@ -148,22 +148,33 @@ def agendar_view(request):
     if mascota_id and mascota_id.isdigit() and request.user.is_authenticated:
         mascota_elegida = Mascota.objects.filter(id=mascota_id, dueno=request.user, activa=True).first()
 
-    # solo escondemos los datos de contacto si la cuenta ya los tiene
-    # completos si falta alguno se muestran para que los complete ahi
+    contacto_cuenta = {}
     cuenta_completa = False
     if request.user.is_authenticated:
-        if request.user.first_name and request.user.last_name and request.user.telefono:
+        contacto_cuenta = {
+            'nombre': request.user.first_name,
+            'apellido': request.user.last_name,
+            'email': request.user.email,
+            'telefono': request.user.telefono,
+        }
+        if request.user.first_name and request.user.last_name and request.user.email and request.user.telefono:
             cuenta_completa = True
+
+    contacto_editado = False
+    for campo in contacto_cuenta:
+        if campo in request.POST:
+            contacto_editado = True
+
+    mostrar_contacto = True
+    if cuenta_completa and not contacto_editado:
+        mostrar_contacto = False
 
     recargando = request.POST.get('recargar') == '1'
 
     if request.method == 'POST' and not recargando:
         datos = request.POST.copy()
-        if cuenta_completa:
-            datos['nombre'] = request.user.first_name
-            datos['apellido'] = request.user.last_name
-            datos['email'] = request.user.email
-            datos['telefono'] = request.user.telefono
+        if cuenta_completa and not contacto_editado:
+            datos.update(contacto_cuenta)
         form = SolicitudCitaForm(datos)
         form.fields['hora'].choices = obtener_horas_disponibles(fecha_seleccionada)
         if form.is_valid():
@@ -180,6 +191,10 @@ def agendar_view(request):
             request.session['mis_solicitudes'] = ids_sesion
 
             return redirect('confirmar_cita', solicitud.id)
+
+        for campo in contacto_cuenta:
+            if campo in form.errors:
+                mostrar_contacto = True
     else:
         # si viene de recargar la pagina (por ejemplo al cambiar la fecha)
         # esto rescata lo que la persona ya habia escrito en el formulario
@@ -199,11 +214,8 @@ def agendar_view(request):
             if valor:
                 initial[campo] = valor
         initial['fecha'] = fecha_seleccionada
-        if cuenta_completa:
-            initial['nombre'] = request.user.first_name
-            initial['apellido'] = request.user.last_name
-            initial['email'] = request.user.email
-            initial['telefono'] = request.user.telefono
+        if cuenta_completa and not contacto_editado:
+            initial.update(contacto_cuenta)
         if mascota_elegida:
             initial['nombre_mascota'] = mascota_elegida.nombre
             initial['especie_mascota'] = mascota_elegida.especie
@@ -217,7 +229,7 @@ def agendar_view(request):
 
     bloqueos_del_dia = BloqueoHorario.objects.filter(fecha=fecha_seleccionada)
 
-    context = {'form': form, 'mascotas': mascotas, 'fecha_seleccionada': fecha_seleccionada, 'mascota_elegida': mascota_elegida, 'cuenta_completa': cuenta_completa, 'bloqueos_del_dia': bloqueos_del_dia}
+    context = {'form': form, 'mascotas': mascotas, 'fecha_seleccionada': fecha_seleccionada, 'mascota_elegida': mascota_elegida, 'mostrar_contacto': mostrar_contacto, 'bloqueos_del_dia': bloqueos_del_dia}
     return render(request, 'citas/cliente/agendar_form.html', context)
 
 
