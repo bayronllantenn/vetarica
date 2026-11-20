@@ -151,12 +151,7 @@ def nuevo_insumo(request):
     if request.method == 'POST':
         form = InsumoForm(request.POST)
         if form.is_valid():
-            stock_inicial = form.cleaned_data['stock_inicial']
-            vencimiento = form.cleaned_data['vencimiento']
-            with transaction.atomic():
-                insumo = form.save()
-                if stock_inicial > 0:
-                    registrar_movimiento(insumo, 'Entrada', stock_inicial, 'Stock inicial', None, request.user, None, vencimiento)
+            insumo = form.save()
             messages.success(request, f'{insumo.nombre} fue agregado al inventario.')
             return redirect('inventario')
     else:

@@ -210,7 +210,8 @@
 .ing-solo-pdf,
 .ing-pdf,
 .ing-pie,
-.ing-total-pdf {
+.ing-total-pdf,
+.ing-fila-pdf {
   display: none;
 }
 
@@ -245,8 +246,13 @@
 
   .sidebar,
   .mobile-topbar,
-  .ing-filtro {
+  .ing-filtro,
+  .pac-paginacion {
     display: none !important;
+  }
+
+  .ing-fila-pdf {
+    display: table-row !important;
   }
 
   .ing-solo-pdf {

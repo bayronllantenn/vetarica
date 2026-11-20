@@ -118,7 +118,7 @@ Vet Arica{% endblock %} {% block css %}
         </thead>
         <tbody>
           {% for cita in citas_pagadas %}
-          <tr>
+          <tr {% if not cita.en_pagina %}class="ing-fila-pdf"{% endif %}>
             <td data-label="Fecha de pago"><strong>{{ cita.fecha_pago|date:"d/m/Y" }}</strong><span>{{ cita.fecha_pago|date:"H:i" }} hrs</span></td>
             <td data-label="N° de transacción">{{ cita.webpay_orden|default:"-" }}<span>Webpay Plus</span></td>
             <td class="pac-dueno"><strong>{{ cita.nombre_mascota }}</strong><span>{{ cita.nombre }} {{ cita.apellido }}</span></td>
@@ -130,6 +130,24 @@ Vet Arica{% endblock %} {% block css %}
         </tbody>
         <tfoot class="ing-total-pdf"><tr><td colspan="5">Total citas ({{ cantidad }} cita{{ cantidad|pluralize }})</td><td class="ing-derecha"><strong>${{ total_citas }}</strong></td></tr></tfoot>
       </table>
+
+      {% if pagina_citas.paginator.num_pages > 1 %}
+      <footer class="pac-paginacion">
+        <span>Página {{ pagina_citas.number }} de {{ pagina_citas.paginator.num_pages }}</span>
+        <div class="pac-paginacion-botones">
+          {% if pagina_citas.has_previous %}
+          <a href="?desde={{ desde|date:'Y-m-d' }}&hasta={{ hasta|date:'Y-m-d' }}&page={{ pagina_citas.previous_page_number }}" class="pac-paginacion-btn">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </a>
+          {% endif %}
+          {% if pagina_citas.has_next %}
+          <a href="?desde={{ desde|date:'Y-m-d' }}&hasta={{ hasta|date:'Y-m-d' }}&page={{ pagina_citas.next_page_number }}" class="pac-paginacion-btn">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </a>
+          {% endif %}
+        </div>
+      </footer>
+      {% endif %}
       {% else %}
       <div class="pac-vacio">
         <p>No hay citas pagadas en este período.</p>
