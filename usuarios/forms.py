@@ -60,6 +60,28 @@ def validar_rut(rut):
         raise ValidationError('El rut ingresado es invalido.')
     return rut
 
+
+def validar_telefono(telefono):
+    telefono = telefono.replace(' ', '')
+
+    if telefono.startswith('+56'):
+        telefono = telefono[3:]
+    elif telefono.startswith('56'):
+        telefono = telefono[2:]
+
+    if not telefono.isdigit():
+        raise ValidationError('El teléfono solo puede contener números.')
+    if len(telefono) != 9 or not telefono.startswith('9'):
+        raise ValidationError('El teléfono debe tener 9 dígitos y empezar con 9.')
+
+    resto = telefono[1:]
+    todos_iguales = resto == resto[0] * 8
+    es_seguido = resto == '12345678' or resto == '87654321'
+    if todos_iguales or es_seguido:
+        raise ValidationError('Ingresa un número de teléfono real.')
+
+    return telefono
+
 class RegisterForm(UserCreationForm):
     class Meta:
         model = Persona
@@ -84,21 +106,7 @@ class RegisterForm(UserCreationForm):
         self.fields['password2'].widget.attrs['placeholder'] = 'Confirmar contraseña'
 
     def clean_telefono(self):
-        telefono = self.cleaned_data['telefono'].replace(' ', '')
-
-        if telefono.startswith('+56'):
-            telefono = telefono[3:]
-        elif telefono.startswith('56'):
-            telefono = telefono[2:]
-
-        if not telefono.isdigit():
-            raise ValidationError('El telefono solo puede tener numeros.')
-        if len(telefono) != 9:
-            raise ValidationError('El telefono debe tener 9 digitos (ej: 998555962).')
-        if telefono[0] != '9':
-            raise ValidationError('El telefono debe empezar con 9.')
-
-        return telefono
+        return validar_telefono(self.cleaned_data['telefono'])
 
     def clean_rut(self):
         return validar_rut(self.cleaned_data['rut'])
@@ -159,6 +167,7 @@ class ConfiguracionForm(forms.ModelForm):
 
     clean_first_name = RegisterForm.clean_first_name
     clean_last_name = RegisterForm.clean_last_name
+    clean_telefono = RegisterForm.clean_telefono
 
 
 class CrearUsuarioForm(RegisterForm):

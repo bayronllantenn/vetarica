@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django import forms
 from django.utils import timezone
 
-from usuarios.forms import validar_rut
+from usuarios.forms import validar_rut, validar_telefono
 from .models import (ESPECIES_MASCOTA,SEXOS_MASCOTA,BloqueoHorario,FichaMedica,Mascota,SolicitudCita,TipoConsulta,)
 
 DOMINIOS_CONOCIDOS = {
@@ -232,20 +232,7 @@ class SolicitudCitaForm(forms.ModelForm):
         return email
 
     def clean_telefono(self):
-        telefono = self.cleaned_data['telefono'].replace(' ', '')
-
-        if not telefono.isdigit():
-            raise forms.ValidationError('El teléfono solo puede contener números.')
-        if len(telefono) != 9 or not telefono.startswith('9'):
-            raise forms.ValidationError('El teléfono debe tener 9 dígitos y empezar con 9.')
-
-        resto = telefono[1:]
-        todos_iguales = resto == resto[0] * 8
-        es_seguido = resto == '12345678' or resto == '87654321'
-        if todos_iguales or es_seguido:
-            raise forms.ValidationError('Ingresa un número de teléfono real.')
-
-        return telefono
+        return validar_telefono(self.cleaned_data['telefono'])
 
     def clean_tipo_consulta(self):
         tipo = self.cleaned_data['tipo_consulta']
