@@ -8,9 +8,9 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from inventario.models import CATEGORIAS_INSUMO, Insumo, Movimiento, registrar_movimiento
+from inventario.models import CATEGORIAS_INSUMO, Insumo, Movimiento, Venta, registrar_movimiento
 from usuarios.models import Persona
-from usuarios.views import es_personal_clinica
+from usuarios.views import es_equipo_clinico, es_personal_clinica, es_tecnico, redirigir_segun_rol
 from .forms import CitaInternaForm, FichaMedicaForm, MascotaForm, ReagendarCitaForm, SolicitudCitaForm, cancelar_citas_vencidas, obtener_horas_disponibles, rango_del_dia
 from .models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita
 from .utils import get_webpay_transaction
@@ -95,6 +95,8 @@ def elegir_dueno(request, es_personal):
 
 @login_required(login_url='sin_acceso')
 def agregar_mascota(request):
+    if es_tecnico(request.user):
+        return redirigir_segun_rol(request.user)
     es_personal = es_personal_clinica(request.user)
 
     if es_personal:
@@ -131,6 +133,8 @@ def agregar_mascota(request):
 
 # AGENDAR CITA-----------------------------------------------------------------------------------------
 def agendar_view(request):
+    if request.user.is_authenticated and es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
     if request.user.is_authenticated:
         mascotas = Mascota.objects.filter(dueno=request.user, activa=True)
     else:
@@ -557,7 +561,7 @@ def valor_insumos_de_ficha(ficha):
 @never_cache
 @login_required(login_url='sin_acceso')
 def ficha_medica_detalle(request, cita_id):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
 
     solicitud = get_object_or_404(SolicitudCita, id=cita_id)
@@ -582,6 +586,10 @@ def ficha_medica_detalle(request, cita_id):
     puede_marcar_ausente = False
     if (esta_pagada or paga_en_clinica) and solicitud.estado == 'Confirmada' and solicitud.fecha_hora <= ahora and ficha is None:
         puede_marcar_ausente = True
+
+    if es_tecnico(request.user):
+        puede_reagendar = False
+        puede_marcar_ausente = False
 
     if request.method == 'POST' and not puede_llenar_ficha:
         messages.error(request, 'No se puede registrar la ficha de esta cita.')
@@ -636,7 +644,7 @@ def ficha_medica_detalle(request, cita_id):
 @never_cache
 @login_required(login_url='sin_acceso')
 def ficha_sin_cita(request, mascota_id):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
     mascota = get_object_or_404(Mascota, id=mascota_id)
     if request.method == 'POST':
@@ -663,7 +671,7 @@ def ficha_es_de_hoy(ficha):
 @never_cache
 @login_required(login_url='sin_acceso')
 def fichas_paciente(request, mascota_id):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
     mascota = get_object_or_404(Mascota, id=mascota_id)
     fichas = FichaMedica.objects.filter(mascota=mascota).select_related('solicitud__tipo_consulta').order_by('-fecha_atencion')
@@ -675,7 +683,7 @@ def fichas_paciente(request, mascota_id):
 @never_cache
 @login_required(login_url='sin_acceso')
 def editar_ficha(request, ficha_id):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
 
     ficha = get_object_or_404(FichaMedica, id=ficha_id)
@@ -709,7 +717,7 @@ def editar_ficha(request, ficha_id):
 @login_required(login_url='sin_acceso')
 def imprimir_ficha(request, ficha_id):
     ficha = get_object_or_404(FichaMedica, id=ficha_id)
-    es_personal = es_personal_clinica(request.user)
+    es_personal = es_equipo_clinico(request.user)
     es_dueno = False
     if ficha.mascota and ficha.mascota.dueno == request.user:
         es_dueno = True
@@ -749,7 +757,7 @@ def buscar_mascotas(buscar):
 @never_cache
 @login_required(login_url='sin_acceso')
 def pacientes(request):
-    if not es_personal_clinica(request.user):
+    if not es_equipo_clinico(request.user):
         return redirect('sin_acceso')
 
     buscar = request.GET.get('buscar', '').strip()
@@ -793,6 +801,10 @@ def sumar_insumos(desde, hasta):
     total = 0
     for salida in salidas:
         total = total + salida.cantidad * salida.precio_unitario
+
+    ventas = Venta.objects.filter(fecha__range=(inicio, fin))
+    for venta in ventas:
+        total = total + venta.cantidad * venta.precio_unitario
     return total
 
 @never_cache
@@ -853,6 +865,21 @@ def ingresos_doctora(request):
             por_mes[mes] = [0, 0]
         por_mes[mes][1] = por_mes[mes][1] + monto
 
+    ventas = Venta.objects.filter(fecha__range=(inicio, fin))
+    for venta in ventas:
+        insumo = venta.insumo
+        monto = venta.cantidad * venta.precio_unitario
+        total_insumos = total_insumos + monto
+        if insumo not in por_insumo:
+            por_insumo[insumo] = [0, 0]
+        por_insumo[insumo][0] = por_insumo[insumo][0] + venta.cantidad
+        por_insumo[insumo][1] = por_insumo[insumo][1] + monto
+
+        mes = timezone.localtime(venta.fecha).date().replace(day=1)
+        if mes not in por_mes:
+            por_mes[mes] = [0, 0]
+        por_mes[mes][1] = por_mes[mes][1] + monto
+
     insumos_ocupados = []
     for insumo in por_insumo:
         cantidad_usada = por_insumo[insumo][0]
@@ -894,7 +921,8 @@ def ingresos_doctora(request):
     diferencia = None
     bajo = False
     if total_mes > 0 and total_mes_anterior > 0:
-        diferencia = (total_mes - total_mes_anterior) * 100 // total_mes_anterior
+        diferencia = (total_mes - total_mes_anterior) * 100 / total_mes_anterior
+        diferencia = round(diferencia)
         if diferencia < 0:
             bajo = True
 

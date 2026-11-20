@@ -22,9 +22,11 @@
         <a href="{% url 'movimientos' %}" class="btn btn-outline-secondary pac-boton">
           Ver movimientos
         </a>
+        {% if request.user.rol != 'tecnico' %}
         <a href="{% url 'registrar_venta' %}" class="btn btn-outline-secondary pac-boton">
           <i class="bi bi-cart"></i> Registrar venta
         </a>
+        {% endif %}
         <a href="{% url 'nuevo_insumo' %}" class="btn btn-teal pac-boton">
           <i class="bi bi-plus-lg"></i> Nuevo insumo
         </a>
@@ -58,7 +60,7 @@
             <th>Cantidad</th>
             <th>Categoría</th>
             <th class="inv-monto">Valor neto</th>
-            <th class="inv-monto">Beneficio</th>
+            {% if request.user.rol != 'tecnico' %}<th class="inv-monto">Beneficio</th>{% endif %}
             <th class="inv-monto">Total</th>
             <th>Vence</th>
             <th>Acciones</th>
@@ -84,7 +86,7 @@
             </td>
             <td data-label="Categoría"><span class="inv-etiqueta">{{ fila.insumo.categoria }}</span></td>
             <td data-label="Valor neto" class="inv-monto">{% if fila.neto %}${{ fila.neto }}{% else %}-{% endif %}</td>
-            <td data-label="Beneficio" class="inv-monto inv-beneficio">{% if fila.insumo.ganancia and fila.beneficio %}{{ fila.insumo.ganancia }}% = ${{ fila.beneficio }}{% elif fila.insumo.ganancia %}{{ fila.insumo.ganancia }}%{% else %}-{% endif %}</td>
+            {% if request.user.rol != 'tecnico' %}<td data-label="Beneficio" class="inv-monto inv-beneficio">{% if fila.insumo.ganancia and fila.beneficio %}{{ fila.insumo.ganancia }}% = ${{ fila.beneficio }}{% elif fila.insumo.ganancia %}{{ fila.insumo.ganancia }}%{% else %}-{% endif %}</td>{% endif %}
             <td data-label="Total" class="inv-monto"><strong>{% if fila.total %}${{ fila.total }}{% else %}-{% endif %}</strong></td>
             <td data-label="Vence">
               {% if fila.primer_lote %}
@@ -187,6 +189,22 @@
             <option value="{{ valor }}" {% if fila.insumo.categoria == valor %}selected{% endif %}>{{ texto }}</option>
             {% endfor %}
           </select>
+          <div class="mb-3">
+            {% if proveedores %}
+            <input type="hidden" name="editar_proveedores" value="1" />
+            <label class="form-label" for="proveedores-{{ fila.insumo.id }}">Proveedores</label>
+            <div class="pac-campo text-start">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <select id="proveedores-{{ fila.insumo.id }}" name="proveedores" class="form-select" multiple data-buscar-proveedores>
+                {% for proveedor in proveedores %}
+                <option value="{{ proveedor.pk }}"{% if proveedor in fila.insumo.proveedores.all %} selected{% endif %}>{{ proveedor.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% else %}
+            <div class="text-muted">Aún no hay proveedores registrados.</div>
+            {% endif %}
+          </div>
           <div class="row g-3 mb-4">
             <div class="col-6">
               <label class="form-label" for="minimo-{{ fila.insumo.id }}">Stock mínimo</label>
@@ -195,6 +213,7 @@
                 <span class="input-group-text">{{ fila.insumo.unidad }}</span>
               </div>
             </div>
+            {% if request.user.rol != 'tecnico' %}
             <div class="col-6">
               <label class="form-label" for="ganancia-{{ fila.insumo.id }}">Ganancia</label>
               <div class="input-group">
@@ -202,6 +221,7 @@
                 <span class="input-group-text">%</span>
               </div>
             </div>
+            {% endif %}
           </div>
           <div class="modal-eliminar-botones">
             <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
@@ -238,6 +258,17 @@
     score: function (texto) { const puntaje = this.getScoreFunction(texto); return function (item) { return texto ? puntaje(item) : 0; }; },
     render: {option_create: function (data, escape) { return '<div class="create">Buscar "' + escape(data.input) + '"</div>'; },no_results: function () { return '<div class="no-results">Sin coincidencias</div>'; },
     },
+  });
+
+  document.querySelectorAll("[data-buscar-proveedores]").forEach((selector) => {
+    new TomSelect(selector, {
+      placeholder: "Buscar proveedor",
+      maxOptions: null,
+      plugins: ["remove_button"],
+      render: {
+        no_results: () => '<div class="no-results">Sin coincidencias</div>',
+      },
+    });
   });
 </script>
 <script>

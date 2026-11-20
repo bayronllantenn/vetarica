@@ -29,8 +29,10 @@ def es_veterinaria(usuario):
 def es_tecnico(usuario):
     return usuario.rol == 'tecnico'
 
-def puede_ver_inventario(usuario):
-    return es_personal_clinica(usuario) or es_tecnico(usuario)
+def es_equipo_clinico(usuario):
+    if es_personal_clinica(usuario) or es_tecnico(usuario):
+        return True
+    return False
 
 MESES_ABREVIADOS = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
@@ -118,6 +120,8 @@ def sin_acceso_view(request):
 @never_cache
 @login_required(login_url='sin_acceso')
 def dashboard_usuario(request):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
     ahora = timezone.now()
     mascotas = request.user.mascotas.filter(activa=True)
 
@@ -152,6 +156,8 @@ def dashboard_usuario(request):
 @never_cache
 @login_required(login_url='sin_acceso')
 def historial_citas(request):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
     anio_actual = timezone.now().year
     citas = request.user.citas_solicitadas.select_related('mascota')
     citas = citas.order_by('-fecha_hora')
@@ -189,6 +195,8 @@ def historial_citas(request):
 
 @login_required(login_url='sin_acceso')
 def configuracion(request):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
     if request.method == "POST":
         form = ConfiguracionForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
@@ -204,6 +212,8 @@ def configuracion(request):
 #MASCOTA---------------------------------------------------------------------------------------------
 @login_required(login_url='sin_acceso')
 def ficha_mascota(request, mascota_id):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
     mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
     historial = FichaMedica.objects.filter(mascota=mascota)
     historial = historial.order_by('-fecha_atencion')
@@ -216,6 +226,8 @@ def ficha_mascota(request, mascota_id):
 
 @login_required(login_url='sin_acceso')
 def editar_mascota(request, mascota_id):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
     mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
     if request.method == 'POST':
         form = MascotaForm(request.POST, request.FILES, instance=mascota)
@@ -230,6 +242,8 @@ def editar_mascota(request, mascota_id):
 
 @login_required(login_url='sin_acceso')
 def eliminar_mascota(request, mascota_id):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
     mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
     if request.method == 'POST':
         pendiente = mascota.citas.filter(estado='Pendiente').exists()
