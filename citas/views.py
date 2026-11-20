@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import Http404
+from django.db import transaction
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -527,26 +528,38 @@ def insumos_por_categoria():
         grupos.append({'categoria': nombre, 'insumos': insumos})
     return grupos
 
-def leer_insumos_usados(request):
+def leer_insumos_usados(request, bloquear_stock=False):
     ids = request.POST.getlist('insumo_id')
     cantidades = request.POST.getlist('insumo_cantidad')
+    error_cantidad = 'Revisa los insumos: elige un insumo y una cantidad mayor a 0.'
+    if len(ids) != len(cantidades):
+        return {}, error_cantidad
+
+    cantidades_por_id = {}
+    for i in range(len(ids)):
+        if not ids[i].isdecimal():
+            continue
+        if not cantidades[i].isdecimal() or int(cantidades[i]) == 0:
+            return {}, error_cantidad
+
+        insumo_id = int(ids[i])
+        cantidad = int(cantidades[i])
+        cantidades_por_id[insumo_id] = cantidades_por_id.get(insumo_id, 0) + cantidad
+
+    insumos = Insumo.objects.filter(activo=True, pk__in=cantidades_por_id)
+    if bloquear_stock:
+        insumos = insumos.select_for_update().order_by('pk')
 
     usados = {}
-    for i in range(len(ids)):
-        if not ids[i].isdigit():
-            continue
-        insumo = Insumo.objects.filter(id=ids[i], activo=True).first()
-        cantidad = cantidades[i]
-        if insumo is None or not cantidad.isdigit() or int(cantidad) == 0:
-            return {}, 'Revisa los insumos: elige un insumo y una cantidad mayor a 0.'
-        if insumo in usados:
-            usados[insumo] = usados[insumo] + int(cantidad)
-        else:
-            usados[insumo] = int(cantidad)
+    for insumo in insumos:
+        cantidad = cantidades_por_id[insumo.pk]
+        disponible = insumo.stock_disponible()
+        if cantidad > disponible:
+            return {}, f'No hay stock suficiente de {insumo.nombre} (quedan {disponible} sin vencer).'
+        usados[insumo] = cantidad
 
-    for insumo in usados:
-        if usados[insumo] > insumo.stock_disponible():
-            return {}, f'No hay stock suficiente de {insumo.nombre} (quedan {insumo.stock_disponible()} sin vencer).'
+    if len(usados) != len(cantidades_por_id):
+        return {}, error_cantidad
 
     return usados, None
 
@@ -712,17 +725,29 @@ def editar_ficha(request, ficha_id):
     if request.method == 'POST':
         form = FichaMedicaForm(request.POST, instance=ficha)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Ficha clínica actualizada correctamente.')
-            return redirect(volver_url)
-        messages.error(request, 'Revisa los campos marcados en rojo.')
+            with transaction.atomic():
+                insumos_usados, error_insumos = leer_insumos_usados(request, bloquear_stock=True)
+                if error_insumos is None:
+                    form.save()
+                    for insumo, cantidad in insumos_usados.items():
+                        registrado = registrar_movimiento(insumo, 'Salida', cantidad, motivo='Usado en la ficha clínica', ficha=ficha, usuario=request.user)
+                        if not registrado:
+                            error_insumos = f'No hay stock suficiente de {insumo.nombre}.'
+                            transaction.set_rollback(True)
+                            break
+            if error_insumos is None:
+                messages.success(request, 'Ficha clínica actualizada correctamente.')
+                return redirect(volver_url)
+            messages.error(request, error_insumos)
+        else:
+            messages.error(request, 'Revisa los campos marcados en rojo.')
     else: 
         form = FichaMedicaForm(instance=ficha)
         if not editable:
             for campo in form.fields.values():
                 campo.disabled = True
     insumos_ya_usados, total_insumos = valor_insumos_de_ficha(ficha)
-    context = {'solicitud': ficha.solicitud, 'mascota': ficha.mascota, 'ficha': ficha, 'form': form, 'volver_url': volver_url, 'puede_llenar_ficha': True, 'solo_ver': not editable, 'insumos_ya_usados': insumos_ya_usados, 'total_insumos': total_insumos}
+    context = {'solicitud': ficha.solicitud, 'mascota': ficha.mascota, 'ficha': ficha, 'form': form, 'volver_url': volver_url, 'puede_llenar_ficha': True, 'solo_ver': not editable, 'insumos_por_categoria': insumos_por_categoria() if editable else [], 'insumos_ya_usados': insumos_ya_usados, 'total_insumos': total_insumos}
     return render(request, 'citas/doctora/ficha_medica_form.html', context)
 
 @never_cache

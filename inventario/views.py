@@ -1,7 +1,6 @@
 from datetime import date
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,7 +8,6 @@ from django.urls import reverse
 from django.utils.http import urlencode
 from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
-from usuarios.forms import validar_rut
 from usuarios.views import es_equipo_clinico, es_personal_clinica, es_tecnico, es_veterinaria
 from .forms import BajaForm, InsumoForm, ProveedorForm, VentaForm
 from .models import CATEGORIAS_INSUMO, Insumo, Lote, Movimiento, OrdenCompra, Proveedor, Venta, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
@@ -164,13 +162,9 @@ def eliminar_insumo(request, insumo_id):
         return redirect('sin_acceso')
     insumo = get_object_or_404(Insumo, id=insumo_id, activo=True)
     if request.method == 'POST':
-        if insumo.movimientos.exists() or insumo.ventas.exists():
-            insumo.activo = False
-            insumo.save()
-            messages.success(request, f'{insumo.nombre} fue eliminado. Su historial se conserva.')
-        else:
-            insumo.delete()
-            messages.success(request, f'{insumo.nombre} fue eliminado.')
+        insumo.activo = False
+        insumo.save(update_fields=['activo'])
+        messages.success(request, f'{insumo.nombre} fue ocultado. Puedes verlo en Ver eliminados.')
     return redirect('inventario')
 
 
@@ -282,11 +276,8 @@ def elegir_proveedor(request):
         return None
 
     nombre = request.POST.get('proveedor_nombre', '').strip()
-    try:
-        rut = validar_rut(request.POST.get('proveedor_rut', ''))
-    except ValidationError:
-        return None
-    if nombre == '':
+    rut = request.POST.get('proveedor_rut', '').strip().replace('.', '').replace('-', '').upper()
+    if not nombre or not rut or len(rut) > 12:
         return None
 
     proveedor = Proveedor.objects.filter(rut=rut).first()
@@ -344,7 +335,7 @@ def registrar_orden(request):
     with transaction.atomic():
         proveedor = elegir_proveedor(request)
         if request.POST.get('proveedor') == 'nuevo' and proveedor is None:
-            messages.error(request, 'El nombre o el RUT del proveedor no es válido.')
+            messages.error(request, 'Completa el nombre y el RUT del proveedor. El RUT admite hasta 12 caracteres sin puntos ni guion.')
             return redirect('orden_compra')
 
         orden = crear_orden_compra(request.user, numero, proveedor)

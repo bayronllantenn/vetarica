@@ -178,6 +178,7 @@ Vet Arica{% endblock %} {% block css %}
                   <tr>
                     <th>Insumo</th>
                     <th>Cantidad</th>
+                    <th class="text-end">Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -185,6 +186,7 @@ Vet Arica{% endblock %} {% block css %}
                   <tr>
                     <td><strong>{{ usado.nombre }}</strong></td>
                     <td data-label="Cantidad">{{ usado.cantidad }} {{ usado.unidad }}</td>
+                    <td data-label="Total" class="text-end">${{ usado.subtotal }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>

@@ -236,7 +236,7 @@
       <div class="modal-eliminar-caja">
         <span class="modal-eliminar-icono"><i class="bi bi-trash"></i></span>
         <h3>¿Eliminar {{ fila.insumo.nombre }}?</h3>
-        <p>Dejará de aparecer en el inventario y en las fichas. Si tiene movimientos, su historial se conserva y puedes verlo marcando "Ver eliminados".</p>
+        <p>Dejará de aparecer en el inventario y en las fichas. Puedes volver a verlo marcando "Ver eliminados" y pulsando "Buscar".</p>
         <form method="post" action="{% url 'eliminar_insumo' fila.insumo.id %}">
           {% csrf_token %}
           <div class="modal-eliminar-botones">
