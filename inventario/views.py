@@ -10,14 +10,14 @@ from django.utils.http import urlencode
 from django.views.decorators.cache import never_cache
 from citas.views import separar_miles
 from usuarios.forms import validar_rut
-from usuarios.views import es_personal_clinica, es_veterinaria
+from usuarios.views import puede_ver_inventario
 from .forms import BajaForm, InsumoForm, ProveedorForm, VentaForm
 from .models import CATEGORIAS_INSUMO, Insumo, Lote, Movimiento, OrdenCompra, Proveedor, Venta, buscar_orden_repetida, crear_orden_compra, dar_de_baja_lote, registrar_movimiento
 from .ocr import buscar_insumo, buscar_proveedor, leer_numero_documento, leer_proveedor, leer_texto, separar_productos
 
 #ALERTAS----------------------------------------------------------------------------------------------
 def alertas(request):
-    if not request.user.is_authenticated or not es_personal_clinica(request.user):
+    if not request.user.is_authenticated or not puede_ver_inventario(request.user):
         return {}
 
     lista = []
@@ -45,7 +45,7 @@ def alertas(request):
 
 @login_required(login_url='sin_acceso')
 def ocultar_alerta(request, lote_id):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     lote = get_object_or_404(Lote, id=lote_id)
     if request.method == 'POST':
@@ -67,7 +67,7 @@ def es_categoria_valida(categoria):
 @never_cache
 @login_required(login_url='sin_acceso')
 def inventario(request):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
 
     if request.method == 'POST':
@@ -134,7 +134,7 @@ def inventario(request):
 
 @login_required(login_url='sin_acceso')
 def nuevo_insumo(request):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     if request.method == 'POST':
         form = InsumoForm(request.POST)
@@ -153,7 +153,7 @@ def nuevo_insumo(request):
 
 @login_required(login_url='sin_acceso')
 def eliminar_insumo(request, insumo_id):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     insumo = get_object_or_404(Insumo, id=insumo_id, activo=True)
     if request.method == 'POST':
@@ -171,7 +171,7 @@ def eliminar_insumo(request, insumo_id):
 @never_cache
 @login_required(login_url='sin_acceso')
 def lotes_insumo(request, insumo_id):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     insumo = get_object_or_404(Insumo, id=insumo_id)
     context = {'insumo': insumo, 'lotes': insumo.lotes_con_fecha(), 'sin_fecha': insumo.unidades_sin_fecha()}
@@ -180,7 +180,7 @@ def lotes_insumo(request, insumo_id):
 
 @login_required(login_url='sin_acceso')
 def dar_de_baja(request, lote_id):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     lote = get_object_or_404(Lote.objects.select_related('insumo'), id=lote_id)
     if request.method == 'POST' and lote.cantidad > 0 and lote.estado_vencimiento() == 'Vencido':
@@ -195,7 +195,7 @@ def dar_de_baja(request, lote_id):
 @never_cache
 @login_required(login_url='sin_acceso')
 def proveedores(request):
-    if not es_veterinaria(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     buscar = request.GET.get('buscar', '').strip()
     lista = Proveedor.objects.order_by('nombre')
@@ -211,7 +211,7 @@ def proveedores(request):
 
 @login_required(login_url='sin_acceso')
 def crear_proveedor(request):
-    if not es_veterinaria(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     if request.method == 'POST':
         form = ProveedorForm(request.POST)
@@ -226,7 +226,7 @@ def crear_proveedor(request):
 
 @login_required(login_url='sin_acceso')
 def editar_proveedor(request, proveedor_id):
-    if not es_veterinaria(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     proveedor = get_object_or_404(Proveedor, id=proveedor_id)
     if request.method == 'POST':
@@ -241,7 +241,7 @@ def editar_proveedor(request, proveedor_id):
 
 @login_required(login_url='sin_acceso')
 def eliminar_proveedor(request, proveedor_id):
-    if not es_veterinaria(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     proveedor = get_object_or_404(Proveedor, id=proveedor_id)
     if request.method == 'POST':
@@ -377,7 +377,7 @@ def registrar_orden(request):
 @never_cache
 @login_required(login_url='sin_acceso')
 def orden_compra(request):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
 
     if request.method == 'POST' and 'registrar' in request.POST:
@@ -415,7 +415,7 @@ def orden_compra(request):
 @never_cache
 @login_required(login_url='sin_acceso')
 def detalle_orden(request, codigo):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
     orden = get_object_or_404(OrdenCompra, codigo=codigo)
     lista = orden.movimientos.filter(tipo='Entrada').select_related('insumo').order_by('insumo__nombre')
@@ -426,7 +426,7 @@ def detalle_orden(request, codigo):
 @never_cache
 @login_required(login_url='sin_acceso')
 def movimientos(request):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
 
     insumo_id = request.GET.get('insumo', '')
@@ -456,7 +456,7 @@ def movimientos(request):
 
 @login_required(login_url='sin_acceso')
 def nuevo_movimiento(request):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
 
     if request.method == 'POST':
@@ -489,7 +489,7 @@ def nombre_con_precio(insumo):
 
 @login_required(login_url='sin_acceso')
 def registrar_venta(request):
-    if not es_personal_clinica(request.user):
+    if not puede_ver_inventario(request.user):
         return redirect('sin_acceso')
 
     if request.method == 'POST':

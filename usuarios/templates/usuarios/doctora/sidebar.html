@@ -55,6 +55,7 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'tipos_servicios' %}active{% endif %}">
     <i class="bi bi-tags"></i> Tipos de servicios
   </a>
+  {% endif %}
   <a href="{% url 'inventario' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'inventario' %}active{% endif %}">
     <i class="bi bi-boxes"></i> Inventario
@@ -63,11 +64,11 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'movimientos' or request.resolver_match.url_name == 'nuevo_movimiento' or request.resolver_match.url_name == 'detalle_orden' %}active{% endif %}">
     <i class="bi bi-box-seam"></i> Movimientos
   </a>
-  {% if request.user.rol == 'veterinaria' %}
   <a href="{% url 'proveedores' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
     <i class="bi bi-truck"></i> Proveedores
   </a>
+  {% if request.user.rol == 'veterinaria' %}
   <a href="{% url 'ingresos_doctora' %}"
      class="sidebar-link {% if request.resolver_match.url_name == 'ingresos_doctora' %}active{% endif %}">
     <i class="bi bi-cash-coin"></i> Ingresos
@@ -76,7 +77,6 @@
      class="sidebar-link {% if request.resolver_match.url_name == 'usuarios_list' %}active{% endif %}">
     <i class="bi bi-people"></i> Usuarios
   </a>
-  {% endif %}
   {% endif %}
 </nav>
   <div class="sidebar-footer">

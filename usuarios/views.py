@@ -29,6 +29,9 @@ def es_veterinaria(usuario):
 def es_tecnico(usuario):
     return usuario.rol == 'tecnico'
 
+def puede_ver_inventario(usuario):
+    return es_personal_clinica(usuario) or es_tecnico(usuario)
+
 MESES_ABREVIADOS = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
     'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
