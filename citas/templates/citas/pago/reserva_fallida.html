@@ -9,15 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
     <link href="{% static 'citas/css/reserva_fallida.css' %}" rel="stylesheet" />
+    <link href="{% static 'citas/css/fondo_citas.css' %}" rel="stylesheet" />
   </head>
-  <body>
-    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="form-deco fondo-camino" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-1" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-2" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-3" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
-    <img src="{% static 'inicio/img/ilustraciones/perro.png' %}" alt="" class="form-deco fondo-perro" />
+  <body class="fondo-citas">
+    {% include "citas/fondo_citas.html" %}
 
     <div class="tarjeta">
 
@@ -25,7 +20,7 @@
       <img src="{% static 'inicio/img/ilustraciones/Perro_y_gato_bajo_corazones_rotos.png' %}" alt="Perro y gato tristes" class="ilustracion"/>
 
       <h1 class="titulo">Pago no aprobado</h1>
-      <p class="texto">No se pudo procesar el pago, por lo tanto la cita no quedó confirmada.Puedes intentar nuevamente con otro medio de pago.</p>
+      <p class="texto">No se pudo procesar el pago, por lo tanto la cita no quedÃ³ confirmada. Puedes intentar nuevamente con otro medio de pago.</p>
 
       {% if solicitud %}
       <div class="resumen">
@@ -65,11 +60,9 @@
           <span class="valor"><span class="etiqueta-amarilla">{{ solicitud.estado }}</span></span>
         </div>
       </div>
-      {% else %}
-      <p class="texto">No se pudo asociar el pago a una solicitud específica.</p>
       {% endif %}
 
-      <a href="{% url 'agendar' %}" class="boton">Intentar nuevamente <i class="bi bi-arrow-right"></i></a>
+      <a href="{% url 'agendar' %}" class="boton">Intentar nuevamente</a>
       <a href="{% url 'dashboard' %}" class="enlace">Volver a mi cuenta</a>
     </div>
 

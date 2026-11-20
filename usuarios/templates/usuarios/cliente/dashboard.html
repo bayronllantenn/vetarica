@@ -97,19 +97,10 @@ Vet Arica{% endblock %} {% block css %}
           <img src="{% static 'inicio/img/iconos/huella_durazno.svg' %}" alt="" class="mascota-card-marca-agua huella-durazno" />
 
           <div class="mascota-card-body">
-            <div class="mascota-card-nombre-fila">
-              <h3 class="mascota-card-nombre">{{ item.mascota.nombre }}</h3>
-              <span class="mascota-card-sexo-badge">
-                {% if item.mascota.sexo == 'Macho' %}
-                <i class="bi bi-gender-male"></i>
-                {% else %}
-                <i class="bi bi-gender-female"></i>
-                {% endif %}
-              </span>
-            </div>
+            <h3 class="mascota-card-nombre">{{ item.mascota.nombre }}</h3>
             <p class="mascota-subinfo">
               <span>Sexo: {{ item.mascota.sexo }}</span>
-              <span>Nacimiento: {{ item.mascota.fecha_nacimiento|date:"d/m/Y"|default:"—" }}</span>
+              <span>Nacimiento: {{ item.mascota.fecha_nacimiento|date:"d/m/Y"|default:"-" }}</span>
             </p>
 
             <div class="mascota-card-pills">

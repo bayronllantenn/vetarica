@@ -12,15 +12,10 @@
     <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet" />
     <link href="{% static 'citas/css/mascota_form.css' %}" rel="stylesheet" />
     <link href="{% static 'citas/css/agendar.css' %}" rel="stylesheet" />
+    <link href="{% static 'citas/css/fondo_citas.css' %}" rel="stylesheet" />
   </head>
-  <body class="mascota-form-body">
-    <img src="{% static 'inicio/img/decoracion/ficha_camino.png' %}" alt="" class="form-deco fondo-camino" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-1" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-2" />
-    <img src="{% static 'inicio/img/decoracion/ficha_huella_grande.png' %}" alt="" class="form-deco fondo-huella fondo-huella-3" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_izquierda.png' %}" alt="" class="form-deco fondo-nube fondo-nube-izq" />
-    <img src="{% static 'inicio/img/ilustraciones/nube_derecha.png' %}" alt="" class="form-deco fondo-nube fondo-nube-der" />
-    <img src="{% static 'inicio/img/ilustraciones/perro.png' %}" alt="" class="form-deco fondo-perro" />
+  <body class="mascota-form-body fondo-citas">
+    {% include "citas/fondo_citas.html" %}
     <div class="mascota-card-wrapper agendar-card-wrapper">
       <form class="mascota-form-card" method="post" novalidate>
         {% csrf_token %}
@@ -54,19 +49,19 @@
         {% endif %}
 
         <div class="crispy-fields-wrap campos-con-icono">
-          {% if not cuenta_completa %}
+          {% if mostrar_contacto %}
           <p class="section-title">Datos de contacto</p>
 
           <div class="row g-3">
             <div class="col-md-6 campo">
               <label class="campo-label" for="{{ form.nombre.id_for_label }}">
-                <i class="bi bi-person"></i> Nombre
+                Nombre
               </label>
               {{ form.nombre|as_crispy_field }}
             </div>
             <div class="col-md-6 campo">
               <label class="campo-label" for="{{ form.apellido.id_for_label }}">
-                <i class="bi bi-person"></i> Apellido
+                Apellido
               </label>
               {{ form.apellido|as_crispy_field }}
             </div>
@@ -74,13 +69,13 @@
           <div class="row g-3">
             <div class="col-md-6 campo">
               <label class="campo-label" for="{{ form.email.id_for_label }}">
-                <i class="bi bi-envelope"></i> Correo
+                Correo
               </label>
               {{ form.email|as_crispy_field }}
             </div>
             <div class="col-md-6 campo">
               <label class="campo-label" for="{{ form.telefono.id_for_label }}">
-                <i class="bi bi-telephone"></i> Teléfono
+                Teléfono
               </label>
               {{ form.telefono|as_crispy_field }}
             </div>
@@ -92,7 +87,7 @@
           {% if mascotas %}
           <div class="mb-3">
             <label class="campo-label" for="mascota_guardada">
-              <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Mascota
+              Mascota
             </label>
             <select id="mascota_guardada" name="mascota_id" class="form-select" onchange="recargarFormulario(this.form)">
               {% for mascota in mascotas %}
@@ -109,19 +104,19 @@
             <div class="row g-3">
               <div class="col-md-4 campo">
                 <label class="campo-label" for="{{ form.nombre_mascota.id_for_label }}">
-                  <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Nombre mascota
+                  Nombre mascota
                 </label>
                 {{ form.nombre_mascota|as_crispy_field }}
               </div>
               <div class="col-md-4 campo">
                 <label class="campo-label" for="{{ form.especie_mascota.id_for_label }}">
-                  <img src="{% static 'inicio/img/iconos/huella.svg' %}" alt="" class="campo-icono" /> Especie
+                  Especie
                 </label>
                 {{ form.especie_mascota|as_crispy_field }}
               </div>
               <div class="col-md-4 campo">
                 <label class="campo-label" for="{{ form.raza_mascota.id_for_label }}">
-                  <i class="bi bi-tag"></i> Raza
+                  Raza
                 </label>
                 {{ form.raza_mascota|as_crispy_field }}
               </div>
@@ -129,13 +124,13 @@
             <div class="row g-3">
               <div class="col-md-4 campo">
                 <label class="campo-label" for="{{ form.sexo_mascota.id_for_label }}">
-                  <i class="bi bi-gender-ambiguous"></i> Sexo
+                  Sexo
                 </label>
                 {{ form.sexo_mascota|as_crispy_field }}
               </div>
               <div class="col-md-8 campo">
                 <label class="campo-label" for="{{ form.fecha_nacimiento_mascota.id_for_label }}">
-                  <i class="bi bi-cake2"></i> Fecha de nacimiento
+                  Fecha de nacimiento
                 </label>
                 {{ form.fecha_nacimiento_mascota|as_crispy_field }}
               </div>
@@ -144,7 +139,7 @@
 
           <div class="campo">
             <label class="campo-label" for="{{ form.tipo_consulta.id_for_label }}">
-              <i class="bi bi-clipboard2-pulse"></i> Tipo de consulta
+              Tipo de consulta
             </label>
             {{ form.tipo_consulta|as_crispy_field }}
           </div>
@@ -152,13 +147,13 @@
           <div class="row g-3">
             <div class="col-md-6 campo">
               <label class="campo-label" for="{{ form.fecha.id_for_label }}">
-                <i class="bi bi-calendar-event"></i> Fecha
+                Fecha
               </label>
               {{ form.fecha|as_crispy_field }}
             </div>
             <div class="col-md-6 campo">
               <label class="campo-label" for="{{ form.hora.id_for_label }}">
-                <i class="bi bi-clock"></i> Hora
+                Hora
               </label>
               {{ form.hora|as_crispy_field }}
             </div>
@@ -193,7 +188,7 @@
 
           <div class="campo">
             <label class="campo-label" for="{{ form.observaciones.id_for_label }}">
-              <i class="bi bi-chat-left-text"></i> Observaciones
+              Observaciones
             </label>
             {{ form.observaciones|as_crispy_field }}
           </div>

@@ -1,30 +1,8 @@
 .ficha-fondo {
   position: relative;
   overflow: hidden;
-  background: #f4f9f5;
   margin: 0;
   min-height: 100vh;
-}
-
-.ficha-fondo-mancha {
-  position: absolute;
-  border-radius: 50%;
-  background: #e3efe5;
-  pointer-events: none;
-}
-
-.ficha-fondo-mancha-arriba {
-  top: -120px;
-  right: -100px;
-  width: 420px;
-  height: 300px;
-}
-
-.ficha-fondo-mancha-abajo {
-  bottom: -140px;
-  left: -120px;
-  width: 360px;
-  height: 320px;
 }
 
 .ficha-content {
@@ -112,19 +90,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f4f9f5;
 }
 
 .ficha-foto-vacia img {
   width: 48px;
   opacity: 0.35;
-}
-
-.ficha-foto-rayas {
-  position: absolute;
-  top: -12px;
-  left: -16px;
-  width: 30px;
 }
 
 .ficha-nombre-fila {
