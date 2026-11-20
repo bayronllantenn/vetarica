@@ -17,9 +17,11 @@
         <h1>Pacientes</h1>
         <p class="dash-subtitle">{{ page_obj.paginator.count }} mascotas registradas</p>
       </div>
+      {% if request.user.rol != 'tecnico' %}
       <a href="{% url 'agregar_mascota' %}" class="btn btn-teal pac-boton">
         <i class="bi bi-plus-lg"></i> Nuevo paciente
       </a>
+      {% endif %}
     </section>
 
     <form method="get" class="pac-buscador">

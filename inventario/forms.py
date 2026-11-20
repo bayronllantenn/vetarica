@@ -22,13 +22,13 @@ class ProveedorForm(forms.ModelForm):
 
 
 class InsumoForm(forms.ModelForm):
+    proveedores = forms.ModelMultipleChoiceField(queryset=Proveedor.objects.order_by('nombre'), required=False)
+
     class Meta:
         model = Insumo
-        fields = ('nombre', 'categoria', 'stock_minimo')
+        fields = ('nombre', 'categoria', 'stock_minimo', 'proveedores')
         labels = {'nombre': 'Nombre', 'categoria': 'Categoría', 'stock_minimo': 'Stock mínimo'}
-        widgets = {
-            'nombre': forms.TextInput(attrs={'placeholder': 'Ej: Bravecto 20-40 kg'}),
-        }
+        widgets = {'nombre': forms.TextInput(attrs={'placeholder': 'Ej: Bravecto 20-40 kg'})}
 
     def clean_nombre(self):
         nombre = self.cleaned_data['nombre'].strip()

@@ -16,6 +16,7 @@ from .forms import ConfiguracionForm, CrearUsuarioForm, EditarUsuarioForm, Login
 from .models import Persona
 
 
+#ROLES Y PERMISOS-------------------------------------------------------------------------------------
 def es_personal_clinica(usuario):
     if usuario.rol == 'veterinaria' or usuario.rol == 'secretaria':
         return True
@@ -27,6 +28,11 @@ def es_veterinaria(usuario):
 
 def es_tecnico(usuario):
     return usuario.rol == 'tecnico'
+
+def es_equipo_clinico(usuario):
+    if es_personal_clinica(usuario) or es_tecnico(usuario):
+        return True
+    return False
 
 MESES_ABREVIADOS = [
     'ene', 'feb', 'mar', 'abr', 'may', 'jun',
@@ -47,6 +53,7 @@ def redirigir_segun_rol(usuario):
     return redirect('dashboard')
 
 
+#REGISTRO Y LOGIN-------------------------------------------------------------------------------------
 @never_cache
 def registro_view(request):
     if request.user.is_authenticated:
@@ -109,9 +116,12 @@ def sin_acceso_view(request):
     return render(request, 'usuarios/autorizacion/error.html')
 
 
+#CLIENTE----------------------------------------------------------------------------------------------
 @never_cache
 @login_required(login_url='sin_acceso')
 def dashboard_usuario(request):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
     ahora = timezone.now()
     mascotas = request.user.mascotas.filter(activa=True)
 
@@ -143,6 +153,111 @@ def dashboard_usuario(request):
     return render(request, 'usuarios/cliente/dashboard.html', context)
 
 
+@never_cache
+@login_required(login_url='sin_acceso')
+def historial_citas(request):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
+    anio_actual = timezone.now().year
+    citas = request.user.citas_solicitadas.select_related('mascota')
+    citas = citas.order_by('-fecha_hora')
+
+    periodo = request.GET.get('periodo', 'este_ano')
+    mascota_sel = request.GET.get('mascota', '')
+    estado_sel = request.GET.get('estado', '')
+
+    if periodo == 'este_ano':
+        citas = citas.filter(fecha_hora__year=anio_actual)
+    elif periodo == 'ano_pasado':
+        citas = citas.filter(fecha_hora__year=anio_actual - 1)
+
+    if mascota_sel:
+        citas = citas.filter(mascota_id=mascota_sel)
+    if estado_sel:
+        citas = citas.filter(estado=estado_sel)
+
+    estados = SolicitudCita.ESTADOS
+
+    paginador = Paginator(citas, 8)
+    numero_pagina = request.GET.get('page')
+    page_obj = paginador.get_page(numero_pagina)
+
+    context = {
+        'page_obj': page_obj,
+        'mascotas': request.user.mascotas.all(),
+        'estados': estados,
+        'periodo': periodo,
+        'mascota_sel': mascota_sel,
+        'estado_sel': estado_sel,
+    }
+    return render(request, 'usuarios/cliente/historial_citas_list.html', context)
+
+
+@login_required(login_url='sin_acceso')
+def configuracion(request):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
+    if request.method == "POST":
+        form = ConfiguracionForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Tus cambios se guardaron correctamente.")
+            return redirect("dashboard")
+        messages.error(request, "Revisa los campos marcados en rojo.")
+    else:
+        form = ConfiguracionForm(instance=request.user)
+
+    return render(request, "usuarios/cliente/configuracion.html", {"form": form})
+
+#MASCOTA---------------------------------------------------------------------------------------------
+@login_required(login_url='sin_acceso')
+def ficha_mascota(request, mascota_id):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
+    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
+    historial = FichaMedica.objects.filter(mascota=mascota)
+    historial = historial.order_by('-fecha_atencion')
+    context = {
+        'mascota': mascota,
+        'historial': historial,
+    }
+    return render(request, 'usuarios/cliente/ficha_mascota.html', context)
+
+
+@login_required(login_url='sin_acceso')
+def editar_mascota(request, mascota_id):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
+    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
+    if request.method == 'POST':
+        form = MascotaForm(request.POST, request.FILES, instance=mascota)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'{mascota.nombre} fue actualizada correctamente.')
+            return redirect('dashboard')
+    else:
+        form = MascotaForm(instance=mascota)
+    return render(request, 'usuarios/cliente/editar_mascota.html', {'form': form, 'mascota': mascota})
+
+
+@login_required(login_url='sin_acceso')
+def eliminar_mascota(request, mascota_id):
+    if es_equipo_clinico(request.user):
+        return redirigir_segun_rol(request.user)
+    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
+    if request.method == 'POST':
+        pendiente = mascota.citas.filter(estado='Pendiente').exists()
+        confirmada = mascota.citas.filter(estado='Confirmada').exists()
+        if pendiente or confirmada:
+            messages.error(request, f'{mascota.nombre} tiene una cita agendada.')
+            return redirect('dashboard')
+        mascota.activa = False
+        mascota.save()
+        messages.success(request, f'{mascota.nombre} fue eliminada correctamente.')
+    return redirect('dashboard')
+
+
+#DOCTORA----------------------------------------------------------------------------------------------
 @never_cache
 @login_required(login_url='sin_acceso')
 def inicio_doctora(request):
@@ -275,17 +390,6 @@ def inicio_doctora(request):
     }
     return render(request, 'usuarios/doctora/inicio.html', context)
 
-
-@never_cache
-@login_required(login_url='sin_acceso')
-def tipos_servicios(request):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-
-    tipos_consulta = TipoConsulta.objects.all()
-    return render(request, 'usuarios/doctora/tipos_servicios.html', {'tipos_consulta': tipos_consulta})
-
-
 @never_cache
 @login_required(login_url='sin_acceso')
 def agenda_doctora(request):
@@ -384,6 +488,107 @@ def agenda_doctora(request):
     }
     return render(request, 'usuarios/doctora/agenda.html', context)
 
+#TIPOS DE CONSULTA------------------------------------------------------------------------------------
+@never_cache
+@login_required(login_url='sin_acceso')
+def tipos_servicios(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    tipos_consulta = TipoConsulta.objects.all()
+    return render(request, 'usuarios/doctora/tipos_servicios.html', {'tipos_consulta': tipos_consulta})
+
+
+@login_required(login_url='sin_acceso')
+def crear_tipo_consulta(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        form = TipoConsultaForm(request.POST)
+        if form.is_valid():
+            tipo = form.save()
+            messages.success(request, f'{tipo.nombre} fue agregado correctamente.')
+            return redirect('tipos_servicios')
+    else:
+        form = TipoConsultaForm()
+    return render(request, 'usuarios/doctora/crear_tipo_consulta.html', {'form': form})
+
+@login_required(login_url='sin_acceso')
+def editar_tipo_consulta(request, tipo_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    tipo = get_object_or_404(TipoConsulta, id=tipo_id)
+    if request.method == 'POST':
+        form = TipoConsultaForm(request.POST, instance=tipo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'{tipo.nombre} fue actualizado correctamente.')
+            return redirect('tipos_servicios')
+    else:
+        form = TipoConsultaForm(instance=tipo)
+    return render(request, 'usuarios/doctora/editar_tipo_consulta.html', {'form': form, 'tipo': tipo})
+
+
+@login_required(login_url='sin_acceso')
+def ocultar_tipo_consulta(request, tipo_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+    tipo = get_object_or_404(TipoConsulta, id=tipo_id)
+    if request.method == 'POST':
+        if tipo.activo:
+            tipo.activo = False
+            messages.success(request, f'{tipo.nombre} fue ocultado y ya no se puede agendar.')
+        else:
+            tipo.activo = True
+            messages.success(request, f'{tipo.nombre} se puede agendar de nuevo.')
+        tipo.save()
+    return redirect('tipos_servicios')
+
+#BLOQUEOS DE HORARIO ----------------------------------------------------------------------------------
+@never_cache
+@login_required(login_url='sin_acceso')
+def bloqueos_doctora(request):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    if request.method == 'POST':
+        form = BloqueoHorarioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Horario bloqueado correctamente.')
+            return redirect('bloqueos_doctora')
+        messages.error(request, 'Revisa los campos marcados en rojo.')
+    else:
+        form = BloqueoHorarioForm()
+
+    hoy = timezone.localdate()
+    form.fields['fecha'].widget.attrs['min'] = hoy.isoformat()
+
+    bloqueos = BloqueoHorario.objects.filter(fecha__gte=hoy)
+    bloqueos = bloqueos.order_by('fecha', 'hora_inicio')
+
+    context = {
+        'form': form,
+        'bloqueos': bloqueos,
+    }
+    return render(request, 'usuarios/doctora/bloqueos.html', context)
+
+
+@login_required(login_url='sin_acceso')
+def eliminar_bloqueo(request, bloqueo_id):
+    if not es_personal_clinica(request.user):
+        return redirect('sin_acceso')
+
+    bloqueo = get_object_or_404(BloqueoHorario, id=bloqueo_id)
+    if request.method == 'POST':
+        bloqueo.delete()
+        messages.success(request, 'Bloqueo eliminado correctamente.')
+    return redirect('bloqueos_doctora')
+
+
+#USUARIOS---------------------------------------------------------------------------------------------
 @never_cache
 @login_required(login_url='sin_acceso')
 def usuarios_list(request):
@@ -410,7 +615,6 @@ def usuarios_list(request):
 def crear_usuario(request):
     if not es_veterinaria(request.user):
         return redirect('sin_acceso')
-
     if request.method == 'POST':
         form = CrearUsuarioForm(request.POST)
         if form.is_valid():
@@ -472,179 +676,7 @@ def bloquear_usuario(request, usuario_id):
             messages.success(request, f'{usuario.email} fue desbloqueado.')
     return redirect('usuarios_list')
 
-@never_cache
-@login_required(login_url='sin_acceso')
-def bloqueos_doctora(request):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-
-    if request.method == 'POST':
-        form = BloqueoHorarioForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Horario bloqueado correctamente.')
-            return redirect('bloqueos_doctora')
-        messages.error(request, 'Revisa los campos marcados en rojo.')
-    else:
-        form = BloqueoHorarioForm()
-
-    hoy = timezone.localdate()
-    form.fields['fecha'].widget.attrs['min'] = hoy.isoformat()
-
-    bloqueos = BloqueoHorario.objects.filter(fecha__gte=hoy)
-    bloqueos = bloqueos.order_by('fecha', 'hora_inicio')
-
-    context = {
-        'form': form,
-        'bloqueos': bloqueos,
-    }
-    return render(request, 'usuarios/doctora/bloqueos.html', context)
-
-
-@login_required(login_url='sin_acceso')
-def eliminar_bloqueo(request, bloqueo_id):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-
-    bloqueo = get_object_or_404(BloqueoHorario, id=bloqueo_id)
-    if request.method == 'POST':
-        bloqueo.delete()
-        messages.success(request, 'Bloqueo eliminado correctamente.')
-    return redirect('bloqueos_doctora')
-
-
-@never_cache
-@login_required(login_url='sin_acceso')
-def historial_citas(request):
-    anio_actual = timezone.now().year
-    citas = request.user.citas_solicitadas.select_related('mascota')
-    citas = citas.order_by('-fecha_hora')
-
-    periodo = request.GET.get('periodo', 'este_ano')
-    mascota_sel = request.GET.get('mascota', '')
-    estado_sel = request.GET.get('estado', '')
-
-    if periodo == 'este_ano':
-        citas = citas.filter(fecha_hora__year=anio_actual)
-    elif periodo == 'ano_pasado':
-        citas = citas.filter(fecha_hora__year=anio_actual - 1)
-
-    if mascota_sel:
-        citas = citas.filter(mascota_id=mascota_sel)
-    if estado_sel:
-        citas = citas.filter(estado=estado_sel)
-
-    estados = SolicitudCita.ESTADOS
-
-    paginador = Paginator(citas, 8)
-    numero_pagina = request.GET.get('page')
-    page_obj = paginador.get_page(numero_pagina)
-
-    context = {
-        'page_obj': page_obj,
-        'mascotas': request.user.mascotas.all(),
-        'estados': estados,
-        'periodo': periodo,
-        'mascota_sel': mascota_sel,
-        'estado_sel': estado_sel,
-    }
-    return render(request, 'usuarios/cliente/historial_citas_list.html', context)
-
-@login_required(login_url='sin_acceso')
-def ficha_mascota(request, mascota_id):
-    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
-    historial = FichaMedica.objects.filter(mascota=mascota)
-    historial = historial.order_by('-fecha_atencion')
-    context = {
-        'mascota': mascota,
-        'historial': historial,
-    }
-    return render(request, 'usuarios/cliente/ficha_mascota.html', context)
-
-
-@login_required(login_url='sin_acceso')
-def configuracion(request):
-    if request.method == "POST":
-        form = ConfiguracionForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Tus cambios se guardaron correctamente.")
-            return redirect("dashboard")
-        messages.error(request, "Revisa los campos marcados en rojo.")
-    else:
-        form = ConfiguracionForm(instance=request.user)
-
-    return render(request, "usuarios/cliente/configuracion.html", {"form": form})
-
-@login_required(login_url='sin_acceso')
-def eliminar_mascota(request, mascota_id):
-    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
-    if request.method == 'POST':
-        mascota.activa = False
-        mascota.save()
-        messages.success(request, f'{mascota.nombre} fue eliminada correctamente.')
-    return redirect('dashboard')
-
-@login_required(login_url='sin_acceso')
-def editar_mascota(request, mascota_id):
-    mascota = get_object_or_404(Mascota, id=mascota_id, dueno=request.user, activa=True)
-    if request.method == 'POST':
-        form = MascotaForm(request.POST, request.FILES, instance=mascota)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'{mascota.nombre} fue actualizada correctamente.')
-            return redirect('dashboard')
-    else:
-        form = MascotaForm(instance=mascota)
-    return render(request, 'usuarios/cliente/editar_mascota.html', {'form': form, 'mascota': mascota})
-
-@login_required(login_url='sin_acceso')
-def crear_tipo_consulta(request):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-
-    if request.method == 'POST':
-        form = TipoConsultaForm(request.POST)
-        if form.is_valid():
-            tipo = form.save()
-            messages.success(request, f'{tipo.nombre} fue agregado correctamente.')
-            return redirect('tipos_servicios')
-    else:
-        form = TipoConsultaForm()
-    return render(request, 'usuarios/doctora/crear_tipo_consulta.html', {'form': form})
-
-@login_required(login_url='sin_acceso')
-def editar_tipo_consulta(request, tipo_id):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-
-    tipo = get_object_or_404(TipoConsulta, id=tipo_id)
-    if request.method == 'POST':
-        form = TipoConsultaForm(request.POST, instance=tipo)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'{tipo.nombre} fue actualizado correctamente.')
-            return redirect('tipos_servicios')
-    else:
-        form = TipoConsultaForm(instance=tipo)
-    return render(request, 'usuarios/doctora/editar_tipo_consulta.html', {'form': form, 'tipo': tipo})
-
-@login_required(login_url='sin_acceso')
-def ocultar_tipo_consulta(request, tipo_id):
-    if not es_personal_clinica(request.user):
-        return redirect('sin_acceso')
-
-    tipo = get_object_or_404(TipoConsulta, id=tipo_id)
-    if request.method == 'POST':
-        if tipo.activo:
-            tipo.activo = False
-            messages.success(request, f'{tipo.nombre} fue ocultado y ya no se puede agendar.')
-        else:
-            tipo.activo = True
-            messages.success(request, f'{tipo.nombre} se puede agendar de nuevo.')
-        tipo.save()
-    return redirect('tipos_servicios')
-
+#ERRORES----------------------------------------------------------------------------------------------
 def error_404(request, exception=None):
     return render(request, '404.html', status=404)
 

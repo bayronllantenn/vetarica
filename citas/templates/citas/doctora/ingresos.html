@@ -22,7 +22,7 @@ Vet Arica{% endblock %} {% block css %}
         <tr><th>Período</th><td>{{ desde|date:"d/m/Y" }} al {{ hasta|date:"d/m/Y" }}</td></tr>
         <tr><th>Fecha de emisión</th><td>{% now "d/m/Y" %}, {% now "H:i" %} hrs</td></tr>
         {% if request.user.first_name %}<tr><th>Emitido por</th><td>{{ request.user.first_name }} {{ request.user.last_name }}</td></tr>{% endif %}
-        <tr><th>Origen de los datos</th><td>Citas pagadas en línea mediante Webpay Plus (Transbank) e insumos usados en fichas clínicas</td></tr>
+        <tr><th>Origen de los datos</th><td>Citas pagadas en línea mediante Webpay Plus (Transbank) e insumos usados en fichas clínicas o vendidos</td></tr>
       </table>
       <h2 class="ing-pdf-seccion">1. Resumen del período</h2>
       <table class="ing-pdf-tabla">
@@ -46,7 +46,7 @@ Vet Arica{% endblock %} {% block css %}
     <section class="dash-hero pac-titulo">
       <div>
         <h1>Ingresos</h1>
-        <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas e insumos ocupados.</p>
+        <p class="dash-subtitle">Resumen de lo cobrado en citas pagadas e insumos usados o vendidos.</p>
       </div>
 
       <div class="ing-filtro">
@@ -79,7 +79,7 @@ Vet Arica{% endblock %} {% block css %}
       <div class="ing-dato">
         <span><i class="bi bi-box-seam"></i> Insumos</span>
         <strong>${{ total_insumos }}</strong>
-        <p class="ing-cambio">Usados en fichas clínicas</p>
+        <p class="ing-cambio">Usados en fichas clínicas o vendidos</p>
       </div>
       <div class="ing-dato">
         <span><i class="bi bi-cash-stack"></i> Total del período</span>
@@ -138,8 +138,8 @@ Vet Arica{% endblock %} {% block css %}
       {% endif %}
     </section>
 
-    <h2 class="ing-pdf ing-pdf-seccion">4. Insumos ocupados</h2>
-    <h2 class="ing-subtitulo ing-subtitulo-separado">Insumos ocupados</h2>
+    <h2 class="ing-pdf ing-pdf-seccion">4. Insumos usados y vendidos</h2>
+    <h2 class="ing-subtitulo ing-subtitulo-separado">Insumos usados y vendidos</h2>
     <section class="pac-panel">
       {% if insumos_ocupados %}
       <table class="pac-tabla">
@@ -178,7 +178,7 @@ Vet Arica{% endblock %} {% block css %}
       <div><span class="ing-pdf-linea"></span><strong>Emitido por</strong>{{ request.user.first_name }} {{ request.user.last_name }}</div>
       <div><span class="ing-pdf-linea"></span><strong>Revisado y aprobado por</strong>Nombre y firma</div>
     </div>
-    <footer class="ing-pie">Montos expresados en pesos chilenos (CLP), IVA incluido. Los insumos se valorizan al precio registrado al momento de su uso en la ficha clínica. Las citas con pago presencial en la clínica no forman parte de este reporte. Documento generado por el Sistema de gestión Vet Arica.</footer>
+    <footer class="ing-pie">Montos expresados en pesos chilenos (CLP), IVA incluido. Los insumos se valorizan al precio registrado al momento de su uso en la ficha clínica o de su venta. Las citas con pago presencial en la clínica no forman parte de este reporte. Documento generado por el Sistema de gestión Vet Arica.</footer>
   </main>
 </div>
 {% endblock %} {% block extra_js %}
