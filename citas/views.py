@@ -807,6 +807,17 @@ def sumar_insumos(desde, hasta):
         total = total + venta.cantidad * venta.precio_unitario
     return total
 
+def sumar_en(diccionario, clave, valor):
+    if clave not in diccionario:
+        diccionario[clave] = 0
+    diccionario[clave] = diccionario[clave] + valor
+
+def mes_de(fecha):
+    return timezone.localtime(fecha).date().replace(day=1)
+
+def monto_de(fila):
+    return fila['monto']
+
 @never_cache
 @login_required(login_url='sin_acceso')
 def ingresos_doctora(request):
@@ -827,12 +838,15 @@ def ingresos_doctora(request):
 
     inicio = rango_del_dia(desde)[0]
     fin = rango_del_dia(hasta)[1]
-    citas_pagadas = SolicitudCita.objects.select_related('tipo_consulta').filter(estado_pago='Pagado', fecha_pago__range=(inicio, fin))
-    citas_pagadas = citas_pagadas.order_by('-fecha_pago')
 
+    citas_mes = {}
+    insumos_mes = {}
+    cantidad_insumo = {}
+    monto_insumo = {}
+
+    citas_pagadas = SolicitudCita.objects.select_related('tipo_consulta').filter(estado_pago='Pagado', fecha_pago__range=(inicio, fin)).order_by('-fecha_pago')
     total_citas = 0
     cantidad = 0
-    por_mes = {}
     lista_citas = []
     for cita in citas_pagadas:
         monto = 0
@@ -840,69 +854,67 @@ def ingresos_doctora(request):
             monto = cita.monto_pagado
         total_citas = total_citas + monto
         cantidad = cantidad + 1
-
         cita.monto_texto = separar_miles(monto)
         lista_citas.append(cita)
+        sumar_en(citas_mes, mes_de(cita.fecha_pago), monto)
 
-        mes = timezone.localtime(cita.fecha_pago).date().replace(day=1)
-        if mes not in por_mes:
-            por_mes[mes] = [0, 0]
-        por_mes[mes][0] = por_mes[mes][0] + monto
-
-    salidas = Movimiento.objects.select_related('insumo').filter(tipo='Salida', ficha__isnull=False, fecha__range=(inicio, fin))
-    por_insumo = {}
-    total_insumos = 0
-    for salida in salidas:
-        monto = salida.cantidad * salida.precio_unitario
-        total_insumos = total_insumos + monto
-        if salida.insumo not in por_insumo:
-            por_insumo[salida.insumo] = [0, 0]
-        por_insumo[salida.insumo][0] = por_insumo[salida.insumo][0] + salida.cantidad
-        por_insumo[salida.insumo][1] = por_insumo[salida.insumo][1] + monto
-
-        mes = timezone.localtime(salida.fecha).date().replace(day=1)
-        if mes not in por_mes:
-            por_mes[mes] = [0, 0]
-        por_mes[mes][1] = por_mes[mes][1] + monto
-
-    ventas = Venta.objects.filter(fecha__range=(inicio, fin))
-    for venta in ventas:
-        insumo = venta.insumo
-        monto = venta.cantidad * venta.precio_unitario
-        total_insumos = total_insumos + monto
-        if insumo not in por_insumo:
-            por_insumo[insumo] = [0, 0]
-        por_insumo[insumo][0] = por_insumo[insumo][0] + venta.cantidad
-        por_insumo[insumo][1] = por_insumo[insumo][1] + monto
-
-        mes = timezone.localtime(venta.fecha).date().replace(day=1)
-        if mes not in por_mes:
-            por_mes[mes] = [0, 0]
-        por_mes[mes][1] = por_mes[mes][1] + monto
-
-    insumos_ocupados = []
-    for insumo in por_insumo:
-        cantidad_usada = por_insumo[insumo][0]
-        monto = por_insumo[insumo][1]
-        insumos_ocupados.append({'nombre': insumo.nombre, 'cantidad': cantidad_usada, 'unidad': insumo.unidad, 'precio': separar_miles(monto // cantidad_usada), 'monto': monto, 'monto_texto': separar_miles(monto)})
-    insumos_ocupados.sort(key=lambda fila: fila['monto'], reverse=True)
-
-    meses = []
-    citas_por_mes = []
-    insumos_por_mes = []
-    for mes in sorted(por_mes):
-        meses.append(mes.strftime('%m/%Y'))
-        citas_por_mes.append(por_mes[mes][0])
-        insumos_por_mes.append(por_mes[mes][1])
-
-    filas_meses = []
-    for i in range(len(meses)):
-        monto_mes = citas_por_mes[i] + insumos_por_mes[i]
-        filas_meses.append({'mes': meses[i], 'citas': separar_miles(citas_por_mes[i]), 'insumos': separar_miles(insumos_por_mes[i]), 'monto': separar_miles(monto_mes)})
+    paginador = Paginator(lista_citas, 5)
+    pagina_citas = paginador.get_page(request.GET.get('page'))
+    for cita in pagina_citas:
+        cita.en_pagina = True
 
     promedio = 0
     if cantidad > 0:
         promedio = total_citas // cantidad
+
+    total_insumos = 0
+
+    salidas = Movimiento.objects.select_related('insumo').filter(tipo='Salida', ficha__isnull=False, fecha__range=(inicio, fin))
+    for salida in salidas:
+        monto = salida.cantidad * salida.precio_unitario
+        total_insumos = total_insumos + monto
+        sumar_en(cantidad_insumo, salida.insumo, salida.cantidad)
+        sumar_en(monto_insumo, salida.insumo, monto)
+        sumar_en(insumos_mes, mes_de(salida.fecha), monto)
+
+    ventas = Venta.objects.select_related('insumo').filter(fecha__range=(inicio, fin))
+    for venta in ventas:
+        monto = venta.cantidad * venta.precio_unitario
+        total_insumos = total_insumos + monto
+        sumar_en(cantidad_insumo, venta.insumo, venta.cantidad)
+        sumar_en(monto_insumo, venta.insumo, monto)
+        sumar_en(insumos_mes, mes_de(venta.fecha), monto)
+
+    insumos_ocupados = []
+    for insumo in monto_insumo:
+        cantidad_usada = cantidad_insumo[insumo]
+        monto = monto_insumo[insumo]
+        insumos_ocupados.append({'nombre': insumo.nombre, 'cantidad': cantidad_usada, 'unidad': insumo.unidad, 'precio': separar_miles(monto // cantidad_usada), 'monto': monto, 'monto_texto': separar_miles(monto)})
+    insumos_ocupados.sort(key=monto_de, reverse=True)
+
+    todos_los_meses = []
+    for mes in citas_mes:
+        todos_los_meses.append(mes)
+    for mes in insumos_mes:
+        if mes not in todos_los_meses:
+            todos_los_meses.append(mes)
+
+    meses = []
+    citas_por_mes = []
+    insumos_por_mes = []
+    filas_meses = []
+    for mes in sorted(todos_los_meses):
+        monto_citas = 0
+        if mes in citas_mes:
+            monto_citas = citas_mes[mes]
+        monto_insumos = 0
+        if mes in insumos_mes:
+            monto_insumos = insumos_mes[mes]
+
+        meses.append(mes.strftime('%m/%Y'))
+        citas_por_mes.append(monto_citas)
+        insumos_por_mes.append(monto_insumos)
+        filas_meses.append({'mes': mes.strftime('%m/%Y'), 'citas': separar_miles(monto_citas), 'insumos': separar_miles(monto_insumos), 'monto': separar_miles(monto_citas + monto_insumos)})
 
     primer_dia_mes = hoy.replace(day=1)
     ultimo_dia_mes_anterior = primer_dia_mes - timedelta(days=1)
@@ -916,8 +928,6 @@ def ingresos_doctora(request):
     total_mes = sumar_pagos(primer_dia_mes, hoy) + sumar_insumos(primer_dia_mes, hoy)
     total_mes_anterior = sumar_pagos(primer_dia_mes_anterior, ultimo_dia_mes_anterior) + sumar_insumos(primer_dia_mes_anterior, ultimo_dia_mes_anterior)
 
-    sin_ingresos_mes = total_mes == 0
-
     diferencia = None
     bajo = False
     if total_mes > 0 and total_mes_anterior > 0:
@@ -928,6 +938,7 @@ def ingresos_doctora(request):
 
     context = {
         'citas_pagadas': lista_citas,
+        'pagina_citas': pagina_citas,
         'desde': desde,
         'hasta': hasta,
         'total': separar_miles(total_citas + total_insumos),
@@ -946,7 +957,7 @@ def ingresos_doctora(request):
         'total_mes': separar_miles(total_mes),
         'diferencia': diferencia,
         'bajo': bajo,
-        'sin_ingresos_mes': sin_ingresos_mes,
+        'sin_ingresos_mes': total_mes == 0,
         'insumos_ocupados': insumos_ocupados,
         'total_insumos': separar_miles(total_insumos),
     }
