@@ -12,79 +12,108 @@
   <body class="confirmar-body fondo-citas">
     {% include "citas/fondo_citas.html" %}
 
-    <main class="confirmar-contenido">
-      <img src="{% static 'inicio/img/marca/logo_corazon_huella.png' %}" alt="Vet Arica" class="confirmar-logo" />
+    <main class="confirmar-ancho confirmar-contenido">
 
-      <div class="confirmar-card">
-        <h1>Confirma tu cita</h1>
-        <p class="confirmar-sub">Revisa que tus datos estén correctos antes de pagar.</p>
+      <div class="confirmar-marca">
+        <img src="{% static 'inicio/img/marca/logo_sin_fondo.png' %}" alt="" />
+        Vet Arica
+      </div>
 
-        <section class="confirmar-seccion">
-          <div class="confirmar-seccion-titulo">
-            <span class="confirmar-seccion-icono">
-              <img src="{% static 'inicio/img/iconos/cita_usuario.png' %}" alt="" />
-            </span>
-            <h2>Datos de contacto</h2>
-          </div>
-          <div class="confirmar-fila">
-            <span class="confirmar-etiqueta">Nombre</span>
-            <span class="confirmar-valor">{{ solicitud.nombre }} {{ solicitud.apellido }}</span>
-          </div>
-          <div class="confirmar-fila">
-            <span class="confirmar-etiqueta">Email</span>
-            <span class="confirmar-valor">{{ solicitud.email }}</span>
-          </div>
-          <div class="confirmar-fila">
-            <span class="confirmar-etiqueta">Teléfono</span>
-            <span class="confirmar-valor">{{ solicitud.telefono }}</span>
-          </div>
-        </section>
+      <ol class="confirmar-pasos">
+        <li><strong>1.</strong> Servicio</li>
+        <li><strong>2.</strong> Fecha y hora</li>
+        <li><strong>3.</strong> Datos del tutor</li>
+        <li class="activo"><strong>4.</strong> Confirmación y pago</li>
+      </ol>
 
-        <section class="confirmar-seccion">
-          <div class="confirmar-seccion-titulo">
-            <span class="confirmar-seccion-icono">
-              <img src="{% static 'inicio/img/iconos/cita_huella.png' %}" alt="" />
-            </span>
-            <h2>Datos de la atención</h2>
-          </div>
-          <div class="confirmar-fila">
-            <span class="confirmar-etiqueta">Mascota</span>
-            <span class="confirmar-valor">{{ solicitud.nombre_mascota }}</span>
-          </div>
-          <div class="confirmar-fila">
-            <span class="confirmar-etiqueta">Tipo de consulta</span>
-            <span class="confirmar-valor">{{ solicitud.tipo_consulta.nombre }}</span>
-          </div>
-          <div class="confirmar-fila">
-            <span class="confirmar-etiqueta">Fecha</span>
-            <span class="confirmar-valor">{{ solicitud.fecha_hora|date:"d-m-Y" }}</span>
-          </div>
-          <div class="confirmar-fila">
-            <span class="confirmar-etiqueta">Hora</span>
-            <span class="confirmar-valor">{{ solicitud.fecha_hora|time:"H:i" }}</span>
-          </div>
-          {% if solicitud.observaciones %}
-          <div class="confirmar-fila confirmar-fila-observaciones">
-            <span class="confirmar-etiqueta">Observaciones</span>
-            <span class="confirmar-valor">{{ solicitud.observaciones }}</span>
-          </div>
-          {% endif %}
-        </section>
+      <h1>Confirmación y pago</h1>
+      <p class="confirmar-sub">Verifique la información de su reserva antes de continuar al pago.</p>
 
-        <div class="confirmar-total">
-          <span class="confirmar-total-texto">Total a pagar</span>
-          <strong class="confirmar-total-monto">${{ solicitud.tipo_consulta.precio_base|floatformat:"0g" }}</strong>
+      <div class="confirmar-columnas">
+
+        <div class="confirmar-izquierda">
+          <section class="confirmar-caja">
+            <h2>Detalle de la cita</h2>
+            <div class="confirmar-fila">
+              <span>Servicio</span>
+              <strong>{{ solicitud.tipo_consulta.nombre }}</strong>
+            </div>
+            <div class="confirmar-fila">
+              <span>Fecha</span>
+              <strong>{{ solicitud.fecha_hora|date:"l j \d\e F \d\e Y"|capfirst }}</strong>
+            </div>
+            <div class="confirmar-fila">
+              <span>Hora</span>
+              <strong>{{ solicitud.fecha_hora|time:"H:i" }} hrs</strong>
+            </div>
+          </section>
+
+          <section class="confirmar-caja">
+            <h2>Paciente y tutor</h2>
+            <div class="confirmar-fila">
+              <span>Mascota</span>
+              <strong>{{ solicitud.nombre_mascota }}</strong>
+            </div>
+            <div class="confirmar-fila">
+              <span>Tutor</span>
+              <strong>{{ solicitud.nombre }} {{ solicitud.apellido }}</strong>
+            </div>
+            <div class="confirmar-fila">
+              <span>Correo electrónico</span>
+              <strong>{{ solicitud.email }}</strong>
+            </div>
+            <div class="confirmar-fila">
+              <span>Teléfono</span>
+              <strong>{{ solicitud.telefono }}</strong>
+            </div>
+            {% if solicitud.observaciones %}
+            <div class="confirmar-fila">
+              <span>Observaciones</span>
+              <strong>{{ solicitud.observaciones }}</strong>
+            </div>
+            {% endif %}
+          </section>
+
+          <p class="confirmar-nota">La confirmación de la reserva y el comprobante de pago se enviarán al correo electrónico registrado.</p>
         </div>
 
-        <a href="{% url 'iniciar_pago_webpay' solicitud.pk %}" class="confirmar-btn-pagar">
-          Pagar
-        </a>
+        <aside class="confirmar-caja confirmar-pago">
+          <h2>Resumen del pago</h2>
+          <div class="confirmar-linea">
+            <span>{{ solicitud.tipo_consulta.nombre }}</span>
+            <span>${{ precio }}</span>
+          </div>
+          <div class="confirmar-linea confirmar-linea-gris">
+            <span>Subtotal</span>
+            <span>${{ precio }}</span>
+          </div>
 
-        <form method="post" action="{% url 'cancelar_solicitud' solicitud.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="confirmar-btn-cancelar">Cancelar y volver</button>
-        </form>
+          <div class="confirmar-total">
+            <span>Total (CLP)</span>
+            <strong>${{ precio }}</strong>
+          </div>
+
+          <div class="confirmar-acciones">
+            <ul class="confirmar-aviso">
+              <li>Tu hora queda reservada por 15 minutos. Si no pagas en ese tiempo, se libera.</li>
+              <li>Después de pagar, puedes cambiar la fecha una sola vez, con al menos 24 horas de anticipación.</li>
+            </ul>
+
+            <a href="{% url 'iniciar_pago_webpay' solicitud.pk %}" class="confirmar-btn-pagar">
+              Pagar con Webpay
+            </a>
+
+            <form method="post" action="{% url 'cancelar_solicitud' solicitud.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="confirmar-btn-cancelar">Cancelar y volver</button>
+            </form>
+
+            <p class="confirmar-pie-pago">Pago procesado por Transbank a través de Webpay Plus. Será redirigido para completar la transacción.</p>
+          </div>
+        </aside>
+
       </div>
     </main>
+
   </body>
 </html>

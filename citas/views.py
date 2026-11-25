@@ -238,7 +238,8 @@ def confirmar_cita(request, id):
     solicitud = get_object_or_404(SolicitudCita, id=id)
     if not puede_ver_solicitud(request, solicitud):
         raise Http404
-    return render(request, 'citas/cliente/confirmar_cita.html', {'solicitud': solicitud})
+    precio = separar_miles(solicitud.tipo_consulta.precio_base)
+    return render(request, 'citas/cliente/confirmar_cita.html', {'solicitud': solicitud, 'precio': precio})
 
 
 def cancelar_solicitud(request, id):
