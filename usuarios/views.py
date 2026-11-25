@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from citas.forms import BloqueoHorarioForm, HORAS_ATENCION, rango_del_dia, MascotaForm, TipoConsultaForm
+from citas.forms import BloqueoHorarioForm, HORAS_ATENCION, rango_del_dia, MascotaForm, TipoConsultaForm, cancelar_citas_vencidas
 from citas.models import BloqueoHorario, FichaMedica, Mascota, SolicitudCita, TipoConsulta
 from citas.recordatorios import enviar_recordatorios
 from inventario.models import Movimiento
@@ -158,6 +158,7 @@ def dashboard_usuario(request):
 def historial_citas(request):
     if es_equipo_clinico(request.user):
         return redirigir_segun_rol(request.user)
+    cancelar_citas_vencidas()
     anio_actual = timezone.now().year
     citas = request.user.citas_solicitadas.select_related('mascota')
     citas = citas.order_by('-fecha_hora')

@@ -129,6 +129,8 @@
             <td class="text-right nowrap">
               {% if cita.puede_reagendarse %}
               <a href="{% url 'reagendar_cita' cita.id %}" class="pager-btn">Reagendar</a>
+              {% elif cita.estado == 'Pendiente' and cita.estado_pago == 'Pendiente' %}
+              <a href="{% url 'iniciar_pago_webpay' cita.id %}" class="pager-btn">Volver al pago</a>
               {% endif %}
             </td>
           </tr>
