@@ -1,0 +1,127 @@
+.confirmar-marca a {
+  margin-left: auto;
+  color: #1c7a5a;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.confirmar-pasos .pendiente {
+  border-top-color: #c9d8d0;
+  color: #8a9794;
+}
+
+.confirmar-caja h2 span {
+  margin-right: 6px;
+  font-size: 13px;
+  font-weight: normal;
+  color: #1c7a5a;
+}
+
+.confirmar-izquierda {
+  min-width: 0;
+}
+
+.caja-cuerpo {
+  padding: 16px;
+}
+
+.fila-campos {
+  display: flex;
+  gap: 12px;
+}
+
+.campo {
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.campo-doble {
+  flex: 2;
+}
+
+.campo label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.campo label em {
+  font-style: normal;
+  font-weight: normal;
+  color: #8a9794;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #c9d8d0;
+  border-radius: 4px;
+  background-color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.campo-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #c62f2f;
+}
+
+.horas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.campo .hora {
+  margin: 0;
+  font-weight: normal;
+}
+
+.campo .hora input {
+  display: none;
+}
+
+.hora span {
+  display: block;
+  width: 86px;
+  padding: 9px 0;
+  border: 1px solid #c9d8d0;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.hora input:checked + span {
+  background-color: #1c7a5a;
+  border-color: #1c7a5a;
+  color: #fff;
+}
+
+.aviso {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+  font-size: 13px;
+  color: #7a5a12;
+}
+
+.aviso-error {
+  margin-bottom: 16px;
+  background-color: #fde2e2;
+  color: #c62f2f;
+}
+
+@media (max-width: 700px) {
+  .fila-campos {
+    flex-direction: column;
+    gap: 0;
+  }
+}

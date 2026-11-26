@@ -1,0 +1,5 @@
+<div class="campo{% if doble %} campo-doble{% endif %}">
+  <label for="{{ campo.id_for_label }}">{{ texto }}{% if nota %} <em>({{ nota }})</em>{% endif %}</label>
+  {{ campo }}
+  <small class="campo-error">{{ campo.errors.0 }}</small>
+</div>

@@ -7,63 +7,76 @@
     <title>Pago Rechazado - Vet Arica</title>
     <link rel="icon" href="{% static 'inicio/img/marca/favicon.png' %}" />
     <link href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" rel="stylesheet"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
     <link href="{% static 'citas/css/reserva_fallida.css' %}" rel="stylesheet" />
     <link href="{% static 'citas/css/fondo_citas.css' %}" rel="stylesheet" />
   </head>
   <body class="fondo-citas">
-    {% include "citas/fondo_citas.html" %}
+    {% include "citas/includes/fondo_citas.html" %}
 
     <div class="tarjeta">
 
-      <img src="{% static 'inicio/img/marca/logo2.png' %}" alt="Vet Arica" class="logo"/>
-      <img src="{% static 'inicio/img/ilustraciones/Perro_y_gato_bajo_corazones_rotos.png' %}" alt="Perro y gato tristes" class="ilustracion"/>
+      <div class="cabecera">
+        <span class="marca">
+          <img src="{% static 'inicio/img/marca/logo_sin_fondo.png' %}" alt="" />
+          Vet Arica
+        </span>
+        <span class="cabecera-texto">Resultado del pago</span>
+      </div>
 
-      <h1 class="titulo">Pago no aprobado</h1>
-      <p class="texto">No se pudo procesar el pago, por lo tanto la cita no quedÃ³ confirmada. Puedes intentar nuevamente con otro medio de pago.</p>
-
-      {% if solicitud %}
-      <div class="resumen">
-        <div class="fila">
-          <span class="icono"><i class="bi bi-person"></i></span>
-          <span class="etiqueta">Cliente</span>
-          <span class="valor">{{ solicitud.nombre }} {{ solicitud.apellido }}</span>
+      <div class="cuerpo">
+        <div class="aviso">
+          <img src="{% static 'inicio/img/ilustraciones/Perro_y_gato_bajo_corazones_rotos.png' %}" alt="Perro y gato tristes" />
+          <h1>Pago no aprobado</h1>
+          <p>No se pudo procesar el pago, por lo que la cita no quedó confirmada. Puede intentarlo nuevamente con el mismo u otro medio de pago.</p>
         </div>
 
-        <div class="fila">
-          <span class="icono"><i class="bi bi-heart"></i></span>
-          <span class="etiqueta">Mascota</span>
-          <span class="valor">{{ solicitud.nombre_mascota }}</span>
+        {% if solicitud %}
+        <div class="resumen">
+          <div class="resumen-cabecera">Detalle de la cita</div>
+          <div class="fila">
+            <span>Cliente</span>
+            <strong>{{ solicitud.nombre }} {{ solicitud.apellido }}</strong>
+          </div>
+          <div class="fila">
+            <span>Mascota</span>
+            <strong>{{ solicitud.nombre_mascota }}</strong>
+          </div>
+          <div class="fila">
+            <span>Consulta</span>
+            <strong>{{ solicitud.tipo_consulta.nombre }}</strong>
+          </div>
+          <div class="fila">
+            <span>Fecha y hora</span>
+            <strong>{{ solicitud.fecha_hora|date:"d/m/Y" }} · {{ solicitud.fecha_hora|date:"H:i" }} hrs</strong>
+          </div>
+          <div class="fila">
+            <span>Monto</span>
+            <strong>${{ precio }}</strong>
+          </div>
+          <div class="fila">
+            <span>Estado de la cita</span>
+            <strong class="estado-rojo">● {{ solicitud.get_estado_display }}</strong>
+          </div>
         </div>
+        {% endif %}
 
-        <div class="fila">
-          <span class="icono"><i class="bi bi-clipboard2-pulse"></i></span>
-          <span class="etiqueta">Tipo de consulta</span>
-          <span class="valor">{{ solicitud.tipo_consulta.nombre }}</span>
-        </div>
-
-        <div class="fila">
-          <span class="icono"><i class="bi bi-calendar-event"></i></span>
-          <span class="etiqueta">Fecha y hora</span>
-          <span class="valor">{{ solicitud.fecha_hora|date:"d/m/Y H:i" }}</span>
-        </div>
-
-        <div class="fila">
-          <span class="icono"><i class="bi bi-credit-card"></i></span>
-          <span class="etiqueta">Estado del pago</span>
-          <span class="valor"><span class="etiqueta-roja">No aprobado</span></span>
-        </div>
-
-        <div class="fila">
-          <span class="icono"><i class="bi bi-clock"></i></span>
-          <span class="etiqueta">Estado de la cita</span>
-          <span class="valor"><span class="etiqueta-amarilla">{{ solicitud.estado }}</span></span>
+        <div class="motivos">
+          <strong>Motivos frecuentes</strong>
+          <ul>
+            <li>Saldo o cupo insuficiente en la tarjeta.</li>
+            <li>Datos de la tarjeta ingresados de forma incorrecta.</li>
+            <li>La transacción fue cancelada en Webpay.</li>
+          </ul>
         </div>
       </div>
-      {% endif %}
 
-      <a href="{% url 'agendar' %}" class="boton">Intentar nuevamente</a>
-      <a href="{% url 'dashboard' %}" class="enlace">Volver a mi cuenta</a>
+      <div class="pie">
+        <div class="botones">
+          <a href="{% url 'agendar' %}" class="boton">Intentar nuevamente</a>
+          <a href="{% url 'dashboard' %}" class="boton-borde">Volver a mi cuenta</a>
+        </div>
+        <p class="ayuda">¿Necesita ayuda? <a href="mailto:cvetarica@gmail.com">Contáctenos</a></p>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>

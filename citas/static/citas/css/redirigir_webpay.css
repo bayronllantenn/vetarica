@@ -25,8 +25,15 @@ body {
 
 .logo {
     display: block;
-    width: 130px;
-    margin: 0 auto;
+    width: 90px;
+    height: auto;
+    margin: 0 auto 4px;
+}
+.marca {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+    color: #1b1f24;
 }
 
 .ilustracion {
