@@ -29,6 +29,17 @@ if config('DEBUG', default='') == 'True':
 else:
     DEBUG = False
 
+# la cookie de sesion no se puede leer con javascript ni usar desde otras paginas
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# solo en pythonanywhere las cookies viajan por https y el navegador abre la pagina siempre con https
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 3600
+
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'vetarica.pythonanywhere.com']
 
 

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body { margin: 0; padding: 20px 12px; background: #eef3f1; font-family: Arial, sans-serif; color: #1f2d2b; }
+      .correo { max-width: 520px; margin: 0 auto; }
+      .arriba { padding: 20px; background: #e3eee8; text-align: center; }
+      .arriba img { width: 200px; max-width: 100%; margin-top: 12px; }
+      .etiqueta { font-size: 13px; font-weight: bold; color: #1c7a5a; }
+      h1 { margin: 8px 0 6px; font-size: 22px; color: #0f3d33; }
+      .arriba p { margin: 0; font-size: 14px; color: #4b5d59; }
+      .abajo { padding: 24px 20px; background: #fff; text-align: center; font-size: 14px; color: #4b5d59; }
+      .abajo p { margin: 0 0 16px; }
+      .boton { display: inline-block; margin: 6px 0 20px; padding: 12px 28px; border-radius: 8px; background: #1c7a5a; font-weight: bold; }
+      .enlace { font-size: 12px; word-break: break-all; color: #6b7a77; }
+      .nota { margin: 0; font-size: 12px; color: #6b7a77; }
+      .pie { padding: 18px; font-size: 12px; line-height: 1.7; text-align: center; color: #6b7a77; }
+    </style>
+  </head>
+  <body>
+    <div class="correo">
+      <div class="arriba">
+        <span class="etiqueta">RECUPERAR CONTRASEÑA</span>
+        <h1>Crea una nueva contraseña</h1>
+        <p>Hola {{ user.first_name }}, recibimos una solicitud para cambiar tu contraseña.</p>
+        <img src="https://vetarica.pythonanywhere.com/static/inicio/img/ilustraciones/perroYgatoSaludando.png" alt="" />
+      </div>
+
+      <div class="abajo">
+        <p>Presiona el botón para elegir una nueva contraseña.</p>
+        <a href="{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}" class="boton" style="color: #ffffff; text-decoration: none;">Cambiar contraseña</a>
+        <p class="enlace">Si el botón no funciona, copia este enlace en tu navegador:<br />{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}</p>
+        <p class="nota">Si tú no pediste esto, ignora este correo. Tu contraseña sigue igual.</p>
+      </div>
+
+      <div class="pie">
+        <strong>Vet Arica</strong> · Villa El Bosque - Payachatas 1749, Arica, Arica y Parinacota<br />
+        Teléfonos 2263303 · 98713092 · cvetarica@gmail.com<br />
+        Lunes a viernes: 11:00 - 14:00 y 17:00 - 21:00 hrs
+      </div>
+    </div>
+  </body>
+</html>

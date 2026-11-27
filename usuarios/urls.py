@@ -14,6 +14,7 @@ urlpatterns = [
         auth_views.PasswordResetView.as_view(
             template_name='usuarios/recuperar_password.html',
             email_template_name='usuarios/recuperar_email.txt',
+            html_email_template_name='usuarios/recuperar_email.html',
             subject_template_name='usuarios/recuperar_asunto.txt',
         ),
         name='password_reset',

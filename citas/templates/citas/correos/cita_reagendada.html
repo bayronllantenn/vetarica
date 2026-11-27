@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body { margin: 0; padding: 20px 12px; background: #eef3f1; font-family: Arial, sans-serif; color: #1f2d2b; }
+      .correo { max-width: 520px; margin: 0 auto; }
+      .arriba { padding: 20px; background: #e3eee8; text-align: center; }
+      .arriba img { width: 200px; max-width: 100%; margin-top: 12px; }
+      .etiqueta { font-size: 13px; font-weight: bold; color: #1c7a5a; }
+      h1 { margin: 8px 0 6px; font-size: 22px; color: #0f3d33; }
+      .arriba p { margin: 0; font-size: 14px; color: #4b5d59; }
+      .abajo { padding: 20px; background: #fff; }
+      .resumen { width: 100%; margin-bottom: 16px; border: 1px solid #e6ebe9; }
+      .resumen td { padding: 14px; vertical-align: middle; }
+      .dia { width: 56px; border-right: 1px solid #e6ebe9; text-align: center; }
+      .dia span { display: block; font-size: 11px; font-weight: bold; color: #6b7a77; }
+      .dia strong { display: block; font-size: 26px; color: #0f3d33; }
+      .resumen h2 { margin: 0 0 4px; font-size: 17px; color: #0f3d33; }
+      .resumen p { margin: 0; font-size: 13px; color: #4b5d59; }
+      .datos { width: 100%; border-collapse: collapse; font-size: 14px; }
+      .datos td { padding: 12px 4px; border-bottom: 1px solid #eef1f0; color: #6b7a77; }
+      .datos td + td { text-align: right; font-weight: bold; color: #1f2d2b; }
+      .nota { margin: 20px 0 0; font-size: 12px; text-align: center; color: #6b7a77; }
+      .pie { padding: 18px; font-size: 12px; line-height: 1.7; text-align: center; color: #6b7a77; }
+    </style>
+  </head>
+  <body>
+    <div class="correo">
+      <div class="arriba">
+        <span class="etiqueta">CITA REAGENDADA</span>
+        <h1>Tu cita tiene nueva fecha</h1>
+        <p>Hola {{ cita.nombre }}, la cita de {{ cita.nombre_mascota }} quedó para el día y la hora de abajo.</p>
+        <img src="https://vetarica.pythonanywhere.com/static/inicio/img/ilustraciones/perroYgatoSaludando.png" alt="" />
+      </div>
+
+      <div class="abajo">
+        <table class="resumen">
+          <tr>
+            <td class="dia">
+              <span>{{ cita.fecha_hora|date:"b"|upper }}</span>
+              <strong>{{ cita.fecha_hora|date:"j" }}</strong>
+              <span>{{ cita.fecha_hora|date:"D"|upper }}</span>
+            </td>
+            <td>
+              <h2>{{ cita.tipo_consulta.nombre }} de {{ cita.nombre_mascota }}</h2>
+              <p>{{ cita.fecha_hora|date:"l j \d\e F"|capfirst }} - <strong>{{ cita.fecha_hora|date:"H:i" }} hrs</strong></p>
+            </td>
+          </tr>
+        </table>
+
+        <table class="datos">
+          <tr><td>Servicio</td><td>{{ cita.tipo_consulta.nombre }}</td></tr>
+          <tr><td>Mascota</td><td>{{ cita.nombre_mascota }}</td></tr>
+          <tr><td>Dirección</td><td>Villa El Bosque - Payachatas 1749, Arica, Arica y Parinacota</td></tr>
+        </table>
+
+        <p class="nota">Si tienes dudas sobre el cambio, llámanos al 98713092. Te esperamos.</p>
+      </div>
+
+      <div class="pie">
+        <strong>Vet Arica</strong> · Villa El Bosque - Payachatas 1749, Arica, Arica y Parinacota<br />
+        Teléfonos 2263303 · 98713092 · cvetarica@gmail.com<br />
+        Lunes a viernes: 11:00 - 14:00 y 17:00 - 21:00 hrs
+      </div>
+    </div>
+  </body>
+</html>

@@ -84,8 +84,9 @@ def enviar_correo_reagendada(solicitud):
         f'Hola {solicitud.nombre}, tu cita para {solicitud.nombre_mascota} '
         f'quedó para el {fecha}. Te esperamos en Vet Arica.'
     )
+    mensaje_html = render_to_string('citas/correos/cita_reagendada.html', {'cita': solicitud})
     try:
-        send_mail(asunto, mensaje, None, [solicitud.email])
+        send_mail(asunto, mensaje, None, [solicitud.email], html_message=mensaje_html)
     except Exception:
         pass
 
