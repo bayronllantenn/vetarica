@@ -510,12 +510,17 @@ body:has(.sidebar-doctora) .dash-hero .dash-subtitle {
 }
 
 .modo-oscuro .dash-shell,
-.modo-oscuro .alertas-caja {
+.modo-oscuro .alertas-caja,
+.modo-oscuro .dash-shell + .modal-eliminar .modal-eliminar-caja {
   filter: invert(0.9) hue-rotate(180deg);
 }
 
 .modo-oscuro .alertas-caja {
   box-shadow: none;
+}
+
+.modo-oscuro .dash-shell + .modal-eliminar .modal-eliminar-caja {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
 .modo-oscuro .alertas-cuerpo {

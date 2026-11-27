@@ -44,6 +44,7 @@
         <thead>
           <tr>
             <th>Mascota</th>
+            <th>Especie</th>
             <th>Dueño</th>
             <th>Última atención</th>
             <th>Fichas</th>
@@ -58,11 +59,11 @@
                 <span class="pac-avatar pac-avatar-{{ paciente.mascota.especie|lower }}">{{ paciente.mascota.nombre|first|upper }}</span>
                 <div>
                   <strong>{{ paciente.mascota.nombre }}</strong>
-                  {% if not paciente.mascota.activa %}<span class="pac-etiqueta">Dada de baja por el dueño</span>{% endif %}
-                  <span>{{ paciente.mascota.especie }}</span>
+                  {% if not paciente.mascota.activa %}<span class="pac-quitada">Quitada de la cuenta del tutor</span>{% endif %}
                 </div>
               </div>
             </td>
+            <td data-label="Especie">{{ paciente.mascota.especie }}</td>
             <td class="pac-dueno">
               {% if paciente.mascota.dueno %}
               <strong>{{ paciente.mascota.dueno.first_name }} {{ paciente.mascota.dueno.last_name }}</strong>

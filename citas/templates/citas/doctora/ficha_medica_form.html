@@ -65,12 +65,9 @@ Vet Arica{% endblock %} {% block css %}
           </a>
           {% endif %}
           {% if puede_marcar_ausente %}
-          <form method="post" action="{% url 'marcar_no_asistio' solicitud.id %}" class="m-0">
-            {% csrf_token %}
-            <button type="submit" class="pac-btn fic-btn-rojo" onclick="return confirm('¿Marcar esta cita como No asistió?')">
-              <i class="bi bi-person-x"></i> No asistió
-            </button>
-          </form>
+          <a href="#no-asistio" class="pac-btn fic-btn-rojo">
+            <i class="bi bi-person-x"></i> No asistió
+          </a>
           {% endif %}
         </div>
         {% endif %}
@@ -189,6 +186,10 @@ Vet Arica{% endblock %} {% block css %}
                     <td data-label="Total" class="text-end">${{ usado.subtotal }}</td>
                   </tr>
                   {% endfor %}
+                  <tr>
+                    <td colspan="2"><strong>Total insumos</strong></td>
+                    <td data-label="Total insumos" class="text-end"><strong>${{ total_insumos }}</strong></td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -229,6 +230,24 @@ Vet Arica{% endblock %} {% block css %}
     </section>
   </main>
 </div>
+
+{% if puede_marcar_ausente %}
+<div class="modal-eliminar" id="no-asistio">
+  <a href="#cerrar" class="modal-eliminar-fondo" aria-label="Cerrar"></a>
+  <div class="modal-eliminar-caja">
+    <span class="modal-eliminar-icono"><i class="bi bi-person-x"></i></span>
+    <h3>¿{{ nombre }} no asistió a su cita?</h3>
+    <p>La cita del {{ solicitud.fecha_hora|date:"d/m/Y" }} a las {{ solicitud.fecha_hora|date:"H:i" }} quedará como "No asistió" y ya no se podrá registrar su ficha.</p>
+    <div class="modal-eliminar-botones">
+      <a href="#cerrar" class="modal-eliminar-cancelar">Cancelar</a>
+      <form action="{% url 'marcar_no_asistio' solicitud.id %}" method="post" class="mascota-eliminar-form">
+        {% csrf_token %}
+        <button type="submit" class="modal-eliminar-confirmar">Sí, no asistió</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %} {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>

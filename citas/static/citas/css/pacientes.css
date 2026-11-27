@@ -145,6 +145,17 @@
   color: #5b3f8f;
 }
 
+.pac-tabla .pac-quitada {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border: 1px solid rgba(183, 121, 31, 0.45);
+  border-radius: 4px;
+  background: rgba(183, 121, 31, 0.1);
+  font-size: 11px;
+  color: #b7791f;
+}
+
 .pac-tabla .pac-etiqueta {
   padding: 3px 10px;
   border-radius: 999px;

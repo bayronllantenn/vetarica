@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body { margin: 0; padding: 20px 12px; background: #eef3f1; font-family: Arial, sans-serif; color: #1f2d2b; }
+      .correo { max-width: 520px; margin: 0 auto; }
+      .marca { margin-bottom: 12px; font-size: 18px; font-weight: bold; color: #1f2d2b; }
+      .marca img { width: 24px; vertical-align: middle; }
+      .arriba { padding: 20px; background: #e3eee8; text-align: center; }
+      .arriba img { width: 220px; max-width: 100%; }
+      .aprobado { font-size: 13px; font-weight: bold; color: #1c7a5a; }
+      h1 { margin: 12px 0 6px; font-size: 22px; color: #0f3d33; }
+      .arriba p { margin: 0; font-size: 14px; color: #4b5d59; }
+      .abajo { padding: 20px; background: #fff; text-align: center; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+      td { padding: 12px 14px; border-bottom: 1px solid #eef1f0; }
+      td + td { text-align: right; font-weight: bold; }
+      .total td { border: none; background: #f4f8f6; font-weight: bold; }
+      .total td + td { font-size: 22px; color: #0f3d33; }
+      .nota { margin: 20px 0 0; font-size: 12px; color: #6b7a77; }
+      .pie { padding: 18px; font-size: 12px; line-height: 1.7; text-align: center; color: #6b7a77; }
+    </style>
+  </head>
+  <body>
+    <div class="correo">
+      <div class="marca"><img src="{{ logo }}" alt="" /> Vet Arica</div>
+
+      <div class="arriba">
+        <img src="{{ imagen }}" alt="" />
+        <br />
+        <span class="aprobado">PAGO APROBADO</span>
+        <h1>Tu hora fue agendada con éxito</h1>
+        <p>Hola {{ solicitud.nombre }}, este es tu comprobante.</p>
+      </div>
+
+      <div class="abajo">
+        <table>
+          <tr><td>Mascota</td><td>{{ solicitud.nombre_mascota }}</td></tr>
+          <tr><td>Servicio</td><td>{{ solicitud.tipo_consulta.nombre }}</td></tr>
+          <tr><td>Fecha y hora</td><td>{{ fecha }} hrs</td></tr>
+          <tr><td>Medio de pago</td><td>Webpay</td></tr>
+          <tr><td>N° de orden</td><td>{{ solicitud.webpay_orden }}</td></tr>
+          <tr><td>Código de autorización</td><td>{{ codigo }}</td></tr>
+          <tr class="total"><td>Monto pagado</td><td>${{ monto }}</td></tr>
+        </table>
+
+        <p class="nota">Guarda este correo como respaldo de tu pago. Gracias por atenderte con nosotros.</p>
+      </div>
+
+      <div class="pie">
+        <strong>Vet Arica</strong> · Villa El Bosque, Payachatas 1749, Arica<br />
+        Teléfonos 2263303 · 98713092 · cvetarica@gmail.com<br />
+        Lunes a viernes: 11:00 - 14:00 y 17:00 - 21:00 hrs
+      </div>
+    </div>
+  </body>
+</html>

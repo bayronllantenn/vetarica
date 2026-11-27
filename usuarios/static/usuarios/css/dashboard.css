@@ -853,6 +853,10 @@ html {
   display: flex;
 }
 
+body:has(.modal-eliminar:target) {
+  overflow: hidden;
+}
+
 .modal-eliminar-fondo {
   position: absolute;
   inset: 0;

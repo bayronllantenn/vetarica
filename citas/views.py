@@ -6,6 +6,8 @@ from django.core.paginator import Paginator
 from django.http import Http404
 from django.db import transaction
 from django.shortcuts import redirect, render, get_object_or_404
+from django.template.loader import render_to_string
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
@@ -47,11 +49,11 @@ def separar_miles(numero):
     return format(numero, ',').replace(',', '.')
 
 # CORREOS----------------------------------------------------------------------------------------------
-def enviar_correo_confirmacion(solicitud):
+def enviar_correo_confirmacion(request, solicitud, codigo):
     if not solicitud.email:
         return
 
-    fecha = timezone.localtime(solicitud.fecha_hora).strftime('%d/%m/%Y %H:%M')
+    fecha = timezone.localtime(solicitud.fecha_hora).strftime('%d/%m/%Y - %H:%M')
     monto = separar_miles(solicitud.monto_pagado)
     asunto = 'Comprobante de pago - Vet Arica'
     mensaje = (
@@ -63,8 +65,12 @@ def enviar_correo_confirmacion(solicitud):
         f'Gracias por atenderte con nosotros.\n\n'
         f'Atte. Vet Arica'
     )
+    logo = request.build_absolute_uri(static('inicio/img/marca/favicon.png'))
+    imagen = request.build_absolute_uri(static('inicio/img/ilustraciones/chocando_palmas.png'))
+    datos = {'solicitud': solicitud, 'fecha': fecha, 'monto': monto, 'codigo': codigo, 'logo': logo, 'imagen': imagen}
+    mensaje_html = render_to_string('citas/correos/comprobante_pago.html', datos)
     try:
-        send_mail(asunto, mensaje, None, [solicitud.email])
+        send_mail(asunto, mensaje, None, [solicitud.email], html_message=mensaje_html)
     except Exception:
         pass
 
@@ -348,7 +354,7 @@ def retorno_webpay(request):
             solicitud.monto_pagado = response.get('amount')
             solicitud.fecha_pago = timezone.now()
             solicitud.save()
-            enviar_correo_confirmacion(solicitud)
+            enviar_correo_confirmacion(request, solicitud, response.get('authorization_code'))
             messages.success(request, 'Tu cita fue reservada y pagada correctamente.')
             return redirect('reserva_exitosa', solicitud.pk)
         else:
