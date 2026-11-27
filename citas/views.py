@@ -236,7 +236,16 @@ def agendar_view(request):
 
     bloqueos_del_dia = BloqueoHorario.objects.filter(fecha=fecha_seleccionada)
 
-    context = {'form': form, 'mascotas': mascotas, 'fecha_seleccionada': fecha_seleccionada, 'mascota_elegida': mascota_elegida, 'mostrar_contacto': mostrar_contacto, 'bloqueos_del_dia': bloqueos_del_dia}
+    horas = []
+    for opcion in form.fields['hora'].choices:
+        if opcion[0] != '':
+            horas.append(opcion[0])
+
+    tipo = form.fields['tipo_consulta'].queryset.first()
+    precio = ''
+    if tipo:
+        precio = separar_miles(tipo.precio_base)
+    context = {'form': form, 'mascotas': mascotas, 'fecha_seleccionada': fecha_seleccionada, 'mascota_elegida': mascota_elegida, 'mostrar_contacto': mostrar_contacto, 'bloqueos_del_dia': bloqueos_del_dia, 'horas': horas, 'tipo': tipo, 'precio': precio}
     return render(request, 'citas/cliente/agendar_form.html', context)
 
 
@@ -377,12 +386,13 @@ def reserva_exitosa(request, id):
 
 def reserva_fallida(request, id=None):
     solicitud = None
-    
+    precio = ''
     if id:
         solicitud = get_object_or_404(SolicitudCita, id=id)
         if not puede_ver_solicitud(request, solicitud):
             raise Http404
-    return render(request, 'citas/pago/reserva_fallida.html', {'solicitud': solicitud})
+        precio = separar_miles(solicitud.tipo_consulta.precio_base)
+    return render(request, 'citas/pago/reserva_fallida.html', {'solicitud': solicitud, 'precio': precio})
 
 
 # REAGENDAR CITA---------------------------------------------------------------------------------------

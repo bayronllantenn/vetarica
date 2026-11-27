@@ -11,11 +11,12 @@
     <link href="{% static 'citas/css/fondo_citas.css' %}" rel="stylesheet" />
   </head>
   <body class="fondo-citas">
-    {% include "citas/fondo_citas.html" %}
+    {% include "citas/includes/fondo_citas.html" %}
 
     <div class="tarjeta">
 
-      <img src="{% static 'inicio/img/marca/logo2.png' %}" alt="Vet Arica" class="logo"/>
+      <img src="{% static 'inicio/img/marca/logo_sin_fondo.png' %}" alt="" class="logo"/>
+      <p class="marca">Vet Arica</p>
       <img src="{% static 'inicio/img/originales/Tarjeta_webpay.png' %}" alt="Tarjeta de pago" class="ilustracion"/>
 
       <h1 class="titulo">Redirigiendo a Webpay</h1>

@@ -76,16 +76,14 @@ def obtener_horas_disponibles(fecha):
                 if si_esta_en_el_bloqueo:
                     horas_ocupadas.append(hora)
 
-    if fecha == timezone.localdate():
-        hora_actual = timezone.localtime().strftime('%H:%M')
-    else:
-        hora_actual = '00:00'
+    limite = timezone.now() + timedelta(minutes=MINUTOS_ANTICIPACION_MINIMA)
 
     horas_disponibles = []
     for opcion in HORAS_ATENCION:
         hora = opcion[0]
-        si_esta_libre = hora not in horas_ocupadas and hora > hora_actual
-        if not hora or si_esta_libre:
+        if not hora:
+            horas_disponibles.append(opcion)
+        elif hora not in horas_ocupadas and juntar_fecha_y_hora(fecha, hora) > limite:
             horas_disponibles.append(opcion)
     return horas_disponibles
 
@@ -199,9 +197,9 @@ class SolicitudCitaForm(forms.ModelForm):
                 'maxlength': '9',
                 'title': 'Ingresa 9 números, ej: 912345678',
             }),
-            'raza_mascota': forms.TextInput(attrs={'placeholder': 'Raza (opcional)'}),
+            'raza_mascota': forms.TextInput(attrs={'placeholder': 'Ej.: Quiltro'}),
             'fecha_nacimiento_mascota': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
-            'observaciones': forms.Textarea(attrs={'placeholder': 'Observaciones (opcional)', 'rows': 3}),
+            'observaciones': forms.Textarea(attrs={'placeholder': 'Síntomas, medicamentos actuales u otra información relevante', 'rows': 3}),
         }
         labels = {
             'fecha_nacimiento_mascota': 'Fecha de nacimiento',

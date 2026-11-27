@@ -23,7 +23,7 @@
     <link href="{% static 'citas/css/fondo_citas.css' %}" rel="stylesheet" />
   </head>
   <body class="mascota-form-body fondo-citas">
-    {% include "citas/fondo_citas.html" %}
+    {% include "citas/includes/fondo_citas.html" %}
     <div class="mascota-card-wrapper">
       <form class="mascota-form-card" method="post" enctype="multipart/form-data" novalidate id="mascotaForm">
         {% csrf_token %}
