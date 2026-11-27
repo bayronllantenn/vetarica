@@ -20,7 +20,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('panel-vetarica/', admin.site.urls),
     path('', include('inicio.urls')),
     path('usuarios/', include('usuarios.urls')),
     path('citas/', include('citas.urls')),

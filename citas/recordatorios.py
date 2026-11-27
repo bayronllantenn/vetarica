@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from .forms import rango_del_dia
@@ -28,8 +29,10 @@ def enviar_recordatorios():
             f'Hola {cita.nombre}, te recordamos que mañana a las {hora} '
             f'tienes la cita de {cita.nombre_mascota} en Vet Arica. Te esperamos.'
         )
+        imagen = 'https://vetarica.pythonanywhere.com/static/inicio/img/ilustraciones/perroYgatoSaludando.png'
+        mensaje_html = render_to_string('citas/correos/recordatorio_cita.html', {'cita': cita, 'imagen': imagen})
         try:
-            send_mail(asunto, mensaje, None, [cita.email])
+            send_mail(asunto, mensaje, None, [cita.email], html_message=mensaje_html)
         except Exception:
             continue
 
